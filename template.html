@@ -265,39 +265,35 @@
     padding: 44px 48px 48px 48px;
     overflow: hidden;
   }
-  /* ---------- 코넬 노트: 왼쪽 단서(cue) | 오른쪽 노트, 아래 요약 ---------- */
-  .cornell { position: relative; display: grid; grid-template-columns: minmax(150px, 26%) minmax(0, 1fr); row-gap: 18px; }
-  .cornell::before { content: ""; position: absolute; top: 0; bottom: 0; left: 26%; border-left: 1.5px solid color-mix(in srgb, var(--pen) 45%, transparent); pointer-events: none; }
-  .cornell > .cue { padding: 0 16px 0 0; font-size: 14px; line-height: 1.55; color: var(--ink); min-width: 0; }
-  .cornell > .note { padding-left: 20px; min-width: 0; }
-  .cue .sticky { position: sticky; top: 12px; }
-  .cue .cuehead { font-weight: 700; font-size: 14.5px; line-height: 1.4; }
-  .cue .cuehead .sub { font-size: 12.5px; }
-  .cue .lbl { display: block; font-size: 12px; color: var(--pen-blue); font-weight: 700; letter-spacing: 0.06em; margin-bottom: 6px; }
-  .cue ul.kw { list-style: none; padding: 0; margin: 0; display: grid; gap: 5px; font-size: 13.5px; line-height: 1.4; }
-  .cue ul.kw li { padding-left: 12px; position: relative; }
-  .cue ul.kw li::before { content: "·"; position: absolute; left: 0; color: var(--pen); font-weight: 700; }
-  .cue details.analysis { margin: 0; padding: 8px 10px 10px; }
-  .cue details.analysis summary { font-size: 14px; }
-  .cue .analysis .asks { font-size: 13.5px; }
-  .cue .analysis ul.clues li { grid-template-columns: 1fr; gap: 0; font-size: 13.5px; margin-bottom: 4px; }
-  .cue .analysis ul.clues .means { font-size: 13px; }
-  .cue .analysis .shapes { font-size: 13px; }
-  .cornell-sum { margin-top: 26px; padding-top: 14px; border-top: 1.5px solid color-mix(in srgb, var(--pen) 45%, transparent); scroll-margin-top: 20px; }
-  .cornell-sum .sumhead { display: flex; align-items: center; gap: 12px; margin: 0 0 10px; }
-  .cornell-sum .sumhead .t { font-size: 12px; color: var(--pen-blue); font-weight: 700; letter-spacing: 0.06em; }
-  .cornell-sum .sumhead .rule { flex: 1; height: 1px; background: var(--line); }
-  .note .prose h3.scrib { display: none; }
-  .note .sechtml > *:first-child { margin-top: 0; }
+  /* ---------- 스프링 노트: 가운데 세로선, 왼쪽 영어 · 오른쪽 한국어 ---------- */
+  .cols { position: relative; }
+  .cols::before { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1.5px solid color-mix(in srgb, var(--pen) 38%, transparent); pointer-events: none; }
+  .row2 {
+    --g: 32px; --l: 0px; --r: 0px;
+    display: grid;
+    grid-template-columns: calc(50% + (var(--r) - var(--l)) / 2 - var(--g) / 2) minmax(0, 1fr);
+    column-gap: var(--g);
+    align-items: start;
+  }
+  .row2 > .sub { margin-top: 2px; }
+  .row2 > .en { display: block; min-width: 0; }
+  .cols .para { --l: 10px; }
+  .cols .prose ul { list-style: none; }
+  .cols .prose ul:not(.ticks):not(.crosses):not(.traps) > li { position: relative; --l: 20px; }
+  .cols .prose ul:not(.ticks):not(.crosses):not(.traps) > li::before { content: "•"; position: absolute; left: -14px; top: 0; color: var(--ink-soft); }
+  .cols .keypoints li { --l: 26px; }
+  .cols .postit ul { list-style: none; }
+  .cols .postit ul:not(.ticks):not(.crosses) > li { position: relative; --l: 18px; }
+  .cols .postit ul:not(.ticks):not(.crosses) > li::before { content: "•"; position: absolute; left: -14px; top: 0; color: var(--ink-soft); }
+  .cols .postit ul.ticks > li, .cols .postit ul.crosses > li { --l: 22px; }
+  .cols .postit .memo { --l: 12px; --r: 12px; }
+  .cols .opt .txt { --l: 59.5px; --r: 15.5px; }
+  .cols .opt { background: var(--paper); }
+  .cols .tablewrap, .cols details.analysis, .cols .verdict, .cols .pager { position: relative; background: var(--paper); }
+  .cols .prose table { width: 100%; }
   @media (max-width: 720px) {
-    .cornell { grid-template-columns: 1fr; row-gap: 6px; }
-    .cornell::before { display: none; }
-    .cornell > .cue { padding: 0; border-bottom: 1px dashed var(--line); padding-bottom: 6px; }
-    .cornell > .note { padding-left: 0; margin-bottom: 14px; }
-    .cue .sticky { position: static; }
-    .cue .cuehead { display: none; }
-    .cornell > .cue:empty, .cornell > .cue:has(> .cuehead:only-child) { display: none; }
-    .note .prose h3.scrib { display: inline; }
+    .row2 { display: block; }
+    .cols::before { display: none; }
     .book { aspect-ratio: auto; }
   }
   .page.flip { animation: flip 260ms ease-out; }
@@ -846,23 +842,31 @@
     if (parts.length < 2) return inline(text);
     return parts.map((t, i) => `<span class="sent"><i class="sn">${CIRCLED[i] || (i + 1)}</i>${inline(t)}</span>`).join(' ');
   }
-  function analysis(p, open) {
+  function analysis(p) {
     const a = p.pattern; if (!a) return '';
-    return `<details class="analysis" ${open ? 'open' : ''}><summary>지문 분석${a.type ? `<span class="chip">${esc(a.type)}</span>` : ''}</summary>
+    return `<details class="analysis"><summary>지문 분석${a.type ? `<span class="chip">${esc(a.type)}</span>` : ''}</summary>
       ${a.asks ? `<p class="asks"><b>묻는 것</b>${inline(a.asks)}</p>` : ''}
       ${a.clues?.length ? `<ul class="clues">${a.clues.map(c => `<li><span class="kw"><mark>${esc(c.text)}</mark></span><span class="means">${inline(c.means)}</span></li>`).join('')}</ul>` : ''}
       ${(a.answerShape || a.distractorShape) ? `<div class="shapes">${a.answerShape ? `<div class="ok"><b>정답 모양</b>${inline(a.answerShape)}</div>` : ''}${a.distractorShape ? `<div class="no"><b>오답 모양</b>${inline(a.distractorShape)}</div>` : ''}</div>` : ''}
     </details>`;
   }
-  // 정리 노트를 ### 소제목 단위로 나눈다 → 코넬 노트의 행(왼쪽 단서 = 소제목, 오른쪽 = 내용)
-  function mdSections(text) {
-    const out = []; let head = '', buf = [];
-    const flush = () => { if (head || buf.some(l => l.trim())) out.push({ head, html: md(buf.join('\n')) }); buf = []; };
-    for (const line of String(text ?? '').split('\n')) {
-      if (/^### /.test(line)) { flush(); head = line.slice(4).trim(); continue; }
-      buf.push(line);
-    }
-    flush(); return out;
+  // 영어 | 한국어 두 칸 정렬: .sub(한국어)를 직접 자식으로 가진 요소에 row2 를 붙인다.
+  function twoCols() {
+    const root = pageEl.querySelector('.cols'); if (!root) return;
+    root.querySelectorAll('.para, .summary, .qtext p, .opt .txt, .postit .memo, p, li, h3, h4').forEach(el => {
+      if (el.classList.contains('row2')) return;
+      const sub = [...el.children].find(c => c.classList.contains('sub'));
+      const forced = el.matches('.para, .summary, .qtext p, .opt .txt, .postit .memo');
+      if (!sub && !forced) return;
+      el.classList.add('row2');
+      // 영어 쪽(= .sub 앞의 모든 조각)을 span.en 하나로 감싸 왼쪽 한 칸에 넣는다.
+      const already = el.firstChild && el.firstChild.nodeType === 1 && el.firstChild.classList.contains('en') && (el.firstChild.nextSibling === sub || (!sub && !el.firstChild.nextSibling));
+      if (!already) {
+        const en = document.createElement('span'); en.className = 'en';
+        while (el.firstChild && el.firstChild !== sub) en.appendChild(el.firstChild);
+        el.insertBefore(en, sub || null);
+      }
+    });
   }
   const SCRIPT_KEY = 'ccaf-script-open';
   const scriptOpen = () => { try { return localStorage.getItem(SCRIPT_KEY) !== '0'; } catch { return true; } };
@@ -1118,31 +1122,32 @@
   function renderLesson(p, pages) {
     const pr = state.progress[p.id] || {};
     if (!pr.studiedAt) saveProgress(p.id, { opened: true });
+    const hasCore = !!(p.body || p.keyPoints?.length || p.examTrends);
     const hasScript = (p.paragraphs || []).length > 0;
-    const hasSum = !!(p.summary || p.examTrends || p.keyPoints?.length);
-    const sections = p.body ? mdSections(p.body) : [];
-    const cueOf = h => h ? `<div class="cuehead">${bi(h)}</div>` : '';
     pageEl.innerHTML = `<div class="washi purple"></div>
       ${eyebrow(p, '인강')}
-      ${titleBlock(p, hasSum && hasScript ? '<button class="jump" data-scroll="core" title="아래 요약 칸으로">요약 보기 ↓</button>' : '')}
-      <div class="cornell">
-        ${hasScript ? `<div class="cue"><div class="sticky"><span class="lbl">KEYWORDS · 흐름</span>${sections.filter(x => x.head).length ? `<ul class="kw">${sections.filter(x => x.head).map(x => '<li>' + inline(x.head.split(' // ')[0]) + '</li>').join('')}</ul>` : ''}</div></div>
-          <div class="note"><details class="script" ${scriptOpen() ? 'open' : ''}><summary>대본 <span class="cnt">${p.paragraphs.length}줄 · 접었다 펼 수 있어요</span></summary>
-            <div class="prose">${p.paragraphs.map(x => `<p class="para"><span class="en">${inline(x.en)}</span>${x.ko ? `<span class="sub">${inline(x.ko)}</span>` : ''}</p>`).join('')}</div></details></div>` : ''}
-        ${sections.map(sec => `<div class="cue">${cueOf(sec.head)}</div><div class="note"><div class="prose sechtml">${sec.head ? `<h3 class="scrib">${bi(sec.head)}</h3>` : ''}${sec.html}</div></div>`).join('')}
-      </div>
-      ${hasSum ? `<section class="cornell-sum" id="core">
-        <div class="sumhead"><span class="t">SUMMARY · 요약</span><i class="rule"></i>${hasScript ? '<button class="jump small" data-scroll="top">대본으로 ↑</button>' : ''}</div>
-        ${p.summary ? `<div class="summary"><span class="lbl">Summary</span>${bi(p.summary)}</div>` : ''}
+      ${titleBlock(p, hasCore && hasScript ? '<button class="jump" data-scroll="core" title="대본을 건너뛰고 정리·시험 포인트로">요약 보기 ↓</button>' : '')}
+      <div class="cols">
+      ${p.summary ? `<div class="summary"><span class="lbl">Summary</span>${bi(p.summary)}</div>` : ''}
+      ${hasScript
+        ? `<details class="script" ${scriptOpen() ? 'open' : ''}><summary>대본 <span class="cnt">${p.paragraphs.length}줄 · 접었다 펼 수 있어요</span></summary>
+           <div class="prose">${p.paragraphs.map(x => `<p class="para"><span class="en">${inline(x.en)}</span>${x.ko ? `<span class="sub">${inline(x.ko)}</span>` : ''}</p>`).join('')}</div></details>`
+        : ''}
+      ${hasCore ? `<section class="core" id="core">
+        <h2 class="sec withbtn"><span class="scrib">핵심 정리</span><i class="rule"></i>${hasScript ? '<button class="jump small" data-scroll="top">대본으로 ↑</button>' : ''}</h2>
+        ${p.body ? `<details class="notes" ${hasScript ? '' : 'open'}><summary>정리 노트</summary><div class="prose">${md(p.body)}</div></details>` : ''}
         ${kp(p)}
         ${trends(p)}
       </section>` : ''}
+      </div>
       ${pager(pages)}`;
-    wire();
+    wire(); twoCols();
     const sc = pageEl.querySelector('details.script'); if (sc) sc.addEventListener('toggle', () => { try { localStorage.setItem(SCRIPT_KEY, sc.open ? '1' : '0'); } catch {} });
     pageEl.querySelectorAll('[data-scroll]').forEach(b => b.addEventListener('click', () => {
       if (b.dataset.scroll === 'top') { pageEl.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
-      const core = pageEl.querySelector('#core'); if (core) core.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const core = pageEl.querySelector('#core'); if (!core) return;
+      const d = core.querySelector('details.notes'); if (d) d.open = true;
+      core.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }));
   }
 
@@ -1152,10 +1157,9 @@
     pageEl.innerHTML = `<div class="washi green"></div>
       ${eyebrow(p, `문제 ${p._qi} / ${p._qn}`)}
       ${titleBlock(p)}
-      <div class="cornell">
-      <div class="cue"><div class="sticky">${p.pattern ? analysis(p, answered) : '<span class="lbl">CUE · 단서</span>'}</div></div>
-      <div class="note">
+      <div class="cols">
       <div class="prose qtext"><p>${p.question_en ? sentences(p.question_en) : inline(p.question_ko)}${p.question_en && p.question_ko ? `<span class="sub">${inline(p.question_ko)}</span>` : ''}</p></div>
+      ${analysis(p)}
       <div class="options">${(p.options || []).map(o => {
         let cls = 'opt';
         if (answered) { if (o.key === p.answer) cls += ' right'; else if (o.key === pr.chosen) cls += ' wrongpick'; }
@@ -1170,12 +1174,12 @@
         <h2 class="sec"><span class="hlbar orange">Why this answer</span></h2>
         <div class="prose">${md(p.explanation)}</div>
         ${p.traps?.length ? `<h2 class="sec"><span class="hlbar pink">Traps</span></h2><ul class="traps prose">${p.traps.map(t => `<li><b>${esc(t.key)}</b> ${bi(t.why)}</li>`).join('')}</ul>` : ''}
+        ${kp(p)}
         ${noteBlock(pr)}
       </div>
       </div>
-      </div>
-      ${answered && p.keyPoints?.length ? `<section class="cornell-sum"><div class="sumhead"><span class="t">SUMMARY · 요약</span><i class="rule"></i></div>${kp(p)}</section>` : ''}
       ${pager(pages)}`;
+    twoCols();
     pageEl.querySelectorAll('[data-opt]').forEach(b => b.addEventListener('click', () => { const chosen = b.dataset.opt; saveProgress(p.id, { chosen, correct: chosen === p.answer }); render(); }));
     const retry = pageEl.querySelector('[data-retry]'); if (retry) retry.addEventListener('click', () => { saveProgress(p.id, { chosen: null, correct: null }); render(); });
     wireNote(p); wire();
