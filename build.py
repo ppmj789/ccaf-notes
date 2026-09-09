@@ -33,6 +33,11 @@ for p in pages:
         print(f'경고: {p["id"]} 의 section "{sec}" 이 course.json 에 없습니다 (책 끝에 Unsorted 로 감)')
 
 site = json.loads((ROOT / 'site.json').read_text(encoding='utf-8')) if (ROOT / 'site.json').exists() else {}
+import base64, mimetypes
+for cov in sorted((ROOT / 'assets').glob('cover.*')) if (ROOT / 'assets').exists() else []:
+    mime = mimetypes.guess_type(cov.name)[0] or 'image/jpeg'
+    site['cover'] = f'data:{mime};base64,' + base64.b64encode(cov.read_bytes()).decode('ascii')
+    break
 esc = lambda o: json.dumps(o, ensure_ascii=False).replace('</', '<\\/')
 tpl = (ROOT / 'template.html').read_text(encoding='utf-8')
 assert '/*__PAGES__*/' in tpl and '/*__COURSE__*/' in tpl and '/*__SITE__*/' in tpl
