@@ -10,44 +10,576 @@
   "summary": "JSON structures information into predictable fields and values, while schemas define the rules for that data to enable AI systems to communicate reliably with applications. // JSON은 정보를 구조화된 필드와 값으로 조직하며, 스키마는 AI 시스템이 애플리케이션과 신뢰할 수 있게 통신하도록 데이터의 규칙을 정의한다.",
   "paragraphs": [
     {
-      "en": "When people first see JSON, it can look very technical But the basic idea is actually simple JSON is just a way to organize information in a predictable structure Let's compare ordinary text with structured data Ordinary text might look like this The customer wants to return order 12345 because the item arrived damaged A human can read that and understand it easily But software often works better when the same information is organized into separate fields For example, order id, reason, request detection That is structured data Instead of one sentence, we break the information into clearly labeled pieces JSON is one common format for representing that kind of structured data",
-      "ko": "사람들이 JSON을 처음 보면 매우 기술적으로 느껴질 수 있다 하지만 기본 개념은 사실 아주 간단하다 JSON은 정보를 예측 가능한 구조로 정리하는 방식일 뿐이다 일반 텍스트와 구조화된 데이터(structured data)를 비교해보자 일반 텍스트는 다음과 같이 보일 수 있다 고객이 물품이 손상된 상태로 도착했기 때문에 주문번호 12345를 반품하고 싶어 한다 사람이 이것을 읽으면 쉽게 이해할 수 있다 하지만 소프트웨어는 같은 정보가 별도의 필드(field)로 정리될 때 더 잘 작동하는 경우가 많다 예를 들어, order id, reason, request detection 그것이 구조화된 데이터입니다 한 문장 대신 정보를 명확하게 레이블이 붙은 부분들로 나눕니다 JSON은 그러한 종류의 구조화된 데이터를 나타내는 일반적인 형식 중 하나입니다"
+      "en": "When people first see JSON, it can look very technical.",
+      "ko": "사람들이 JSON을 처음 보면 굉장히 기술적으로 보일 수 있습니다."
     },
     {
-      "en": "JSON stands for JavaScript Object Notation You do not need to know JavaScript to understand JSON The important idea is that JSON stores information using names and values For example, imagine we want to represent a shop assist return request We might have order id 12345, reason damaged item, refund requested yes In JSON, this information could be represented as an object An object is simply a collection of fields and values Each field has a name and each field has a value For example, the field name might be order id The value might be 12345 Another field might be reason The value might be damaged item And another field might be refund requested The value might be true",
-      "ko": "JSON은 JavaScript Object Notation의 약자입니다 JSON을 이해하기 위해 JavaScript를 알 필요는 없습니다 중요한 개념은 JSON이 이름과 값을 사용하여 정보를 저장한다는 것입니다 예를 들어, 매장 지원 반품 요청을 표현하려고 한다고 상상해 보세요 예를 들어 order id가 12345이고, reason이 damaged item, refund requested가 yes인 정보를 가질 수 있습니다 JSON에서 이 정보는 object로 표현할 수 있습니다 object는 단순히 field와 value의 모음입니다 각 field는 이름을 갖고 있으며, 각 field는 value를 갖고 있습니다 예를 들어, field의 이름은 order id일 수 있습니다 value는 12345일 수 있습니다 또 다른 field는 reason일 수 있습니다 value는 damaged item일 수 있습니다 또 다른 필드는 refund requested일 수도 있습니다 값은 true일 수도 있습니다"
+      "en": "But the basic idea is actually simple.",
+      "ko": "하지만 기본 개념은 사실 단순합니다."
     },
     {
-      "en": "JSON can store different types of values One common type is a string A string is simply text For example, damaged item or John Smith Another type is a number For example, 12345 or 49.99 Another type is a boolean A boolean has only two possible values True or false For example, refund underscore requested true This means that the customer requested a refund JSON can also contain lists A list is useful when there may be multiple values For example, imagine the customer reported two problems A missing item And damaged packaging Those problems could be stored in a list JSON also has a value called null Null means there is no value available This is different from an empty string",
-      "ko": "JSON은 다양한 유형의 값을 저장할 수 있습니다 일반적인 유형 중 하나는 string입니다 string은 단순히 텍스트를 의미합니다 예를 들어 damaged item이나 John Smith 같은 것들입니다 또 다른 유형은 number입니다 예를 들어 12345나 49.99 같은 것들입니다 다른 타입은 boolean입니다 boolean은 True 또는 false라는 두 가지 가능한 값만 가집니다 예를 들어, refund_requested가 true입니다 이는 고객이 환불을 요청했다는 의미입니다 JSON은 리스트를 포함할 수도 있습니다 리스트는 여러 값이 있을 수 있을 때 유용합니다 예를 들어, 고객이 두 가지 문제를 보고했다고 가정합시다 - 누락된 항목 그리고 손상된 포장 이 문제들은 리스트에 저장될 수 있습니다 JSON은 또한 null이라는 값을 가지고 있습니다 Null은 이용 가능한 값이 없다는 것을 의미합니다 이것은 빈 문자열과는 다릅니다"
+      "en": "JSON is just a way to organize information in a predictable structure.",
+      "ko": "JSON은 정보를 예측 가능한 구조로 정리하는 방법일 뿐입니다."
     },
     {
-      "en": "And it is different from zero For example, imagine the customer wants to return a product But we do not know the order id yet The order id field might be null That tells the application This field exists But the value is currently unknown or unavailable This becomes very useful in AI applications Cloud may be able to extract some information from a customer message But not everything Instead of inventing missing information We can allow certain fields to be null Now let's talk about required and optional information Some fields may be required That means the data is not considered complete without them For example, imagine a refund request must always include a reason",
-      "ko": "그리고 이것은 0과도 다릅니다 예를 들어, 고객이 상품을 반품하고 싶다고 상상해 봅시다 하지만 우리는 아직 주문 ID를 모릅니다 주문 ID 필드는 null일 수 있습니다 이를 애플리케이션에 알려준다 이 필드는 존재한다 하지만 현재 값은 알 수 없거나 사용할 수 없다 이것이 AI 애플리케이션에서 매우 유용해진다 Claude는 고객 메시지에서 일부 정보를 추출할 수 있다 하지만 모든 정보는 아니다 누락된 정보를 만드는 대신 특정 필드를 null로 설정할 수 있다 이제 필수 정보와 선택사항 정보에 대해 이야기해봅시다 일부 필드는 필수일 수 있습니다 즉, 이러한 필드 없이는 데이터가 완전한 것으로 간주되지 않습니다 예를 들어, 환불 요청에는 항상 이유가 포함되어야 한다고 상상해보세요"
+      "en": "Let's compare ordinary text with structured data.",
+      "ko": "일반 텍스트와 구조화된 데이터를 비교해 봅시다."
     },
     {
-      "en": "The reason field could be required Other fields may be optional For example, the customer may include an additional comment But that comment is not necessary to process the request So one field can be required While another field is optional This leads us to another important concept A schema A schema describes what the structured data should look like You can think of a schema as a contract It defines the expected structure For example, a schema might say There must be an order id field There must be a reason field The reason must be text There may be a refund requested field That field must be true or false And there may be an additional notes field",
-      "ko": "reason 필드는 필수일 수 있습니다 다른 필드는 선택사항일 수 있습니다 예를 들어, 고객이 추가 comment를 포함할 수 있습니다 하지만 요청을 처리하기 위해 그 comment는 필요하지 않습니다 따라서 하나의 필드는 필수가 될 수 있습니다 한편 다른 필드는 선택사항입니다 이는 우리를 또 다른 중요한 개념인 schema로 이끕니다 schema는 구조화된 데이터가 어떤 형태여야 하는지 설명합니다 schema를 계약으로 생각할 수 있습니다 이는 기대되는 구조를 정의합니다 예를 들어, schema는 다음과 같이 명시할 수 있습니다 order_id 필드가 반드시 있어야 한다는 것입니다 reason field는 반드시 있어야 한다 reason은 text여야 한다 refund requested field가 있을 수 있다 그 field는 true 또는 false여야 한다 그리고 additional notes field가 있을 수 있다"
+      "en": "Ordinary text might look like this:",
+      "ko": "일반 텍스트는 이런 모습일 수 있습니다."
     },
     {
-      "en": "That field can contain text or it can be null The schema does not contain the customer's actual data It describes the rules for the data This distinction is important The JSON object contains the real values The schema describes what fields are allowed What types of values they should contain And which fields are required Why is this useful? Because applications prefer predictable information Imagine Claude returns this sentence I think the customer probably wants a refund Because the product seems damaged A human can understand that But software now has to figure out several things What is the issue type?",
-      "ko": "그 field는 text를 포함할 수도 있고 null일 수도 있다 schema는 고객의 실제 데이터를 포함하지 않는다 schema는 데이터의 규칙을 설명한다 이 구분은 중요합니다 JSON 객체는 실제 값들을 포함합니다 schema(스키마)는 어떤 필드들이 허용되는지 설명합니다 그들이 어떤 타입의 값을 포함해야 하는지 그리고 어떤 필드가 필수인지 이것이 왜 유용할까요? 애플리케이션들이 예측 가능한 정보를 선호하기 때문입니다 Claude가 이 문장을 반환한다고 상상해 보세요 고객이 아마도 환불을 원하는 것 같습니다 제품이 손상된 것 같기 때문입니다 인간은 그것을 이해할 수 있습니다 하지만 소프트웨어는 이제 여러 가지를 파악해야 합니다 이슈 유형은 무엇입니까?"
+      "en": "The customer wants to return order 12345 because the item arrived damaged.",
+      "ko": "고객이 order 12345를 반품하려 하는데, 상품이 파손된 채로 도착했기 때문입니다."
     },
     {
-      "en": "Was a refund requested? What value should be stored in the database? Should the workflow continue? Natural language can be flexible That is useful for people But that flexibility can make automation harder Now imagine Claude returns structured information instead Issue type damaged item Requested action refund Refund requested true Now the application knows exactly where each piece of information is It can validate the values Store them in a database Send them to another system Or use them to decide what happens next This is why structured output is so important in AI systems It creates a more predictable connection between the model and the rest of the application",
-      "ko": "환불이 요청되었습니까? 데이터베이스에 어떤 값을 저장해야 합니까? 워크플로우를 계속해야 합니까? 자연언어는 유연할 수 있습니다. 이는 사람들에게 유용합니다. 하지만 이러한 유연성은 자동화를 더 어렵게 만들 수 있습니다. 이제 Claude가 대신 구조화된 정보를 반환한다고 상상해보세요. 이슈 유형: 손상된 항목 요청한 조치: 환불 환불 요청됨: true 이제 애플리케이션은 각 정보가 정확히 어디에 있는지 알 수 있습니다. 값을 검증할 수 있습니다 데이터베이스에 저장할 수 있습니다 다른 시스템으로 전송할 수 있습니다 또는 다음에 무엇을 할지 결정하는 데 활용할 수 있습니다 이것이 AI 시스템에서 structured output이 매우 중요한 이유입니다 모델과 애플리케이션의 나머지 부분 사이에 더 예측 가능한 연결을 만들기 때문입니다"
+      "en": "A human can read that and understand it easily.",
+      "ko": "사람은 이를 읽고 쉽게 이해할 수 있습니다."
     },
     {
-      "en": "Let's use a simple shop assist example A customer writes My blue shirt arrived damaged and I want my money back Claude may extract information such as Issue type damaged item Product blue shirt Requested action refund Order ID null Why is the order ID null? Because the customer did not provide it That is better than Claude inventing an order number Now imagine we define a schema for this return request The schema might require an issue type It might require a requested action It might allow the product description to be optional And it might allow the order ID to be null when the information is missing The schema gives Claude and the application a shared structure",
-      "ko": "간단한 쇼핑 어시스턴트의 예를 들어봅시다 고객이 작성합니다 제 파란색 셔츠가 손상된 상태로 도착했고 환불을 원합니다 Claude는 다음과 같은 정보를 추출할 수 있습니다 문제 유형 손상된 항목 상품 파란색 셔츠 요청된 작업 환불, Order ID null Order ID가 null인 이유는 무엇입니까? 고객이 제공하지 않았기 때문입니다 이것이 Claude가 주문 번호를 만들어내는 것보다 훨씬 낫습니다 이제 반품 요청에 대한 schema를 정의한다고 상상해보자 schema는 issue type을 요구할 수 있다 요청된 action을 요구할 수 있다 상품 설명을 선택 사항으로 허용할 수 있다 그리고 정보가 없을 때 order ID를 null로 허용할 수 있다 schema는 Claude와 애플리케이션에 공유된 구조를 제공한다"
+      "en": "But software often works better when the same information is organized into separate fields.",
+      "ko": "하지만 소프트웨어는 같은 정보가 별도의 필드로 정리되어 있을 때 더 잘 작동하는 경우가 많습니다."
     },
     {
-      "en": "Claude knows what kind of output is expected And the application knows what kind of data it should receive This also makes validation possible The application can check Are all required fields present? Are the values the correct type? Is a boolean really true or false? Is a number actually a number? If the output does not follow the expected structure, the application can detect the problem You do not need to become a programmer to understand the key idea Ordinary text is flexible Structured data organizes information into predictable fields JSON is a common format for structured data A JSON object contains fields and values",
-      "ko": "Claude는 어떤 종류의 output이 예상되는지 알 수 있다 그리고 애플리케이션은 어떤 종류의 데이터를 받아야 하는지 알 수 있다 이는 또한 검증을 가능하게 합니다 애플리케이션이 확인할 수 있습니다 모든 필수 필드가 있는가? 값들이 올바른 타입인가? boolean이 정말 true 또는 false인가? 숫자가 실제로 숫자인가? 출력이 기대되는 구조를 따르지 않으면, 애플리케이션이 문제를 탐지할 수 있습니다 핵심 아이디어를 이해하기 위해 프로그래머가 될 필요는 없습니다 일반 텍스트는 유연합니다 구조화된 데이터는 정보를 예측 가능한 필드로 정리합니다 JSON은 구조화된 데이터의 일반적인 형식입니다 JSON 객체는 필드와 값을 포함합니다"
+      "en": "For example: order id, reason, refund requested.",
+      "ko": "예를 들어 order id, reason, refund requested처럼요."
     },
     {
-      "en": "Those values can include text, numbers, true or false values, lists, or null Some fields can be required Others can be optional And a schema describes the rules for what that structured data should look like The main idea is simple Humans are comfortable with flexible language Applications usually work better with predictable structure JSON and schemas help connect those two worlds",
-      "ko": "이런 값들은 텍스트, 숫자, true/false 값, 리스트(목록), 또는 null을 포함할 수 있습니다 일부 필드는 필수일 수 있습니다 다른 필드들은 선택사항일 수 있습니다 그리고 schema는 구조화된 데이터가 어떻게 보여야 하는지에 대한 규칙을 설명합니다 핵심 아이디어는 단순합니다 인간은 유연한 언어에 익숙합니다 애플리케이션은 보통 예측 가능한 구조에서 더 잘 작동합니다 JSON과 스키마는 이 두 세계를 연결하는 데 도움이 됩니다"
+      "en": "That is structured data.",
+      "ko": "그것이 바로 구조화된 데이터입니다."
+    },
+    {
+      "en": "Instead of one sentence, we break the information into clearly labeled pieces.",
+      "ko": "하나의 문장 대신, 정보를 명확하게 이름이 붙은 조각들로 나누는 것입니다."
+    },
+    {
+      "en": "JSON is one common format for representing that kind of structured data.",
+      "ko": "JSON은 이런 종류의 구조화된 데이터를 표현하는 흔한 형식 중 하나입니다."
+    },
+    {
+      "en": "JSON stands for JavaScript Object Notation.",
+      "ko": "JSON은 JavaScript Object Notation의 약자입니다."
+    },
+    {
+      "en": "You do not need to know JavaScript to understand JSON.",
+      "ko": "JSON을 이해하기 위해 JavaScript를 알 필요는 없습니다."
+    },
+    {
+      "en": "The important idea is that JSON stores information using names and values.",
+      "ko": "중요한 것은 JSON이 이름과 값을 이용해 정보를 저장한다는 점입니다."
+    },
+    {
+      "en": "For example, imagine we want to represent a ShopAssist return request.",
+      "ko": "예를 들어 ShopAssist의 반품 요청을 표현하고 싶다고 상상해 봅시다."
+    },
+    {
+      "en": "We might have order id 12345, reason damaged item, refund requested yes.",
+      "ko": "order id는 12345, reason은 damaged item, refund requested는 yes일 수 있습니다."
+    },
+    {
+      "en": "In JSON, this information could be represented as an object.",
+      "ko": "JSON에서는 이 정보를 하나의 object로 표현할 수 있습니다."
+    },
+    {
+      "en": "An object is simply a collection of fields and values.",
+      "ko": "object는 단순히 필드와 값들의 모음입니다."
+    },
+    {
+      "en": "Each field has a name and each field has a value.",
+      "ko": "각 필드에는 이름이 있고, 각 필드에는 값이 있습니다."
+    },
+    {
+      "en": "For example, the field name might be order id.",
+      "ko": "예를 들어 필드 이름은 order id일 수 있습니다."
+    },
+    {
+      "en": "The value might be 12345.",
+      "ko": "값은 12345일 수 있습니다."
+    },
+    {
+      "en": "Another field might be reason.",
+      "ko": "또 다른 필드는 reason일 수 있습니다."
+    },
+    {
+      "en": "The value might be damaged item.",
+      "ko": "값은 damaged item일 수 있습니다."
+    },
+    {
+      "en": "And another field might be refund requested.",
+      "ko": "그리고 또 다른 필드는 refund requested일 수 있습니다."
+    },
+    {
+      "en": "The value might be true.",
+      "ko": "값은 true일 수 있습니다."
+    },
+    {
+      "en": "JSON can store different types of values.",
+      "ko": "JSON은 다양한 유형의 값을 저장할 수 있습니다."
+    },
+    {
+      "en": "One common type is a string.",
+      "ko": "흔히 사용되는 유형 중 하나는 string입니다."
+    },
+    {
+      "en": "A string is simply text.",
+      "ko": "string은 단순히 텍스트입니다."
+    },
+    {
+      "en": "For example, \"damaged item\" or \"John Smith.\"",
+      "ko": "예를 들어 \"damaged item\"이나 \"John Smith\" 같은 것이죠."
+    },
+    {
+      "en": "Another type is a number.",
+      "ko": "또 다른 유형은 숫자(number)입니다."
+    },
+    {
+      "en": "For example, 12345 or 49.99.",
+      "ko": "예를 들어 12345나 49.99 같은 값입니다."
+    },
+    {
+      "en": "Another type is a boolean.",
+      "ko": "또 다른 유형은 boolean입니다."
+    },
+    {
+      "en": "A boolean has only two possible values.",
+      "ko": "boolean은 가능한 값이 단 두 가지뿐입니다."
+    },
+    {
+      "en": "True or false.",
+      "ko": "true 또는 false죠."
+    },
+    {
+      "en": "For example, refund_requested: true.",
+      "ko": "예를 들어 refund_requested: true 같은 경우입니다."
+    },
+    {
+      "en": "This means that the customer requested a refund.",
+      "ko": "이는 고객이 환불을 요청했다는 의미입니다."
+    },
+    {
+      "en": "JSON can also contain lists.",
+      "ko": "JSON은 리스트(list)도 담을 수 있습니다."
+    },
+    {
+      "en": "A list is useful when there may be multiple values.",
+      "ko": "리스트는 여러 값이 있을 수 있을 때 유용합니다."
+    },
+    {
+      "en": "For example, imagine the customer reported two problems.",
+      "ko": "예를 들어 고객이 두 가지 문제를 신고했다고 해봅시다."
+    },
+    {
+      "en": "A missing item.",
+      "ko": "하나는 누락된 상품이고,"
+    },
+    {
+      "en": "And damaged packaging.",
+      "ko": "다른 하나는 손상된 포장입니다."
+    },
+    {
+      "en": "Those problems could be stored in a list.",
+      "ko": "이 문제들은 리스트에 저장할 수 있습니다."
+    },
+    {
+      "en": "JSON also has a value called null.",
+      "ko": "JSON에는 null이라는 값도 있습니다."
+    },
+    {
+      "en": "Null means there is no value available.",
+      "ko": "null은 사용 가능한 값이 없다는 뜻입니다."
+    },
+    {
+      "en": "This is different from an empty string.",
+      "ko": "이는 빈 string과는 다릅니다."
+    },
+    {
+      "en": "And it is different from zero.",
+      "ko": "그리고 0과도 다릅니다."
+    },
+    {
+      "en": "For example, imagine the customer wants to return a product.",
+      "ko": "예를 들어 고객이 상품을 반품하려 한다고 해봅시다."
+    },
+    {
+      "en": "But we do not know the order id yet.",
+      "ko": "하지만 아직 order id를 모르는 상황이죠."
+    },
+    {
+      "en": "The order id field might be null.",
+      "ko": "이때 order id 필드는 null일 수 있습니다."
+    },
+    {
+      "en": "That tells the application:",
+      "ko": "이는 애플리케이션에게 다음을 알려줍니다."
+    },
+    {
+      "en": "This field exists,",
+      "ko": "이 필드는 존재하지만,"
+    },
+    {
+      "en": "but the value is currently unknown or unavailable.",
+      "ko": "값은 현재 알 수 없거나 사용할 수 없다는 것이죠."
+    },
+    {
+      "en": "This becomes very useful in AI applications.",
+      "ko": "이는 AI 애플리케이션에서 매우 유용하게 쓰입니다."
+    },
+    {
+      "en": "Claude may be able to extract some information from a customer message,",
+      "ko": "Claude는 고객 메시지에서 일부 정보를 추출할 수 있지만,"
+    },
+    {
+      "en": "but not everything.",
+      "ko": "모든 정보를 추출할 수 있는 건 아닙니다."
+    },
+    {
+      "en": "Instead of inventing missing information,",
+      "ko": "누락된 정보를 임의로 만들어내는 대신,"
+    },
+    {
+      "en": "we can allow certain fields to be null.",
+      "ko": "특정 필드는 null이 되도록 허용할 수 있습니다."
+    },
+    {
+      "en": "Now let's talk about required and optional information.",
+      "ko": "이제 필수 정보와 선택 정보에 대해 이야기해봅시다."
+    },
+    {
+      "en": "Some fields may be required.",
+      "ko": "어떤 필드는 필수(required)일 수 있습니다."
+    },
+    {
+      "en": "That means the data is not considered complete without them.",
+      "ko": "즉, 그 필드가 없으면 데이터가 완전하지 않다고 간주됩니다."
+    },
+    {
+      "en": "For example, imagine a refund request must always include a reason.",
+      "ko": "예를 들어 환불 요청에는 항상 사유(reason)가 포함되어야 한다고 해봅시다."
+    },
+    {
+      "en": "The reason field could be required.",
+      "ko": "reason 필드는 필수일 수 있습니다."
+    },
+    {
+      "en": "Other fields may be optional.",
+      "ko": "다른 필드는 선택 사항일 수 있습니다."
+    },
+    {
+      "en": "For example, the customer may include an additional comment.",
+      "ko": "예를 들어 고객이 추가 코멘트를 포함할 수도 있습니다."
+    },
+    {
+      "en": "But that comment is not necessary to process the request.",
+      "ko": "하지만 그 코멘트가 요청을 처리하는 데 꼭 필요한 건 아닙니다."
+    },
+    {
+      "en": "So one field can be required, while another field is optional.",
+      "ko": "그래서 한 필드는 필수이고, 다른 필드는 선택 사항일 수 있습니다."
+    },
+    {
+      "en": "This leads us to another important concept: a schema.",
+      "ko": "이건 또 다른 중요한 개념, 바로 schema로 이어집니다."
+    },
+    {
+      "en": "A schema describes what the structured data should look like.",
+      "ko": "schema는 구조화된 데이터가 어떤 모습이어야 하는지를 설명합니다."
+    },
+    {
+      "en": "You can think of a schema as a contract.",
+      "ko": "schema는 일종의 계약이라고 생각하면 됩니다."
+    },
+    {
+      "en": "It defines the expected structure.",
+      "ko": "그것은 예상되는 구조를 정의합니다."
+    },
+    {
+      "en": "For example, a schema might say:",
+      "ko": "예를 들어 schema는 이렇게 말할 수 있습니다."
+    },
+    {
+      "en": "There must be an order id field.",
+      "ko": "order id 필드가 반드시 있어야 합니다."
+    },
+    {
+      "en": "There must be a reason field.",
+      "ko": "reason 필드가 반드시 있어야 합니다."
+    },
+    {
+      "en": "The reason must be text.",
+      "ko": "reason은 반드시 텍스트여야 합니다."
+    },
+    {
+      "en": "There may be a refund requested field.",
+      "ko": "refund requested 필드가 있을 수도 있습니다."
+    },
+    {
+      "en": "That field must be true or false.",
+      "ko": "그 필드는 반드시 true 또는 false여야 합니다."
+    },
+    {
+      "en": "And there may be an additional notes field.",
+      "ko": "그리고 추가로 notes 필드가 있을 수도 있습니다."
+    },
+    {
+      "en": "That field can contain text, or it can be null.",
+      "ko": "그 필드는 텍스트를 담을 수도 있고, null일 수도 있습니다."
+    },
+    {
+      "en": "The schema does not contain the customer's actual data.",
+      "ko": "schema는 고객의 실제 데이터를 담고 있지 않습니다."
+    },
+    {
+      "en": "It describes the rules for the data.",
+      "ko": "그것은 데이터에 대한 규칙을 설명할 뿐입니다."
+    },
+    {
+      "en": "This distinction is important.",
+      "ko": "이 구분은 중요합니다."
+    },
+    {
+      "en": "The JSON object contains the real values.",
+      "ko": "JSON 객체는 실제 값을 담고 있습니다."
+    },
+    {
+      "en": "The schema describes what fields are allowed,",
+      "ko": "schema는 어떤 필드가 허용되는지,"
+    },
+    {
+      "en": "what types of values they should contain,",
+      "ko": "그 필드가 어떤 타입의 값을 담아야 하는지,"
+    },
+    {
+      "en": "and which fields are required.",
+      "ko": "그리고 어떤 필드가 필수인지를 설명합니다."
+    },
+    {
+      "en": "Why is this useful?",
+      "ko": "이게 왜 유용할까요?"
+    },
+    {
+      "en": "Because applications prefer predictable information.",
+      "ko": "애플리케이션은 예측 가능한 정보를 선호하기 때문입니다."
+    },
+    {
+      "en": "Imagine Claude returns this sentence:",
+      "ko": "Claude가 이런 문장을 반환한다고 상상해 보세요."
+    },
+    {
+      "en": "\"I think the customer probably wants a refund, because the product seems damaged.\"",
+      "ko": "\"고객이 아마도 환불을 원하는 것 같습니다, 제품이 손상된 것처럼 보이기 때문입니다.\""
+    },
+    {
+      "en": "A human can understand that.",
+      "ko": "사람은 그 말을 이해할 수 있습니다."
+    },
+    {
+      "en": "But software now has to figure out several things.",
+      "ko": "하지만 소프트웨어는 이제 여러 가지를 파악해야 합니다."
+    },
+    {
+      "en": "What is the issue type?",
+      "ko": "이슈 유형은 무엇인가?"
+    },
+    {
+      "en": "Was a refund requested?",
+      "ko": "환불이 요청되었나요?"
+    },
+    {
+      "en": "What value should be stored in the database?",
+      "ko": "데이터베이스에는 어떤 값을 저장해야 할까요?"
+    },
+    {
+      "en": "Should the workflow continue?",
+      "ko": "워크플로우를 계속 진행해야 할까요?"
+    },
+    {
+      "en": "Natural language can be flexible. That is useful for people, but that flexibility can make automation harder.",
+      "ko": "자연어는 유연할 수 있습니다. 이는 사람에게는 유용하지만, 그 유연함 때문에 오히려 자동화는 어려워질 수 있습니다."
+    },
+    {
+      "en": "Now imagine Claude returns structured information instead:",
+      "ko": "이번엔 Claude가 대신 구조화된 정보를 반환한다고 상상해 보세요."
+    },
+    {
+      "en": "Issue type: damaged item.",
+      "ko": "이슈 유형: 파손된 상품."
+    },
+    {
+      "en": "Requested action: refund.",
+      "ko": "요청된 조치: 환불."
+    },
+    {
+      "en": "Refund requested: true.",
+      "ko": "환불 요청 여부: true."
+    },
+    {
+      "en": "Now the application knows exactly where each piece of information is.",
+      "ko": "이제 애플리케이션은 각 정보가 정확히 어디에 있는지 알 수 있습니다."
+    },
+    {
+      "en": "It can validate the values, store them in a database,",
+      "ko": "값을 검증하고, 데이터베이스에 저장하며,"
+    },
+    {
+      "en": "send them to another system, or use them to decide what happens next.",
+      "ko": "다른 시스템으로 전송하거나, 다음에 무엇을 할지 결정하는 데 사용할 수 있습니다."
+    },
+    {
+      "en": "This is why structured output is so important in AI systems.",
+      "ko": "바로 이 때문에 AI 시스템에서 구조화된 출력이 매우 중요합니다."
+    },
+    {
+      "en": "It creates a more predictable connection between the model and the rest of the application.",
+      "ko": "모델과 애플리케이션의 나머지 부분 사이에 더 예측 가능한 연결을 만들어 주기 때문입니다."
+    },
+    {
+      "en": "Let's use a simple ShopAssist example.",
+      "ko": "간단한 ShopAssist 예시를 살펴보겠습니다."
+    },
+    {
+      "en": "A customer writes, \"My blue shirt arrived damaged and I want my money back.\"",
+      "ko": "한 고객이 이렇게 씁니다. \"파란색 셔츠가 파손된 채로 도착했고, 환불을 받고 싶어요.\""
+    },
+    {
+      "en": "Claude may extract information such as:",
+      "ko": "Claude는 다음과 같은 정보를 추출할 수 있습니다."
+    },
+    {
+      "en": "Issue type: damaged item.",
+      "ko": "이슈 유형: 파손된 상품."
+    },
+    {
+      "en": "Product: blue shirt.",
+      "ko": "제품: 파란색 셔츠."
+    },
+    {
+      "en": "Requested action: refund.",
+      "ko": "요청된 조치: 환불."
+    },
+    {
+      "en": "Order ID: null.",
+      "ko": "Order ID: null."
+    },
+    {
+      "en": "Why is the order ID null?",
+      "ko": "왜 order id가 null일까요?"
+    },
+    {
+      "en": "Because the customer did not provide it.",
+      "ko": "고객이 그 정보를 제공하지 않았기 때문입니다."
+    },
+    {
+      "en": "That is better than Claude inventing an order number.",
+      "ko": "이는 Claude가 임의로 주문 번호를 지어내는 것보다 훨씬 낫습니다."
+    },
+    {
+      "en": "Now imagine we define a schema for this return request.",
+      "ko": "이번엔 이 반품 요청에 대한 schema를 정의한다고 상상해 보세요."
+    },
+    {
+      "en": "The schema might require an issue type, and it might require a requested action.",
+      "ko": "이 schema는 issue type을 필수로 요구할 수도 있고, requested action도 필수로 요구할 수 있습니다."
+    },
+    {
+      "en": "It might allow the product description to be optional,",
+      "ko": "제품 설명은 선택 사항으로 허용할 수도 있고,"
+    },
+    {
+      "en": "and it might allow the order ID to be null when the information is missing.",
+      "ko": "정보가 없을 때는 order id를 null로 허용할 수도 있습니다."
+    },
+    {
+      "en": "The schema gives Claude and the application a shared structure.",
+      "ko": "이 schema는 Claude와 애플리케이션에 공유된 구조를 제공합니다."
+    },
+    {
+      "en": "Claude knows what kind of output is expected.",
+      "ko": "Claude는 어떤 종류의 output이 기대되는지 알고 있습니다."
+    },
+    {
+      "en": "And the application knows what kind of data it should receive.",
+      "ko": "그리고 애플리케이션은 어떤 종류의 데이터를 받아야 하는지 알고 있습니다."
+    },
+    {
+      "en": "This also makes validation possible.",
+      "ko": "이는 또한 validation을 가능하게 합니다."
+    },
+    {
+      "en": "The application can check:",
+      "ko": "애플리케이션은 다음을 확인할 수 있습니다."
+    },
+    {
+      "en": "Are all required fields present?",
+      "ko": "필수 필드가 모두 존재하는가?"
+    },
+    {
+      "en": "Are the values the correct type?",
+      "ko": "값들이 올바른 타입인가?"
+    },
+    {
+      "en": "Is a boolean really true or false?",
+      "ko": "boolean 값이 정말 true 또는 false인가?"
+    },
+    {
+      "en": "Is a number actually a number?",
+      "ko": "숫자가 실제로 숫자인가?"
+    },
+    {
+      "en": "If the output does not follow the expected structure, the application can detect the problem.",
+      "ko": "output이 예상된 구조를 따르지 않으면, 애플리케이션이 문제를 감지할 수 있습니다."
+    },
+    {
+      "en": "You do not need to become a programmer to understand the key idea.",
+      "ko": "핵심 개념을 이해하기 위해 프로그래머가 될 필요는 없습니다."
+    },
+    {
+      "en": "Ordinary text is flexible.",
+      "ko": "일반적인 텍스트는 유연합니다."
+    },
+    {
+      "en": "Structured data organizes information into predictable fields.",
+      "ko": "구조화된 데이터는 정보를 예측 가능한 필드로 정리합니다."
+    },
+    {
+      "en": "JSON is a common format for structured data.",
+      "ko": "JSON은 구조화된 데이터를 위한 일반적인 형식입니다."
+    },
+    {
+      "en": "A JSON object contains fields and values.",
+      "ko": "JSON object는 필드와 값을 포함합니다."
+    },
+    {
+      "en": "Those values can include text, numbers, true or false values, lists, or null.",
+      "ko": "그 값들에는 텍스트, 숫자, true 또는 false 값, 리스트, 또는 null이 포함될 수 있습니다."
+    },
+    {
+      "en": "Some fields can be required.",
+      "ko": "일부 필드는 필수일 수 있습니다."
+    },
+    {
+      "en": "Others can be optional.",
+      "ko": "다른 필드는 선택 사항일 수 있습니다."
+    },
+    {
+      "en": "And a schema describes the rules for what that structured data should look like.",
+      "ko": "그리고 schema는 그 구조화된 데이터가 어떤 모습이어야 하는지에 대한 규칙을 설명합니다."
+    },
+    {
+      "en": "The main idea is simple.",
+      "ko": "핵심 아이디어는 간단합니다."
+    },
+    {
+      "en": "Humans are comfortable with flexible language.",
+      "ko": "인간은 유연한 언어를 편안하게 느낍니다."
+    },
+    {
+      "en": "Applications usually work better with predictable structure.",
+      "ko": "애플리케이션은 대개 예측 가능한 구조에서 더 잘 작동합니다."
+    },
+    {
+      "en": "JSON and schemas help connect those two worlds.",
+      "ko": "JSON과 schema는 이 두 세계를 연결하는 데 도움을 줍니다."
     }
   ],
   "body": "### Ordinary text vs structured data\n- Ordinary text: \"The customer wants to return order 12345 because the item arrived damaged.\" // 사람은 쉽게 읽지만 소프트웨어는 어렵다.\n- Structured data breaks the same information into labeled fields: order_id, reason, requested_action. // 같은 정보를 이름 붙은 조각으로 나눈 것.\n- ==JSON is one common format for structured data==. // JSON 은 구조화 데이터를 적는 흔한 형식.\n\n### What JSON is\n- JavaScript Object Notation. You do not need JavaScript to understand it. // 이름만 JavaScript 지 언어 지식은 필요 없다.\n- An **object** is a collection of fields; each field has a name and a value. // 객체 = 이름·값 쌍의 묶음.\n- Value types: **string** (text), **number**, **boolean** (true/false), **list** (several values), **null**. // 값의 종류 다섯 가지.\n\n### null is not empty, not zero\n- ==null means the field exists but the value is unknown or unavailable==. // 필드는 있는데 값을 모른다는 뜻.\n- Different from an empty string and different from 0. // 빈 문자열·0 과 다르다.\n- In AI apps: Claude can extract some fields but not all; allowing null ==stops the model from inventing== missing data. // 지어내는 대신 null 을 허용.\n\n### Required vs optional\n- Required: the data is not complete without it (a refund request must include a reason). // 없으면 불완전한 필드.\n- Optional: nice to have, not needed to process the request (an extra comment). // 있어도 되고 없어도 되는 필드.\n\n### What a schema is\n- A schema describes what the structured data should look like: ==a contract== for the expected structure. // 스키마 = 데이터 모양의 계약서.\n- It says which fields exist, what type each value must be, and which fields are required. // 필드·타입·필수 여부.\n- ==The schema does not contain the real data==; the JSON object holds the values, the schema holds the rules. // 스키마는 규칙, JSON 객체는 실제 값.\n\n### Why applications want this\n- A sentence like \"I think the customer probably wants a refund\" forces software to guess the issue type, the action, what to store, whether to continue. // 자연어는 유연하지만 자동화가 어렵다.\n- Structured output (issue_type, requested_action, refund_requested) tells the app exactly where each piece is, so it can ==validate, store, forward, and decide==. // 검증·저장·전달·분기가 가능.\n- With a schema the app can check: required fields present? correct types? a boolean really true/false? // 구조가 어긋나면 바로 탐지.\n\n### ShopAssist example\n- \"My blue shirt arrived damaged and I want my money back\" → issue_type: damaged item, product: blue shirt, requested_action: refund, order_id: null. // 주문 번호를 안 줬으니 null.\n- The schema requires issue_type and requested_action, lets product be optional, and lets order_id be null. // 필수·선택·null 허용을 스키마가 정한다.",
@@ -57,5 +589,19 @@
     "A schema is the contract for the shape: allowed fields, types, required vs optional. It holds rules, not data. // 스키마와 데이터의 구분.",
     "Structured output lets the application validate, store, route, and decide instead of guessing from a sentence. // 구조화 출력이 중요한 이유."
   ],
-  "createdAt": "2026-09-09T03:44:03.735Z"
+  "createdAt": "2026-09-09T03:44:03.735Z",
+  "examTrends": {
+    "how": "Rarely a question on its own; it is the vocabulary behind structured-output and tool-schema questions. Expect answer choices that use required, optional, nullable, enum, boolean and \"schema vs data\" correctly, and distractors that misuse them. // 단독 문제보다는 구조화 출력·툴 스키마 문제의 밑바탕 어휘로 나온다. required·optional·nullable·enum·boolean 과 \"스키마 대 데이터\" 를 정확히 쓴 보기가 정답.",
+    "answerLooks": [
+      "Missing information is represented as null, never invented. // 모르는 값은 null, 지어내지 않는다.",
+      "A schema is the contract for the shape (fields, types, required); the JSON object holds the values. // 스키마는 규칙, 객체는 값.",
+      "Structured fields let the app validate, store, route and decide. // 구조화가 검증·저장·라우팅·분기를 가능하게 한다."
+    ],
+    "traps": [
+      "Treating null, empty string and 0 as the same thing. // null 과 빈 문자열·0 을 같다고 보는 보기.",
+      "Saying the schema \"contains the customer data\". // 스키마가 데이터를 담는다는 보기.",
+      "Making every field required so the model must fill it, which invites invented values. // 전부 필수로 만들면 지어낸 값이 나온다."
+    ],
+    "memorize": "Five value types: string, number, boolean, list, null. Required vs optional. Schema = contract. // 값 5종, 필수 대 선택, 스키마 = 계약."
+  }
 }

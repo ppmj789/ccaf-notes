@@ -18,52 +18,419 @@
   "summary": "Define the output as a tool with a JSON schema and force it with tool_choice; the schema guarantees the shape, and prompt criteria plus evals guarantee the judgment. // 출력을 JSON 스키마를 가진 툴로 정의하고 tool_choice 로 강제한다. 스키마는 모양을, 프롬프트 기준과 평가는 판단을 책임진다.",
   "paragraphs": [
     {
-      "en": "In the previous lesson we introduced the basics of tool use. Now we will apply that idea to one of the most common production use cases: reliable structured output. For example, in ShopAssist a customer might write something messy like \"I got my shoes yesterday and they're scratched. I don't know if I can return them but I want a replacement. I can send a photo if needed.\" As humans we understand this message, but for an application we need something more structured. We may need fields like order id, item, reason, desired action, evidence, urgency and missing information.",
-      "ko": "이전 강의에서 툴 사용의 기본을 소개했습니다. 이제 그 개념을 가장 흔한 프로덕션 사례인 신뢰할 수 있는 구조화 출력에 적용합니다. 예를 들어 ShopAssist 에서 고객이 \"어제 신발 받았는데 긁혀 있어요. 반품이 되는지는 모르겠지만 교환을 원해요. 필요하면 사진 보낼 수 있어요\" 처럼 지저분하게 쓸 수 있습니다. 사람은 이해하지만 애플리케이션에는 더 구조화된 것이 필요합니다. 주문 ID, 상품, 사유, 원하는 조치, 증빙, 긴급도, 누락 정보 같은 필드가 필요할 수 있습니다."
+      "en": "In the previous lesson we introduced the basics of tool use.",
+      "ko": "이전 강의에서 툴 사용의 기본을 소개했습니다."
     },
     {
-      "en": "A common beginner approach is to ask the model \"return only valid JSON\". This can work sometimes, but it is not the most reliable approach. The model might add extra text, it might forget a comma, it might return a value in the wrong format, or it might invent a field because the prompt was not strict enough.",
-      "ko": "초보자가 흔히 쓰는 방법은 모델에게 \"유효한 JSON 만 반환하라\" 고 요청하는 것입니다. 가끔은 되지만 가장 신뢰할 수 있는 방법은 아닙니다. 모델이 여분의 텍스트를 덧붙이거나, 쉼표를 빼먹거나, 잘못된 형식의 값을 주거나, 프롬프트가 충분히 엄격하지 않아서 필드를 지어낼 수 있습니다."
+      "en": "Now we will apply that idea to one of the most common production use cases:",
+      "ko": "이제 그 개념을 가장 흔한 프로덕션 사례 중 하나에 적용해 보겠습니다."
     },
     {
-      "en": "For production applications a better pattern is to use tool use. With tool use we define a tool that has an input schema. Claude does not just write JSON as plain text. Instead Claude produces a structured tool call that follows the schema we defined. This is one of the most reliable ways to get schema-compliant structured output.",
-      "ko": "프로덕션 애플리케이션에는 툴 사용(tool use)이 더 나은 패턴입니다. 툴 사용에서는 입력 스키마(input schema)를 가진 툴을 정의합니다. Claude 는 JSON 을 그냥 텍스트로 쓰지 않고, 우리가 정의한 스키마를 따르는 구조화된 툴 호출을 만듭니다. 스키마를 준수하는 구조화 출력을 얻는 가장 신뢰할 수 있는 방법 중 하나입니다."
+      "en": "Reliable Structured Output.",
+      "ko": "신뢰할 수 있는 구조화 출력입니다."
     },
     {
-      "en": "Let's first look at the less reliable version. This prompt asks for JSON but the structure exists only in the instruction. Claude has to infer the fields. It may return good JSON but our application is still depending on text formatting, and if the response is not valid JSON our parser may fail. This is the problem we want to avoid.",
-      "ko": "먼저 덜 신뢰할 수 있는 버전을 봅시다. 이 프롬프트는 JSON 을 요구하지만 구조가 지시문 안에만 있습니다. Claude 가 필드를 추측해야 합니다. 좋은 JSON 을 줄 수도 있지만 애플리케이션은 여전히 텍스트 형식에 의존하고, 응답이 유효한 JSON 이 아니면 파서가 실패할 수 있습니다. 이것이 피하고 싶은 문제입니다."
+      "en": "For example, in ShopAssist a customer might write something messy",
+      "ko": "예를 들어 ShopAssist 에서 고객이 이렇게 지저분하게 쓸 수 있습니다."
     },
     {
-      "en": "Now let's define the structure as a tool. The tool name is extract_return_request. The description tells Claude what this tool is for, and the input schema defines exactly which fields we want. Notice a few important schema design choices.",
-      "ko": "이제 구조를 툴로 정의합시다. 툴 이름은 extract_return_request 입니다. description 은 이 툴이 무엇을 위한 것인지 Claude 에게 알려 주고, input schema 는 우리가 원하는 필드를 정확히 정의합니다. 몇 가지 중요한 스키마 설계 선택을 눈여겨보세요."
+      "en": "like \"I got my shoes yesterday and they're scratched. I don't know if I can return them",
+      "ko": "\"어제 신발 받았는데 긁혀 있어요. 반품이 되는지는 모르겠지만"
     },
     {
-      "en": "First, some fields are required even when the customer does not provide the information. For example order id is required but it can be null. This is important. Required means the field must exist. Nullable means the value may be missing. So instead of Claude inventing an order id we allow it to say order id: none. This is much safer.",
-      "ko": "첫째, 고객이 정보를 주지 않았을 때도 일부 필드는 required 입니다. 예를 들어 order id 는 required 지만 null 일 수 있습니다. 이게 중요합니다. required 는 필드가 반드시 존재해야 한다는 뜻이고, nullable 은 값이 비어 있을 수 있다는 뜻입니다. 그래서 Claude 가 주문 ID 를 지어내는 대신 order id: none 이라고 말하게 허용합니다. 훨씬 안전합니다."
+      "en": "but I want a replacement. I can send a photo if needed.\"",
+      "ko": "교환을 원해요. 필요하면 사진 보낼 수 있어요.\""
     },
     {
-      "en": "Second, we use enum fields. For reason, Claude must choose one of the allowed values. This prevents random labels like \"product issue\" or \"a return problem\" when our system expects damaged_item or normal_return. Third, we include an unclear value. This is useful when the customer message is ambiguous. Instead of forcing a bad classification, Claude can explicitly say the intent is unclear. Fourth, we include the other-plus-detail pattern. If the customer says something that does not fit our categories, Claude can choose other and explain the case in reason_detail. This gives us controlled structure without losing flexibility.",
-      "ko": "둘째, enum 필드를 씁니다. reason 에서 Claude 는 허용된 값 중 하나를 골라야 합니다. 시스템은 damaged_item 이나 normal_return 을 기대하는데 \"product issue\" 같은 제멋대로인 라벨이 나오는 걸 막습니다. 셋째, unclear 값을 넣습니다. 고객 메시지가 모호할 때 잘못된 분류를 강요하는 대신 의도가 불명확하다고 말할 수 있습니다. 넷째, other 더하기 detail 패턴입니다. 카테고리에 맞지 않는 말이면 other 를 고르고 reason_detail 에 설명합니다. 유연성을 잃지 않으면서 통제된 구조를 얻습니다."
+      "en": "As humans we understand this message,",
+      "ko": "사람은 이 메시지를 이해합니다."
     },
     {
-      "en": "Now let's send the customer message with this tool available. Here we use tool_choice to force Claude to use our extraction tool. This means Claude should return a tool_use block instead of a normal text answer. The response content can contain different block types. For this example we look for the tool_use block and extract its input. The result is now a Python dictionary. This is much easier to use in real application code. We can save it to a database, route the request to the right workflow, ask the customer for missing information, or trigger an escalation if the reason or urgency requires it.",
-      "ko": "이제 이 툴을 사용 가능한 상태로 고객 메시지를 보냅니다. 여기서는 tool_choice 로 Claude 가 우리 추출 툴을 반드시 쓰도록 강제합니다. 즉 일반 텍스트 답변 대신 tool_use 블록을 반환해야 합니다. 응답 content 에는 여러 종류의 블록이 들어갈 수 있습니다. 이 예제에서는 tool_use 블록을 찾아 그 input 을 꺼냅니다. 결과는 파이썬 딕셔너리라 실제 코드에서 쓰기 훨씬 쉽습니다. 데이터베이스에 저장하거나, 알맞은 워크플로우로 라우팅하거나, 누락 정보를 물어보거나, 사유나 긴급도에 따라 에스컬레이션할 수 있습니다."
+      "en": "but for an application we need something more structured.",
+      "ko": "하지만 애플리케이션에는 더 구조화된 것이 필요합니다."
     },
     {
-      "en": "The tool_choice setting controls how Claude decides whether to use a tool. With forced tool selection Claude must use one specific tool. That is what we used here. For structured extraction, forced tool selection is often the best choice because we do not want a conversational answer. We want the structured object every time.",
-      "ko": "tool_choice 설정은 Claude 가 툴을 쓸지 어떻게 결정하는지를 제어합니다. 강제 툴 선택에서는 특정 툴 하나를 반드시 써야 합니다. 여기서 쓴 게 그겁니다. 구조화 추출에서는 강제 툴 선택이 보통 최선입니다. 대화형 답변이 아니라 매번 구조화된 객체를 원하기 때문입니다."
+      "en": "We may need fields like order id, item, reason, desired action, evidence, urgency and missing information.",
+      "ko": "주문 ID, 상품, 사유, 원하는 조치, 증빙, 긴급도, 누락 정보 같은 필드가 필요할 수 있습니다."
     },
     {
-      "en": "There is one important limitation. A strict schema can prevent many syntax and formatting problems. It can make sure the output has the expected fields, that an enum value comes from the allowed list, and that missing information is an array. But a schema does not guarantee that the meaning is correct. Claude could still choose normal_return when the better answer is damaged_item. It could still mark urgency as high when the message does not justify that. So tool use solves the structure problem, but we still need good prompt instructions, explicit criteria, examples and evaluation tests to solve the judgment problem. Structure and judgment are different problems. A schema controls the shape of the answer. Criteria control the quality of the decision.",
-      "ko": "중요한 한계가 하나 있습니다. 엄격한 스키마는 많은 문법·형식 문제를 막습니다. 기대한 필드가 있는지, enum 값이 허용 목록에서 왔는지, missing information 이 배열인지 보장합니다. 하지만 의미가 맞다는 것은 보장하지 않습니다. 더 나은 답이 damaged_item 인데 normal_return 을 고를 수 있고, 근거 없이 urgency 를 high 로 표시할 수도 있습니다. 툴 사용은 구조 문제를 풀지만, 판단 문제는 좋은 지시, 명시적 기준, 예시, 평가 테스트로 풀어야 합니다. 구조와 판단은 다른 문제입니다. 스키마는 답의 모양을, 기준은 결정의 품질을 제어합니다."
+      "en": "A common beginner approach is to ask the model \"return only valid JSON\".",
+      "ko": "초보자가 흔히 쓰는 방법은 모델에게 \"유효한 JSON 만 반환하라\" 고 하는 것입니다."
     },
     {
-      "en": "Even with a good schema we should still add format normalization rules in the prompt. For example: if the order id is missing use null, do not invent one. If the customer offers to send a photo later, evidence_provided is false. Use urgency high only when the customer mentions a deadline, repeated failed attempts or business-critical impact. Use unclear when the message does not contain enough information. Use other only when none of the listed enum values fit. These rules make the structured output more consistent and reduce false positives. For ShopAssist this matters because the extracted data may drive real workflow decisions: a damaged item may go to a replacement workflow, a billing dispute to a billing team, a policy exception may require escalation, and a missing order id may trigger a follow-up question instead of a return authorization.",
-      "ko": "좋은 스키마가 있어도 프롬프트에 형식 정규화 규칙을 추가해야 합니다. 예를 들어 주문 ID 가 없으면 null 을 쓰고 지어내지 마라. 고객이 나중에 사진을 보내겠다고 하면 evidence_provided 는 false. 마감 기한, 반복된 실패 시도, 업무상 치명적 영향을 언급할 때만 urgency 를 high 로. 정보가 부족하면 unclear. 나열된 enum 값이 하나도 맞지 않을 때만 other. 이 규칙들이 출력을 더 일관되게 만들고 거짓 양성을 줄입니다. ShopAssist 에서 중요한 이유는 추출된 데이터가 실제 워크플로우 결정을 움직이기 때문입니다. 손상 상품은 교환 워크플로우로, 청구 분쟁은 청구 팀으로, 정책 예외는 에스컬레이션으로, 주문 ID 누락은 반품 승인 대신 추가 질문으로 갑니다."
+      "en": "This can work sometimes, but it is not the most reliable approach.",
+      "ko": "가끔은 되지만 가장 신뢰할 수 있는 방법은 아닙니다."
     },
     {
-      "en": "In the demo we compared two approaches. First we asked Claude to return freeform JSON. That approach is simple but it depends on text formatting and can break parsing. Then we used tool use with a JSON schema. This gave us a structured tool input that our application can extract directly. We also saw why nullable fields are important: when the customer does not provide an order id, Claude should return null, not invent a fake value. And finally we saw that schemas improve reliability but they do not replace good instructions. For the exam remember the key idea: use tool use and JSON schemas when your application needs reliable structured output. Use required fields, nullable values, enums, unclear and other-plus-detail fields to make the schema both strict and practical. And use tool_choice when you need to control whether Claude may use a tool, must use a tool, or must use one specific tool.",
-      "ko": "데모에서는 두 접근을 비교했습니다. 먼저 자유 형식 JSON 을 요청했는데, 단순하지만 텍스트 형식에 의존하고 파싱이 깨질 수 있습니다. 그다음 JSON 스키마를 가진 툴 사용을 써서 애플리케이션이 직접 꺼낼 수 있는 구조화된 툴 입력을 얻었습니다. nullable 필드가 왜 중요한지도 봤습니다. 주문 ID 를 주지 않으면 가짜 값 대신 null 을 반환해야 합니다. 마지막으로 스키마는 신뢰성을 높이지만 좋은 지시를 대체하지 않는다는 것을 봤습니다. 시험용 핵심: 신뢰할 수 있는 구조화 출력이 필요하면 툴 사용과 JSON 스키마를 써라. required 필드, nullable 값, enum, unclear, other 더하기 detail 로 스키마를 엄격하면서 실용적으로 만들어라. 툴을 써도 되는지, 반드시 써야 하는지, 특정 툴을 반드시 써야 하는지 제어할 때는 tool_choice 를 써라."
+      "en": "The model might add extra text, it might forget a comma,",
+      "ko": "모델이 여분의 텍스트를 덧붙이거나 쉼표를 빼먹을 수 있고,"
+    },
+    {
+      "en": "it might return a value in the wrong format,",
+      "ko": "잘못된 형식의 값을 반환할 수도 있고,"
+    },
+    {
+      "en": "or it might invent a field because the prompt was not strict enough.",
+      "ko": "프롬프트가 충분히 엄격하지 않아서 필드를 지어낼 수도 있습니다."
+    },
+    {
+      "en": "For production applications a better pattern is to use tool use.",
+      "ko": "프로덕션 애플리케이션에는 툴 사용(tool use)이 더 나은 패턴입니다."
+    },
+    {
+      "en": "With tool use we define a tool that has an input schema.",
+      "ko": "툴 사용에서는 입력 스키마(input schema)를 가진 툴을 정의합니다."
+    },
+    {
+      "en": "Claude does not just write JSON as plain text.",
+      "ko": "Claude 는 JSON 을 그냥 텍스트로 쓰지 않습니다."
+    },
+    {
+      "en": "Instead Claude produces a structured tool call that follows the schema we defined.",
+      "ko": "대신 우리가 정의한 스키마를 따르는 구조화된 툴 호출을 만듭니다."
+    },
+    {
+      "en": "This is one of the most reliable ways to get schema-compliant structured output.",
+      "ko": "스키마를 준수하는 구조화 출력을 얻는 가장 신뢰할 수 있는 방법 중 하나입니다."
+    },
+    {
+      "en": "Let's first look at the less reliable version.",
+      "ko": "먼저 덜 신뢰할 수 있는 버전을 봅시다."
+    },
+    {
+      "en": "This prompt asks for JSON but the structure exists only in the instruction.",
+      "ko": "이 프롬프트는 JSON 을 요구하지만 구조가 지시문 안에만 있습니다."
+    },
+    {
+      "en": "Claude has to infer the fields.",
+      "ko": "Claude 가 필드를 추측해야 합니다."
+    },
+    {
+      "en": "It may return good JSON but our application is still depending on text formatting,",
+      "ko": "좋은 JSON 을 줄 수도 있지만 애플리케이션은 여전히 텍스트 형식에 의존합니다."
+    },
+    {
+      "en": "and if the response is not valid JSON our parser may fail.",
+      "ko": "응답이 유효한 JSON 이 아니면 파서가 실패할 수 있습니다."
+    },
+    {
+      "en": "This is the problem we want to avoid.",
+      "ko": "이것이 우리가 피하고 싶은 문제입니다."
+    },
+    {
+      "en": "Now let's define the structure as a tool.",
+      "ko": "이제 구조를 툴로 정의합시다."
+    },
+    {
+      "en": "The tool name is extract_return_request.",
+      "ko": "툴 이름은 extract_return_request 입니다."
+    },
+    {
+      "en": "The description tells Claude what this tool is for,",
+      "ko": "description 은 이 툴이 무엇을 위한 것인지 Claude 에게 알려 주고,"
+    },
+    {
+      "en": "and the input schema defines exactly which fields we want.",
+      "ko": "input schema 는 우리가 원하는 필드를 정확히 정의합니다."
+    },
+    {
+      "en": "Notice a few important schema design choices.",
+      "ko": "몇 가지 중요한 스키마 설계 선택을 눈여겨보세요."
+    },
+    {
+      "en": "First, some fields are required even when the customer does not provide the information.",
+      "ko": "첫째, 고객이 정보를 주지 않았을 때도 일부 필드는 required(필수)입니다."
+    },
+    {
+      "en": "For example order id is required but it can be null.",
+      "ko": "예를 들어 order id 는 required 지만 null 일 수 있습니다."
+    },
+    {
+      "en": "This is important. Required means the field must exist.",
+      "ko": "이게 중요합니다. required 는 필드가 반드시 존재해야 한다는 뜻이고,"
+    },
+    {
+      "en": "Nullable means the value may be missing.",
+      "ko": "nullable 은 값이 비어 있을 수 있다는 뜻입니다."
+    },
+    {
+      "en": "So instead of Claude inventing an order id we allow it to say order id: none.",
+      "ko": "그래서 Claude 가 주문 ID 를 지어내는 대신 order id: none 이라고 말하게 허용합니다."
+    },
+    {
+      "en": "This is much safer.",
+      "ko": "이게 훨씬 안전합니다."
+    },
+    {
+      "en": "Second, we use enum fields.",
+      "ko": "둘째, enum 필드를 씁니다."
+    },
+    {
+      "en": "For reason, Claude must choose one of the allowed values.",
+      "ko": "reason 에서 Claude 는 허용된 값 중 하나를 골라야 합니다."
+    },
+    {
+      "en": "This prevents random labels like \"product issue\" or \"a return problem\"",
+      "ko": "\"product issue\" 나 \"a return problem\" 같은 제멋대로인 라벨을 막습니다."
+    },
+    {
+      "en": "when our system expects damaged_item or normal_return.",
+      "ko": "시스템은 damaged_item 이나 normal_return 을 기대하니까요."
+    },
+    {
+      "en": "Third, we include an unclear value.",
+      "ko": "셋째, unclear 값을 포함합니다."
+    },
+    {
+      "en": "This is useful when the customer message is ambiguous.",
+      "ko": "고객 메시지가 모호할 때 유용합니다."
+    },
+    {
+      "en": "Instead of forcing a bad classification, Claude can explicitly say the intent is unclear.",
+      "ko": "잘못된 분류를 강요하는 대신 Claude 가 의도가 불명확하다고 명시적으로 말할 수 있습니다."
+    },
+    {
+      "en": "Fourth, we include the other plus detail pattern.",
+      "ko": "넷째, other 더하기 detail 패턴을 포함합니다."
+    },
+    {
+      "en": "If the customer says something that does not fit our categories,",
+      "ko": "고객이 우리 카테고리에 맞지 않는 말을 하면"
+    },
+    {
+      "en": "Claude can choose other and explain the case in reason_detail.",
+      "ko": "Claude 가 other 를 고르고 reason_detail 에 사정을 설명할 수 있습니다."
+    },
+    {
+      "en": "This gives us controlled structure without losing flexibility.",
+      "ko": "유연성을 잃지 않으면서 통제된 구조를 얻는 거죠."
+    },
+    {
+      "en": "Now let's send the customer message with this tool available.",
+      "ko": "이제 이 툴을 사용 가능한 상태로 고객 메시지를 보냅시다."
+    },
+    {
+      "en": "Here we use tool_choice to force Claude to use our extraction tool.",
+      "ko": "여기서는 tool_choice 로 Claude 가 우리 추출 툴을 반드시 쓰도록 강제합니다."
+    },
+    {
+      "en": "This means Claude should return a tool_use block instead of a normal text answer.",
+      "ko": "즉 Claude 는 일반 텍스트 답변 대신 tool_use 블록을 반환해야 합니다."
+    },
+    {
+      "en": "The response content can contain different block types.",
+      "ko": "응답 content 에는 여러 종류의 블록이 들어갈 수 있습니다."
+    },
+    {
+      "en": "For this example we look for the tool_use block and extract its input.",
+      "ko": "이 예제에서는 tool_use 블록을 찾아서 그 input 을 꺼냅니다."
+    },
+    {
+      "en": "The result is now a Python dictionary. It may look like this.",
+      "ko": "결과는 이제 파이썬 딕셔너리입니다. 이런 모양일 수 있습니다."
+    },
+    {
+      "en": "This is much easier to use in real application code.",
+      "ko": "실제 애플리케이션 코드에서 쓰기 훨씬 쉽습니다."
+    },
+    {
+      "en": "We can save it to a database. We can route the request to the right workflow.",
+      "ko": "데이터베이스에 저장할 수도 있고, 알맞은 워크플로우로 라우팅할 수도 있고,"
+    },
+    {
+      "en": "We can ask the customer for missing information,",
+      "ko": "고객에게 누락 정보를 물어볼 수도 있고,"
+    },
+    {
+      "en": "or we can trigger an escalation if the reason or urgency requires it.",
+      "ko": "사유나 긴급도에 따라 에스컬레이션을 트리거할 수도 있습니다."
+    },
+    {
+      "en": "The tool_choice setting controls how Claude decides whether to use a tool.",
+      "ko": "tool_choice 설정은 Claude 가 툴을 쓸지 말지 어떻게 결정하는지를 제어합니다."
+    },
+    {
+      "en": "With forced tool selection Claude must use one specific tool. That is what we used here.",
+      "ko": "강제 툴 선택에서는 특정 툴 하나를 반드시 써야 합니다. 여기서 쓴 게 그겁니다."
+    },
+    {
+      "en": "For structured extraction forced tool selection is often the best choice",
+      "ko": "구조화 추출에서는 강제 툴 선택이 보통 최선입니다."
+    },
+    {
+      "en": "because we do not want a conversational answer. We want the structured object every time.",
+      "ko": "대화형 답변이 아니라 매번 구조화된 객체를 원하기 때문입니다."
+    },
+    {
+      "en": "There is one important limitation.",
+      "ko": "중요한 한계가 하나 있습니다."
+    },
+    {
+      "en": "A strict schema can prevent many syntax and formatting problems.",
+      "ko": "엄격한 스키마는 많은 문법·형식 문제를 막아 줍니다."
+    },
+    {
+      "en": "For example it can make sure the output has the expected fields.",
+      "ko": "예를 들어 출력에 기대한 필드가 있는지 보장할 수 있고,"
+    },
+    {
+      "en": "It can make sure an enum value comes from the allowed list,",
+      "ko": "enum 값이 허용 목록에서 왔는지 보장할 수 있고,"
+    },
+    {
+      "en": "and it can make sure missing information is an array.",
+      "ko": "missing information 이 배열인지 보장할 수 있습니다."
+    },
+    {
+      "en": "But a schema does not guarantee that the meaning is correct.",
+      "ko": "하지만 스키마는 의미가 맞다는 것을 보장하지 않습니다."
+    },
+    {
+      "en": "Claude could still choose normal_return when the better answer is damaged_item.",
+      "ko": "더 나은 답이 damaged_item 인데 Claude 가 normal_return 을 고를 수 있습니다."
+    },
+    {
+      "en": "It could still mark urgency as high when the message does not justify that.",
+      "ko": "메시지가 그럴 만하지 않은데 urgency 를 high 로 표시할 수도 있습니다."
+    },
+    {
+      "en": "So tool use solves the structure problem.",
+      "ko": "그러니 툴 사용은 구조 문제를 해결합니다."
+    },
+    {
+      "en": "But we still need good prompt instructions, explicit criteria, examples and evaluation tests",
+      "ko": "하지만 판단 문제를 풀려면 여전히 좋은 프롬프트 지시, 명시적 기준, 예시, 평가 테스트가 필요합니다."
+    },
+    {
+      "en": "to solve the judgment problem.",
+      "ko": "그것이 판단 문제를 푸는 방법입니다."
+    },
+    {
+      "en": "That is why this lesson connects directly to the previous lessons.",
+      "ko": "그래서 이 강의가 이전 강의들과 직접 연결됩니다."
+    },
+    {
+      "en": "Structure and judgment are different problems.",
+      "ko": "구조와 판단은 다른 문제입니다."
+    },
+    {
+      "en": "A schema controls the shape of the answer. Criteria control the quality of the decision.",
+      "ko": "스키마는 답의 모양을 제어하고, 기준은 결정의 품질을 제어합니다."
+    },
+    {
+      "en": "Even with a good schema we should still add format normalization rules in the prompt.",
+      "ko": "좋은 스키마가 있어도 프롬프트에 형식 정규화 규칙을 추가해야 합니다."
+    },
+    {
+      "en": "For example, use these normalization rules.",
+      "ko": "예를 들면 이런 정규화 규칙입니다."
+    },
+    {
+      "en": "If the order id is missing use null. Do not invent one.",
+      "ko": "주문 ID 가 없으면 null 을 써라. 지어내지 마라."
+    },
+    {
+      "en": "If the customer offers to send a photo later, evidence_provided is false.",
+      "ko": "고객이 나중에 사진을 보내겠다고 하면 evidence_provided 는 false 다."
+    },
+    {
+      "en": "Use urgency high only when the customer mentions a deadline, repeated failed attempts or business critical impact.",
+      "ko": "고객이 마감 기한, 반복된 실패 시도, 업무상 치명적 영향을 언급할 때만 urgency 를 high 로 써라."
+    },
+    {
+      "en": "Use unclear when the message does not contain enough information.",
+      "ko": "메시지에 정보가 충분하지 않으면 unclear 를 써라."
+    },
+    {
+      "en": "Use other only when none of the listed enum values fit.",
+      "ko": "나열된 enum 값이 하나도 맞지 않을 때만 other 를 써라."
+    },
+    {
+      "en": "These rules make the structured output more consistent. They also reduce false positives.",
+      "ko": "이 규칙들이 구조화 출력을 더 일관되게 만들고 거짓 양성(false positive)도 줄입니다."
+    },
+    {
+      "en": "For ShopAssist this matters because the extracted data may drive real workflow decisions.",
+      "ko": "ShopAssist 에서 이게 중요한 이유는 추출된 데이터가 실제 워크플로우 결정을 움직일 수 있기 때문입니다."
+    },
+    {
+      "en": "A damaged item may go to a replacement workflow. A billing dispute may go to a billing team.",
+      "ko": "손상 상품은 교환 워크플로우로, 청구 분쟁은 청구 팀으로 갈 수 있습니다."
+    },
+    {
+      "en": "A policy exception may require escalation.",
+      "ko": "정책 예외는 에스컬레이션이 필요할 수 있습니다."
+    },
+    {
+      "en": "And a missing order id may trigger a follow-up question instead of a return authorization.",
+      "ko": "주문 ID 누락은 반품 승인 대신 추가 질문을 트리거할 수 있습니다."
+    },
+    {
+      "en": "In the demo we compared two approaches.",
+      "ko": "데모에서는 두 접근을 비교했습니다."
+    },
+    {
+      "en": "First we asked Claude to return freeform JSON.",
+      "ko": "먼저 Claude 에게 자유 형식 JSON 을 요청했습니다."
+    },
+    {
+      "en": "That approach is simple but it depends on text formatting and can break parsing.",
+      "ko": "단순하지만 텍스트 형식에 의존하고 파싱이 깨질 수 있습니다."
+    },
+    {
+      "en": "Then we used tool use with a JSON schema.",
+      "ko": "그다음 JSON 스키마를 가진 툴 사용을 썼습니다."
+    },
+    {
+      "en": "This gave us a structured tool input that our application can extract directly.",
+      "ko": "애플리케이션이 직접 꺼낼 수 있는 구조화된 툴 입력을 얻었습니다."
+    },
+    {
+      "en": "We also saw why nullable fields are important.",
+      "ko": "nullable 필드가 왜 중요한지도 봤습니다."
+    },
+    {
+      "en": "When the customer does not provide an order id Claude should return null, not invent a fake value.",
+      "ko": "고객이 주문 ID 를 주지 않으면 Claude 는 가짜 값을 지어내지 말고 null 을 반환해야 합니다."
+    },
+    {
+      "en": "And finally we saw that schemas improve reliability but they do not replace good instructions.",
+      "ko": "마지막으로 스키마가 신뢰성을 높이지만 좋은 지시를 대체하지는 않는다는 것을 봤습니다."
+    },
+    {
+      "en": "For the exam remember the key idea.",
+      "ko": "시험을 위해 핵심을 기억하세요."
+    },
+    {
+      "en": "Use tool use and JSON schemas when your application needs reliable structured output.",
+      "ko": "애플리케이션이 신뢰할 수 있는 구조화 출력을 필요로 하면 툴 사용과 JSON 스키마를 써라."
+    },
+    {
+      "en": "Use required fields, nullable values, enums, unclear and other plus detail fields",
+      "ko": "required 필드, nullable 값, enum, unclear, other 더하기 detail 필드로"
+    },
+    {
+      "en": "to make the schema both strict and practical.",
+      "ko": "스키마를 엄격하면서도 실용적으로 만들어라."
+    },
+    {
+      "en": "And use tool choice when you need to control whether Claude may use a tool, must use a tool or must use one specific tool.",
+      "ko": "그리고 Claude 가 툴을 써도 되는지, 반드시 써야 하는지, 특정 툴 하나를 반드시 써야 하는지 제어해야 할 때는 tool_choice 를 써라."
     }
-  ]
+  ],
+  "examTrends": {
+    "how": "This topic appears as a scenario question: an app needs data from a messy customer message and must \"parse reliably\" or \"drive a workflow\". The correct answer names tool use with an input schema (JSON schema), often with tool_choice forcing one tool. // 지저분한 고객 메시지에서 데이터를 뽑아 워크플로우를 돌려야 하는 시나리오로 나온다. 정답은 거의 항상 \"입력 스키마를 가진 툴 사용\" 이고 tool_choice 강제가 같이 붙는다.",
+    "answerLooks": [
+      "Define a tool with an input_schema and force it via tool_choice; read the tool_use block's input. // 스키마 툴 정의 + tool_choice 강제 + tool_use 블록의 input 읽기.",
+      "Required-but-nullable fields, enums, an unclear value, other + detail. // 필수·null 허용, enum, unclear, other+detail 이 정답 문구에 등장.",
+      "Schema for shape + prompt criteria, examples, evals for judgment. // 모양은 스키마, 판단은 기준·예시·평가."
+    ],
+    "traps": [
+      "\"Ask for valid JSON in the prompt and parse it\" — simple but breaks on extra text or bad formatting. // \"JSON 만 달라고 하고 파싱\" 은 오답.",
+      "\"A strict schema guarantees correct classification\" — schemas do not control meaning. // 스키마가 정확도까지 보장한다는 보기는 오답.",
+      "\"Let Claude invent a plausible order id\" or make order_id a required non-null string. // 지어내게 두거나 null 을 막는 보기는 오답.",
+      "\"Use tool_choice auto for extraction\" — auto lets Claude answer in text; extraction wants a forced tool. // 추출에 auto 를 쓰는 보기는 오답."
+    ],
+    "memorize": "Structure vs judgment: schema = shape, criteria = quality. tool_choice: auto / any / one specific tool. // 구조 대 판단. tool_choice 세 가지."
+  }
 }
