@@ -38,6 +38,10 @@
         {
           "no": "31",
           "title": "Designing Effective Tools and Structured MCP Errors"
+        },
+        {
+          "no": "32",
+          "title": "Why MCP Exists: Connecting Claude to Tools and Data"
         }
       ]
     }

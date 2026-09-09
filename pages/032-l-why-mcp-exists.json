@@ -1,0 +1,555 @@
+{
+  "id": "l-032",
+  "kind": "lesson",
+  "order": 32,
+  "section": "Tools, MCP, and Agentic Loop",
+  "lecture": "32",
+  "title_en": "Why MCP Exists: Connecting Claude to Tools and Data",
+  "title": "MCP 가 존재하는 이유: Claude 를 툴과 데이터에 연결하기",
+  "domain": "툴·에이전트 루프",
+  "summary": "Claude has no built-in access to databases, CRMs, docs, files, or GitHub, and a custom integration per system becomes hard to manage, so MCP (Model Context Protocol) gives a common protocol where an MCP client (the Claude app) connects to MCP servers that expose tools (actions) and resources (information), local or remote. Access is still controlled by the application, server, permissions, and credentials, so MCP standardizes the connection without removing security boundaries. // Claude 는 DB·CRM·문서·파일·GitHub 에 기본 접근이 없고 시스템마다 맞춤 연동은 관리가 어려워지므로, MCP(Model Context Protocol)는 MCP client(Claude 앱)가 로컬·원격 MCP server 에 연결해 tools(행동)와 resources(정보)를 받는 공통 프로토콜을 준다. 접근은 여전히 앱·서버·permissions·credentials 가 통제하므로 MCP 는 보안 경계를 없애지 않고 연결만 표준화한다.",
+  "paragraphs": [
+    {
+      "en": "Let's start with a simple problem.",
+      "ko": "간단한 문제에서 시작해 봅시다."
+    },
+    {
+      "en": "Claude is powerful, but by itself it does not automatically have access to all the systems",
+      "ko": "Claude 는 강력하지만, 그 자체로는 모든 시스템에 자동으로 접근하지 못합니다."
+    },
+    {
+      "en": "and information your application may need.",
+      "ko": "애플리케이션에 필요한 정보에도 마찬가지입니다."
+    },
+    {
+      "en": "For example, imagine ShopAssist needs to answer this question, where is my order?",
+      "ko": "예를 들어 ShopAssist 가 \"내 주문 어디 있어?\" 라는 질문에 답해야 한다고 해 봅시다."
+    },
+    {
+      "en": "The real answer may exist inside an order database.",
+      "ko": "진짜 답은 주문 데이터베이스 안에 있을 겁니다."
+    },
+    {
+      "en": "Or imagine Claude needs to check a customer account.",
+      "ko": "또는 Claude 가 고객 계정을 확인해야 한다고 해 봅시다."
+    },
+    {
+      "en": "That information may exist inside a CRM system.",
+      "ko": "그 정보는 CRM 시스템 안에 있을 겁니다."
+    },
+    {
+      "en": "Or Claude may need to read documentation stored in a company knowledge base, or inspect files",
+      "ko": "또는 Claude 가 회사 지식 베이스에 저장된 문서를 읽거나, 파일을 살펴보거나,"
+    },
+    {
+      "en": "in a project, or work with information from GitHub.",
+      "ko": "프로젝트 안의 파일이나 GitHub 의 정보를 다뤄야 할 수도 있습니다."
+    },
+    {
+      "en": "These systems exist outside the model.",
+      "ko": "이 시스템들은 모델 바깥에 있습니다."
+    },
+    {
+      "en": "So if we want Claude to work with them, we need a way to connect Claude to external tools and data.",
+      "ko": "그래서 Claude 가 이것들을 다루게 하려면 외부 툴과 데이터에 Claude 를 연결할 방법이 필요합니다."
+    },
+    {
+      "en": "One solution is to build a custom integration for every system.",
+      "ko": "한 가지 방법은 시스템마다 맞춤 연동을 만드는 것입니다."
+    },
+    {
+      "en": "For example, one integration for the customer database, another integration for the CRM,",
+      "ko": "예를 들어 고객 데이터베이스용 연동 하나, CRM 용 연동 하나,"
+    },
+    {
+      "en": "another integration for GitHub, another integration for company documentation, another integration",
+      "ko": "GitHub 용 연동 하나, 회사 문서용 연동 하나,"
+    },
+    {
+      "en": "for the file system. This can work.",
+      "ko": "파일 시스템용 연동 하나. 이렇게 해도 동작은 합니다."
+    },
+    {
+      "en": "But there is a problem.",
+      "ko": "하지만 문제가 있습니다."
+    },
+    {
+      "en": "Every integration may be implemented differently.",
+      "ko": "연동마다 구현 방식이 다를 수 있습니다."
+    },
+    {
+      "en": "Each one may have its own format, its own configuration, its own authentication, and",
+      "ko": "각각 자기만의 포맷, 설정, 인증 방식이 있고,"
+    },
+    {
+      "en": "its own way of describing available capabilities.",
+      "ko": "제공하는 기능을 설명하는 방식도 제각각입니다."
+    },
+    {
+      "en": "As the number of systems grows, managing all of these custom integrations becomes more difficult.",
+      "ko": "시스템 수가 늘어날수록 이 맞춤 연동들을 관리하기가 더 어려워집니다."
+    },
+    {
+      "en": "This is the kind of problem MCP helps solve.",
+      "ko": "MCP 가 해결하는 문제가 바로 이런 종류입니다."
+    },
+    {
+      "en": "MCP stands for Model Context Protocol.",
+      "ko": "MCP 는 Model Context Protocol 의 약자입니다."
+    },
+    {
+      "en": "The basic idea is simple.",
+      "ko": "기본 아이디어는 간단합니다."
+    },
+    {
+      "en": "MCP provides a common way for AI applications to connect to external tools and information.",
+      "ko": "MCP 는 AI 애플리케이션이 외부 툴과 정보에 연결하는 공통 방식을 제공합니다."
+    },
+    {
+      "en": "Instead of inventing a completely different integration pattern for every system, an application",
+      "ko": "시스템마다 완전히 다른 연동 패턴을 새로 만드는 대신,"
+    },
+    {
+      "en": "can use the MCP standard.",
+      "ko": "애플리케이션은 MCP 표준을 쓸 수 있습니다."
+    },
+    {
+      "en": "You can think of MCP as a shared language for connecting AI applications with external capabilities.",
+      "ko": "MCP 는 AI 애플리케이션과 외부 기능을 잇는 공용 언어라고 생각하면 됩니다."
+    },
+    {
+      "en": "For example, one MCP server may expose access to a database.",
+      "ko": "예를 들어 어떤 MCP 서버는 데이터베이스 접근을 제공하고,"
+    },
+    {
+      "en": "Another may expose documentation.",
+      "ko": "다른 서버는 문서를,"
+    },
+    {
+      "en": "Another may expose GitHub operations.",
+      "ko": "다른 서버는 GitHub 작업을,"
+    },
+    {
+      "en": "Another may expose files.",
+      "ko": "다른 서버는 파일을 제공할 수 있습니다."
+    },
+    {
+      "en": "The AI application can work with these systems through a common protocol.",
+      "ko": "AI 애플리케이션은 공통 프로토콜로 이 시스템들을 다룰 수 있습니다."
+    },
+    {
+      "en": "This does not mean all systems become identical.",
+      "ko": "그렇다고 모든 시스템이 똑같아진다는 뜻은 아닙니다."
+    },
+    {
+      "en": "A database is still different from GitHub.",
+      "ko": "데이터베이스는 여전히 GitHub 과 다릅니다."
+    },
+    {
+      "en": "A file system is still different from a CRM.",
+      "ko": "파일 시스템은 여전히 CRM 과 다릅니다."
+    },
+    {
+      "en": "But MCP provides a consistent way to describe and access the capabilities they expose.",
+      "ko": "하지만 MCP 는 각 시스템이 제공하는 기능을 일관되게 설명하고 접근하는 방법을 줍니다."
+    },
+    {
+      "en": "There are two important terms to understand.",
+      "ko": "이해해야 할 중요한 용어가 둘 있습니다."
+    },
+    {
+      "en": "MCP client and MCP server.",
+      "ko": "MCP client 와 MCP server 입니다."
+    },
+    {
+      "en": "The MCP client is the part that wants to use external capabilities.",
+      "ko": "MCP client 는 외부 기능을 쓰고 싶어 하는 쪽입니다."
+    },
+    {
+      "en": "For example, a Claude-powered application can act as an MCP client.",
+      "ko": "예를 들어 Claude 기반 애플리케이션이 MCP client 역할을 할 수 있습니다."
+    },
+    {
+      "en": "The MCP server is the part that exposes capabilities.",
+      "ko": "MCP server 는 기능을 제공(expose)하는 쪽입니다."
+    },
+    {
+      "en": "So the basic idea looks like this.",
+      "ko": "그래서 기본 구조는 이렇습니다."
+    },
+    {
+      "en": "Claude-powered application, MCP client, MCP server, external system.",
+      "ko": "Claude 기반 애플리케이션 → MCP client → MCP server → 외부 시스템."
+    },
+    {
+      "en": "The client connects to the server.",
+      "ko": "client 가 server 에 연결합니다."
+    },
+    {
+      "en": "The server describes what it can provide.",
+      "ko": "server 는 자기가 제공할 수 있는 것을 설명합니다."
+    },
+    {
+      "en": "Then the client can make those capabilities available to Claude.",
+      "ko": "그러면 client 가 그 기능들을 Claude 에게 쓸 수 있게 해 줍니다."
+    },
+    {
+      "en": "Let's look at an example.",
+      "ko": "예를 하나 봅시다."
+    },
+    {
+      "en": "Imagine ShopAssist needs access to customer information.",
+      "ko": "ShopAssist 가 고객 정보에 접근해야 한다고 해 봅시다."
+    },
+    {
+      "en": "A customer system may be exposed through an MCP server.",
+      "ko": "고객 시스템이 MCP server 를 통해 제공될 수 있습니다."
+    },
+    {
+      "en": "That server may provide a tool such as GetCustomer.",
+      "ko": "그 server 는 GetCustomer 같은 툴을 제공할 수 있습니다."
+    },
+    {
+      "en": "ShopAssist connects to the MCP server.",
+      "ko": "ShopAssist 가 MCP server 에 연결합니다."
+    },
+    {
+      "en": "Claude can see that this tool exists.",
+      "ko": "Claude 는 이 툴이 존재한다는 것을 볼 수 있습니다."
+    },
+    {
+      "en": "If Claude needs customer information, it can request that tool.",
+      "ko": "고객 정보가 필요하면 Claude 는 그 툴을 요청할 수 있습니다."
+    },
+    {
+      "en": "The application handles the request through the MCP connection.",
+      "ko": "애플리케이션이 MCP 연결을 통해 그 요청을 처리합니다."
+    },
+    {
+      "en": "The result comes back.",
+      "ko": "결과가 돌아옵니다."
+    },
+    {
+      "en": "Then Claude can continue working with the real customer information.",
+      "ko": "그러면 Claude 는 실제 고객 정보를 가지고 작업을 이어갈 수 있습니다."
+    },
+    {
+      "en": "Now let's introduce another important distinction.",
+      "ko": "이제 또 하나 중요한 구분을 소개합니다."
+    },
+    {
+      "en": "Tools and resources.",
+      "ko": "tools 와 resources 입니다."
+    },
+    {
+      "en": "They are related, but they are not the same.",
+      "ko": "서로 관련은 있지만 같은 것은 아닙니다."
+    },
+    {
+      "en": "A tool represents an action or capability.",
+      "ko": "tool 은 행동(action) 또는 기능을 나타냅니다."
+    },
+    {
+      "en": "For example, look up order, create ticket.",
+      "ko": "예를 들어 주문 조회, 티켓 생성,"
+    },
+    {
+      "en": "Search customers or update case.",
+      "ko": "고객 검색, 케이스 업데이트."
+    },
+    {
+      "en": "A tool usually accepts some input, performs an operation and returns a result.",
+      "ko": "tool 은 보통 입력을 받아 작업을 수행하고 결과를 돌려줍니다."
+    },
+    {
+      "en": "A resource is more like information that can be made available to the application.",
+      "ko": "resource 는 애플리케이션에 제공될 수 있는 정보에 가깝습니다."
+    },
+    {
+      "en": "For example, a documentation page, a configuration file, a knowledge base article or some other",
+      "ko": "예를 들어 문서 페이지, 설정 파일, 지식 베이스 글,"
+    },
+    {
+      "en": "piece of content.",
+      "ko": "또는 다른 어떤 콘텐츠 조각입니다."
+    },
+    {
+      "en": "A simple way to think about the difference is, tools do something.",
+      "ko": "차이를 쉽게 생각하면, tools 는 무언가를 합니다."
+    },
+    {
+      "en": "Resources provide information.",
+      "ko": "resources 는 정보를 제공합니다."
+    },
+    {
+      "en": "For example, imagine a GitHub integration.",
+      "ko": "예를 들어 GitHub 연동을 생각해 봅시다."
+    },
+    {
+      "en": "A tool may search issues.",
+      "ko": "어떤 tool 은 이슈를 검색하고,"
+    },
+    {
+      "en": "Another tool may create a pull request.",
+      "ko": "다른 tool 은 pull request 를 만듭니다."
+    },
+    {
+      "en": "A resource may represent documentation or repository information that can be read.",
+      "ko": "resource 는 읽을 수 있는 문서나 저장소 정보를 나타낼 수 있습니다."
+    },
+    {
+      "en": "The exact capabilities depend on the MCP server.",
+      "ko": "정확히 어떤 기능이 있는지는 MCP server 에 달려 있습니다."
+    },
+    {
+      "en": "MCP can also connect to different kinds of systems.",
+      "ko": "MCP 는 다양한 종류의 시스템에도 연결할 수 있습니다."
+    },
+    {
+      "en": "Some may be local.",
+      "ko": "어떤 것은 로컬일 수 있습니다."
+    },
+    {
+      "en": "For example, files on your computer, a local development environment or a local database.",
+      "ko": "예를 들어 내 컴퓨터의 파일, 로컬 개발 환경, 로컬 데이터베이스."
+    },
+    {
+      "en": "Other systems may be remote.",
+      "ko": "다른 시스템은 원격일 수 있습니다."
+    },
+    {
+      "en": "For example, a cloud CRM, a remote knowledge base, GitHub or another business service.",
+      "ko": "예를 들어 클라우드 CRM, 원격 지식 베이스, GitHub, 다른 비즈니스 서비스."
+    },
+    {
+      "en": "From Claude's perspective, the important point is that the application can expose these external",
+      "ko": "Claude 의 관점에서 중요한 점은, 애플리케이션이 이런 외부 기능을"
+    },
+    {
+      "en": "capabilities in a structured way.",
+      "ko": "구조화된 방식으로 제공할 수 있다는 것입니다."
+    },
+    {
+      "en": "Let's look at a few examples.",
+      "ko": "몇 가지 예를 봅시다."
+    },
+    {
+      "en": "A database MCP server may expose tools for searching customer records.",
+      "ko": "데이터베이스 MCP server 는 고객 레코드 검색 tools 를 제공할 수 있습니다."
+    },
+    {
+      "en": "A documentation MCP server may expose product documentation as resources.",
+      "ko": "문서 MCP server 는 제품 문서를 resources 로 제공할 수 있습니다."
+    },
+    {
+      "en": "A CRM MCP server may expose tools for reading or updating customer cases.",
+      "ko": "CRM MCP server 는 고객 케이스를 읽거나 업데이트하는 tools 를 제공할 수 있습니다."
+    },
+    {
+      "en": "A GitHub MCP server may expose repository-related tools.",
+      "ko": "GitHub MCP server 는 저장소 관련 tools 를 제공할 수 있습니다."
+    },
+    {
+      "en": "A file system MCP server may expose files and directories.",
+      "ko": "파일 시스템 MCP server 는 파일과 디렉터리를 제공할 수 있습니다."
+    },
+    {
+      "en": "This makes MCP useful because Claude-powered applications often need to work with many",
+      "ko": "Claude 기반 애플리케이션은 여러 다른 시스템을 함께 다뤄야 할 때가 많기 때문에"
+    },
+    {
+      "en": "different systems.",
+      "ko": "MCP 가 유용합니다."
+    },
+    {
+      "en": "But there is one very important thing to understand.",
+      "ko": "하지만 꼭 이해해야 할 아주 중요한 점이 하나 있습니다."
+    },
+    {
+      "en": "MCP does not automatically give Claude unlimited access to everything.",
+      "ko": "MCP 가 Claude 에게 모든 것에 대한 무제한 접근을 자동으로 주는 것은 아닙니다."
+    },
+    {
+      "en": "Constructing an MCP server does not mean Claude can suddenly read every file, modify",
+      "ko": "MCP server 를 만들었다고 해서 Claude 가 갑자기 모든 파일을 읽고,"
+    },
+    {
+      "en": "every database record or call every external service.",
+      "ko": "모든 DB 레코드를 수정하고, 모든 외부 서비스를 호출할 수 있는 것은 아닙니다."
+    },
+    {
+      "en": "Access is still controlled by the application and the MCP configuration.",
+      "ko": "접근은 여전히 애플리케이션과 MCP 설정이 통제합니다."
+    },
+    {
+      "en": "The application decides which MCP servers are available.",
+      "ko": "어떤 MCP server 를 쓸 수 있는지는 애플리케이션이 정합니다."
+    },
+    {
+      "en": "The server decides which capabilities it exposes.",
+      "ko": "어떤 기능을 제공할지는 server 가 정합니다."
+    },
+    {
+      "en": "Permissions can control what actions are allowed.",
+      "ko": "어떤 행동이 허용되는지는 permissions 가 통제할 수 있습니다."
+    },
+    {
+      "en": "Credentials can control access to external systems.",
+      "ko": "외부 시스템 접근은 credentials 가 통제할 수 있습니다."
+    },
+    {
+      "en": "And the application can restrict which tools Claude is allowed to use.",
+      "ko": "그리고 애플리케이션은 Claude 가 쓸 수 있는 tools 를 제한할 수 있습니다."
+    },
+    {
+      "en": "For example, a customer support agent may be allowed to read an order.",
+      "ko": "예를 들어 고객 지원 에이전트는 주문을 읽는 것은 허용되지만,"
+    },
+    {
+      "en": "But it may not be allowed to delete that order.",
+      "ko": "그 주문을 삭제하는 것은 허용되지 않을 수 있습니다."
+    },
+    {
+      "en": "A development agent may be allowed to read repository files.",
+      "ko": "개발 에이전트는 저장소 파일을 읽는 것은 허용되지만,"
+    },
+    {
+      "en": "But it may not be allowed to access production credentials.",
+      "ko": "프로덕션 credentials 에 접근하는 것은 허용되지 않을 수 있습니다."
+    },
+    {
+      "en": "So MCP is not about removing security boundaries.",
+      "ko": "그러니 MCP 는 보안 경계를 없애는 것이 아닙니다."
+    },
+    {
+      "en": "It is about creating a standard connection while keeping those boundaries in place.",
+      "ko": "그 경계를 그대로 둔 채 표준 연결을 만드는 것입니다."
+    },
+    {
+      "en": "Let's return to ShopAssist.",
+      "ko": "ShopAssist 로 돌아가 봅시다."
+    },
+    {
+      "en": "Imagine ShopAssist needs three external capabilities.",
+      "ko": "ShopAssist 에 외부 기능 세 가지가 필요하다고 해 봅시다."
+    },
+    {
+      "en": "Customer information from a CRM.",
+      "ko": "CRM 의 고객 정보,"
+    },
+    {
+      "en": "Order information from an order system.",
+      "ko": "주문 시스템의 주문 정보,"
+    },
+    {
+      "en": "And support documentation from a knowledge base.",
+      "ko": "그리고 지식 베이스의 지원 문서."
+    },
+    {
+      "en": "Without a common integration approach, the application may need three completely different",
+      "ko": "공통 연동 방식이 없으면 애플리케이션에는 완전히 다른"
+    },
+    {
+      "en": "custom connections.",
+      "ko": "맞춤 연결 세 개가 필요할 수 있습니다."
+    },
+    {
+      "en": "With MCP, these systems can expose capabilities through a common protocol.",
+      "ko": "MCP 를 쓰면 이 시스템들은 공통 프로토콜로 기능을 제공할 수 있습니다."
+    },
+    {
+      "en": "One server may expose customer tools.",
+      "ko": "한 server 는 고객 tools 를,"
+    },
+    {
+      "en": "Another may expose order tools.",
+      "ko": "다른 server 는 주문 tools 를,"
+    },
+    {
+      "en": "Another may expose documentation resources.",
+      "ko": "다른 server 는 문서 resources 를 제공합니다."
+    },
+    {
+      "en": "Claude can then work with those capabilities through the application.",
+      "ko": "그러면 Claude 는 애플리케이션을 통해 그 기능들을 다룰 수 있습니다."
+    },
+    {
+      "en": "This makes the architecture easier to organize and easier to extend.",
+      "ko": "이렇게 하면 아키텍처를 정리하기도, 확장하기도 쉬워집니다."
+    },
+    {
+      "en": "The main idea is simple.",
+      "ko": "핵심 아이디어는 간단합니다."
+    },
+    {
+      "en": "Claude often needs information and capabilities that exist outside the model.",
+      "ko": "Claude 는 모델 바깥에 있는 정보와 기능이 자주 필요합니다."
+    },
+    {
+      "en": "Custom integrations can connect those systems.",
+      "ko": "맞춤 연동으로 그 시스템들을 연결할 수도 있습니다."
+    },
+    {
+      "en": "But many separate integrations can become difficult to manage.",
+      "ko": "하지만 따로따로인 연동이 많아지면 관리가 어려워집니다."
+    },
+    {
+      "en": "MCP provides a common protocol for exposing tools and resources to Claude-compatible applications.",
+      "ko": "MCP 는 Claude 호환 애플리케이션에 tools 와 resources 를 제공하는 공통 프로토콜입니다."
+    },
+    {
+      "en": "The MCP client connects to MCP servers.",
+      "ko": "MCP client 가 MCP server 에 연결합니다."
+    },
+    {
+      "en": "MCP servers expose capabilities.",
+      "ko": "MCP server 는 기능을 제공합니다."
+    },
+    {
+      "en": "Tools perform actions.",
+      "ko": "tools 는 행동을 수행합니다."
+    },
+    {
+      "en": "Resources provide information.",
+      "ko": "resources 는 정보를 제공합니다."
+    },
+    {
+      "en": "Those systems can be local or remote.",
+      "ko": "그 시스템은 로컬일 수도, 원격일 수도 있습니다."
+    },
+    {
+      "en": "And access remains controlled by permissions, configuration, and the application.",
+      "ko": "그리고 접근은 여전히 permissions·설정·애플리케이션이 통제합니다."
+    },
+    {
+      "en": "MCP gives Claude a structured way to connect with the outside world without giving it unrestricted control.",
+      "ko": "MCP 는 Claude 에게 무제한 권한을 주지 않으면서 바깥 세상과 연결되는 구조화된 방법을 줍니다."
+    }
+  ],
+  "body": "### The problem MCP solves\n- Claude by itself has ==no access== to the order database, the CRM, the knowledge base, project files, or GitHub. They live outside the model. // Claude 혼자서는 외부 시스템에 접근 못 한다.\n- You can build a ==custom integration per system==, and it works, but each one has its own format, configuration, authentication, and way of describing capabilities. // 시스템마다 맞춤 연동은 되긴 하지만 제각각.\n- As systems grow, managing many different custom integrations becomes ==hard==. That is the problem MCP targets. // 시스템이 늘면 관리가 어려워진다.\n\n### What MCP is\n- **MCP = Model Context Protocol**: a ==common way for AI applications to connect to external tools and information==. // AI 앱이 외부 툴·정보에 연결하는 공통 방식.\n- Think of it as a ==shared language== between AI applications and external capabilities, instead of a new pattern per system. // 공용 언어.\n- Systems stay different (a database is not GitHub), but MCP gives a ==consistent way to describe and access== what each exposes. // 시스템은 다르지만 설명·접근 방식은 일관.\n\n### Client and server\n- **MCP client** = the part that ==wants to use== external capabilities. A Claude-powered application acts as the client. // 쓰는 쪽 = Claude 앱.\n- **MCP server** = the part that ==exposes== capabilities. // 제공하는 쪽.\n- Chain: ((Claude app → MCP client → MCP server → external system)). The client connects, the server describes what it provides, the client makes those capabilities available to Claude. // 연결 → 설명 → Claude 에게 노출.\n- Example: a customer system exposes `GetCustomer`. ShopAssist connects, Claude sees the tool, requests it, the app handles the request over MCP, the result comes back. // GetCustomer 예시.\n\n### Tools vs resources\n- **Tool** = an ==action== or capability: look up order, create ticket, search customers, update case. Accepts input, performs an operation, returns a result. // 툴은 행동.\n- **Resource** = ==information== made available to the application: a documentation page, a configuration file, a knowledge base article. // 리소스는 정보.\n- One line: ==tools do something, resources provide information==. GitHub example: search issues / create PR are tools, repository docs are resources. // 툴은 한다, 리소스는 준다.\n- The exact capabilities ==depend on the MCP server==. // 서버마다 다르다.\n\n### Local and remote\n- Local: files on your computer, a local dev environment, a local database. // 로컬.\n- Remote: a cloud CRM, a remote knowledge base, GitHub, another business service. // 원격.\n- Typical servers: database (search tools), documentation (resources), CRM (read/update case tools), GitHub (repo tools), file system (files and directories). // 대표 서버 다섯.\n\n### Access stays controlled\n- MCP does ==not give Claude unlimited access==. Building a server does not let Claude read every file, modify every record, or call every service. // 무제한 접근 아님.\n- Layers of control: the ==application== decides which servers are available, the ==server== decides what it exposes, ==permissions== decide allowed actions, ==credentials== control external access, and the app can ==restrict which tools== Claude may use. // 앱·서버·권한·자격증명·툴 제한.\n- Support agent: read an order, __not delete it__. Dev agent: read repo files, __not production credentials__. // 읽기는 되고 삭제·프로덕션은 안 됨.\n- MCP is about a ==standard connection while keeping security boundaries in place==. // 경계는 그대로, 연결만 표준화.\n\n### ShopAssist with MCP\n- Needs three capabilities: CRM customer info, order system order info, knowledge base docs. // 세 가지 외부 기능.\n- Without MCP: three completely different custom connections. With MCP: three servers (customer tools, order tools, documentation resources) over ==one common protocol==. // 세 서버, 한 프로토콜.\n- Result: architecture that is ==easier to organize and easier to extend==. // 정리·확장이 쉬워진다.",
+  "keyPoints": [
+    "MCP = Model Context Protocol: a common, standard way for AI applications to connect to external tools and data, replacing one custom integration per system. // 시스템마다 맞춤 연동 대신 공통 프로토콜.",
+    "MCP client = the Claude-powered app that wants capabilities; MCP server = the part that exposes them. Chain: app → client → server → external system. // client 는 쓰는 쪽, server 는 제공하는 쪽.",
+    "Tools do something (look up order, create ticket); resources provide information (docs page, config file). // 툴은 행동, 리소스는 정보.",
+    "Servers can be local (files, local DB) or remote (cloud CRM, GitHub, knowledge base). // 로컬·원격 모두 가능.",
+    "MCP does not grant unlimited access: the app picks servers, the server picks what to expose, permissions and credentials gate actions, and the app can restrict tools. // 보안 경계는 그대로."
+  ],
+  "examTrends": {
+    "how": "Usually a scenario: an app must talk to several external systems (CRM, order DB, docs, GitHub) and the question asks what MCP provides or why to use it, or a definition question separating client from server or tools from resources. A frequent twist asks what MCP does NOT do, where the answer is that access is still controlled by the application and permissions. // 보통 시나리오형. 여러 외부 시스템에 연결해야 할 때 MCP 가 주는 것을 묻거나, client·server 또는 tools·resources 구분을 묻는다. MCP 가 하지 않는 것(무제한 접근)을 묻는 변형도 자주 나온다.",
+    "answerLooks": [
+      "\"A standard protocol for connecting Claude applications to external tools and data sources\" // 외부 툴·데이터에 연결하는 표준 프로토콜.",
+      "\"The application is the MCP client; the system exposes capabilities through an MCP server\" // 앱이 client, 시스템이 server.",
+      "\"Tools perform actions; resources expose readable content\" // 툴은 행동, 리소스는 읽을 수 있는 내용.",
+      "\"Access is still governed by the application configuration, permissions, and credentials\" // 접근은 여전히 앱 설정·권한·자격증명이 통제."
+    ],
+    "traps": [
+      "\"MCP gives Claude direct, unrestricted access to any connected system\": wrong, the app and server decide what is exposed and permitted. // 무제한 접근 아님.",
+      "\"MCP replaces tool use or makes all systems behave identically\": wrong, MCP standardizes the connection; a DB is still a DB and tools still run through the app. // 시스템이 같아지는 게 아니라 연결 방식이 같아지는 것.",
+      "\"Claude itself is the MCP server\" or \"the external system is the client\": reversed roles; the Claude app is the client, the system side is the server. // 역할 뒤집기.",
+      "\"A documentation page is a tool\" or \"lookup_order is a resource\": tools act, resources inform. // 툴·리소스 뒤바꿈.",
+      "\"Build a separate custom integration for each system\": works but is the problem MCP exists to remove when the number of systems grows. // 맞춤 연동 남발은 MCP 가 해결하려는 문제."
+    ],
+    "memorize": "MCP: one common protocol, client asks, server exposes, tools act, resources inform, access still controlled. // MCP: 공통 프로토콜 하나, client 가 요청, server 가 제공, tools 는 행동, resources 는 정보, 접근은 여전히 통제."
+  },
+  "createdAt": "2026-09-09T12:00:00Z"
+}
