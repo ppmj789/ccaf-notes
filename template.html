@@ -507,6 +507,15 @@
     display: none;
   }
   .notice.open { display: block; }
+  #authdlg { border: 1.5px solid var(--line); border-radius: 14px; padding: 22px 24px; background: var(--paper); color: var(--ink); box-shadow: var(--shadow); width: min(360px, 92vw); }
+  #authdlg::backdrop { background: rgba(0,0,0,0.35); }
+  .authform { display: grid; gap: 12px; }
+  .authform label { display: grid; gap: 4px; font-size: 14px; color: var(--ink-soft); }
+  .authform input { padding: 8px 10px; border: 1.5px solid var(--line); border-radius: 8px; background: var(--paper-deep); color: var(--ink); font-size: 15px; }
+  .authform .err { color: var(--wrong); font-size: 13px; min-height: 18px; }
+  .authform .row { display: flex; justify-content: flex-end; gap: 8px; }
+  .authform button { border: 1.5px solid var(--line); background: none; border-radius: 999px; padding: 4px 14px; font-family: "Gaegu", sans-serif; font-size: 17px; }
+  .authform button.primary { background: var(--sky); border-color: var(--sky); }
 
   @media (max-width: 720px) {
     .desk { padding: 16px 8px 40px; }
@@ -643,8 +652,17 @@
 <div class="desk">
   <div class="topbar">
     <span class="brand">미지의 CCAF 노트</span>
-    <span class="status"><span class="dot" id="dbdot"></span><span id="dbmsg">저장 준비 중</span></span>
+    <span class="status"><span class="dot" id="dbdot"></span><span id="dbmsg">저장 준비 중</span><button class="lnk" id="authbtn" hidden>로그인</button></span>
   </div>
+  <dialog id="authdlg">
+    <form method="dialog" class="authform">
+      <div class="hand" style="font-size:20px;font-weight:700">노트 열기</div>
+      <label>이메일 <input type="email" name="email" autocomplete="username" required></label>
+      <label>비밀번호 <input type="password" name="password" autocomplete="current-password" required></label>
+      <div class="err" id="autherr"></div>
+      <div class="row"><button type="button" value="cancel" data-cancel>취소</button><button type="submit" class="primary">로그인</button></div>
+    </form>
+  </dialog>
 
   <div class="book">
     <div class="binding" aria-hidden="true"></div>
@@ -660,6 +678,7 @@
 
 <script id="pages-data" type="application/json">/*__PAGES__*/</script>
 <script id="course-data" type="application/json">/*__COURSE__*/</script>
+<script id="site-data" type="application/json">/*__SITE__*/</script>
 <script>
 (() => {
   'use strict';
@@ -673,6 +692,8 @@
   try { state.pages = JSON.parse($('#pages-data').textContent); } catch { state.pages = []; }
   let course = { sections: [] };
   try { course = JSON.parse($('#course-data').textContent) || course; } catch {}
+  let site = {};
+  try { site = JSON.parse($('#site-data').textContent) || {}; } catch {}
   state.pages.sort((a, b) => (a.order || 0) - (b.order || 0));
 
   // ---------- outline & book ----------
@@ -758,7 +779,43 @@
     return html;
   }
 
-  // ---------- progress storage: artifact db → local serve.py → localStorage ----------
+  // ---------- progress storage: artifact db → Supabase → local serve.py → localStorage ----------
+  function loadScript(src) { return new Promise((res, rej) => { const el = document.createElement('script'); el.src = src; el.onload = res; el.onerror = rej; document.head.appendChild(el); }); }
+  async function connectSupabase() {
+    if (!site.supabaseUrl || !site.supabaseAnonKey) return false;
+    try { await loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js'); } catch { return false; }
+    if (!window.supabase?.createClient) return false;
+    const sb = window.supabase.createClient(site.supabaseUrl, site.supabaseAnonKey);
+    state.sb = sb; state.backend = 'supabase';
+    const btn = $('#authbtn'), dlg = $('#authdlg'), form = dlg.querySelector('form'), err = $('#autherr');
+    btn.hidden = false;
+    async function refresh() {
+      const { data: { session } } = await sb.auth.getSession();
+      state.user = session?.user || null;
+      if (!state.user) { $('#dbdot').classList.remove('on'); $('#dbmsg').textContent = '로그인하면 진도가 어디서나 이어져요'; btn.textContent = '로그인'; return; }
+      btn.textContent = '로그아웃';
+      const { data, error } = await sb.from('progress').select('page_id,data').eq('user_id', state.user.id);
+      if (error) { $('#dbmsg').textContent = '불러오기 실패: ' + error.message; return; }
+      const p = {}; (data || []).forEach(r => { p[r.page_id] = r.data || {}; });
+      state.progress = p; lsSet();
+      $('#dbdot').classList.add('on'); $('#dbmsg').textContent = 'Supabase 에 저장 · ' + (state.user.email || '');
+      render();
+    }
+    btn.addEventListener('click', async () => {
+      if (state.user) { await sb.auth.signOut(); state.user = null; state.progress = {}; lsSet(); await refresh(); render(); return; }
+      err.textContent = ''; form.reset(); dlg.showModal();
+    });
+    dlg.querySelector('[data-cancel]').addEventListener('click', () => dlg.close());
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const { error } = await sb.auth.signInWithPassword({ email: fd.get('email'), password: fd.get('password') });
+      if (error) { err.textContent = '로그인 실패: ' + error.message; return; }
+      dlg.close(); await refresh();
+    });
+    await refresh();
+    return true;
+  }
   const lsGet = () => { try { return JSON.parse(localStorage.getItem(LS_KEY) || '{}'); } catch { return {}; } };
   const lsSet = () => { try { localStorage.setItem(LS_KEY, JSON.stringify(state.progress)); } catch {} };
   async function connect() {
@@ -774,6 +831,7 @@
       });
       return;
     }
+    if (await connectSupabase()) return;
     try {
       const r = await fetch('/api/ping', { cache: 'no-store' });
       if (r.ok && (await r.json()).ok) {
@@ -794,6 +852,11 @@
     timers[id] = setTimeout(async () => {
       try {
         if (state.db) await state.db.doc('progress/' + id).set(state.progress[id]);
+        else if (state.sb) {
+          if (!state.user) return;
+          const { error } = await state.sb.from('progress').upsert({ user_id: state.user.id, page_id: id, data: state.progress[id], updated_at: new Date().toISOString() });
+          if (error) throw error;
+        }
         else await fetch('/api/progress', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, data: state.progress[id] }) });
         const s = pageEl.querySelector('.saved'); if (s) s.textContent = '저장됨 ' + new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
       } catch (e) { const s = pageEl.querySelector('.saved'); if (s) s.textContent = '저장 실패: ' + (e?.message || ''); }

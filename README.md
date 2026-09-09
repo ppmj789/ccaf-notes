@@ -25,6 +25,13 @@ python3 build.py          # dist/index.html 만 만들고 싶을 때
 Claude 가 영어 문단 + 한국어 번역 + 정리 노트 + 시험 포인트로 장을 만들어 넣는다.
 claude.ai 아티팩트로도 발행할 수 있고, 그때는 답·메모가 아티팩트 서버에 저장된다.
 
+## 어디서나 보기 (GitHub Pages + Supabase)
+
+- `git push` 하면 `.github/workflows/pages.yml` 이 `build.py` 를 돌려 GitHub Pages 로 배포한다. 휴대폰은 그 주소로 연다.
+- 답·메모는 Supabase 에 저장된다. `supabase/schema.sql` 을 SQL Editor 에서 실행하고, Authentication → Users 에서 이메일+비밀번호 사용자를 하나 만든 뒤, 프로젝트 URL 과 anon key 를 `site.json` 에 적는다.
+- 페이지 오른쪽 위 `로그인` 으로 들어가면 회사·집·휴대폰이 같은 진도를 공유한다. `site.json` 이 비어 있으면 예전처럼 로컬 서버나 브라우저에만 저장한다.
+- 다른 컴퓨터에서는 `git clone` 뒤 `python3 serve.py` 로 똑같이 작업하고, Claude Code 는 `CLAUDE.md` 를 읽어 같은 절차로 움직인다.
+
 ## 장 형식
 
 공통: `id`, `kind`(`question`|`lesson`), `order`, `section`(Udemy 섹션), `lecture`(강의 번호·이름),

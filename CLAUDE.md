@@ -12,6 +12,8 @@ Udemy 강의 대본과 기출 문제를 "한 장씩 넘기는 다이어리" 웹�
 - `template.html` — 디자인과 동작. `build.py` 가 `pages/` + `course.json` 을 심어 `dist/index.html` 을 만든다.
 - `serve.py` — 로컬 서버 (`python3 serve.py` → http://localhost:8787, 새로고침마다 자동 빌드). 답·메모는 `data/progress.json`.
 - 아티팩트(claude.ai): https://claude.ai/code/artifact/f38187b9-3a04-4fc3-a0db-c20d1fff34de — `dist/index.html` 을 이 `url` 로 재발행, capabilities `{"db": {}}` 만.
+- `site.json` — Supabase 접속 정보(`supabaseUrl`, `supabaseAnonKey`). build 가 `/*__SITE__*/` 에 심는다. anon key 는 공개용이라 커밋해도 된다. 진도 저장 우선순위: 아티팩트 db → Supabase(로그인 필요, `supabase/schema.sql` 의 `progress` 테이블, RLS 로 본인 행만) → 로컬 serve.py → localStorage.
+- `.github/workflows/pages.yml` — push 마다 build 해서 GitHub Pages 로 배포. 휴대폰은 이 주소로 본다.
 
 책 구조: 표지 → 차례 → **Part 1 인강**(섹션 간지 → 강의 장) → **Part 2 문제**(섹션 간지 → 문제 장). 인강과 문제는 섞지 않는다.
 
@@ -63,7 +65,7 @@ node -e "const fs=require('fs');const s=fs.readFileSync('dist/index.html','utf8'
 
 - 로컬 서버가 안 떠 있으면: `(setsid nohup python3 serve.py 8787 > /tmp/ccaf-server.log 2>&1 &)`. 재시작 시 `pgrep -f "^python3 serve.py"` 로 PID 를 찾아 kill (`pkill -f` 는 자기 셸까지 죽이니 금지).
 - 아티팩트 재발행: Artifact 툴에 `file_path=~/ccaf-notes/dist/index.html`, `url=위 주소`, capabilities 는 생략(유지) 또는 `{"db": {}}`.
-- 커밋: `git add -A && git commit -m "<무엇을 추가했는지 한국어 한 줄>"` (사용자 이름 Miji). 푸시할 원격은 아직 없다.
+- 커밋: `git add -A && git commit -m "<무엇을 추가했는지 한국어 한 줄>"` (사용자 이름 Miji). 원격 `origin`(GitHub) 이 있으면 `git push` 까지 한다. push 가 곧 배포다.
 
 ## 디자인 변경 시
 

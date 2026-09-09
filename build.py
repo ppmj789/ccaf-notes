@@ -32,10 +32,11 @@ for p in pages:
     if sec not in known and sec != 'Unsorted':
         print(f'경고: {p["id"]} 의 section "{sec}" 이 course.json 에 없습니다 (책 끝에 Unsorted 로 감)')
 
+site = json.loads((ROOT / 'site.json').read_text(encoding='utf-8')) if (ROOT / 'site.json').exists() else {}
 esc = lambda o: json.dumps(o, ensure_ascii=False).replace('</', '<\\/')
 tpl = (ROOT / 'template.html').read_text(encoding='utf-8')
-assert '/*__PAGES__*/' in tpl and '/*__COURSE__*/' in tpl
+assert '/*__PAGES__*/' in tpl and '/*__COURSE__*/' in tpl and '/*__SITE__*/' in tpl
 out = ROOT / 'dist' / 'index.html'
 out.parent.mkdir(exist_ok=True)
-out.write_text(tpl.replace('/*__PAGES__*/', esc(pages)).replace('/*__COURSE__*/', esc(course)), encoding='utf-8')
+out.write_text(tpl.replace('/*__PAGES__*/', esc(pages)).replace('/*__COURSE__*/', esc(course)).replace('/*__SITE__*/', esc(site)), encoding='utf-8')
 print(f'{out}: {len(pages)} pages ({sum(p["kind"]=="question" for p in pages)} questions, {sum(p["kind"]=="lesson" for p in pages)} lessons)')
