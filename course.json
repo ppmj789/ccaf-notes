@@ -42,6 +42,10 @@
         {
           "no": "32",
           "title": "Why MCP Exists: Connecting Claude to Tools and Data"
+        },
+        {
+          "no": "33",
+          "title": "Tool Access, Built-In Tools, and MCP Configuration"
         }
       ]
     }

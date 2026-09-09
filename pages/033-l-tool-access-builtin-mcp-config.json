@@ -1,0 +1,479 @@
+{
+  "id": "l-033",
+  "kind": "lesson",
+  "order": 33,
+  "section": "Tools, MCP, and Agentic Loop",
+  "lecture": "33",
+  "title_en": "Tool Access, Built-In Tools, and MCP Configuration",
+  "title": "툴 접근 범위, 내장 툴, MCP 설정",
+  "domain": "툴·에이전트 루프",
+  "summary": "Giving one agent every tool hurts not just security but reliability, because overlapping tools make Claude more likely to pick the wrong one, so each agent should get the smallest useful tool set for its role while tool choice (auto / any / forced) controls how much freedom Claude has. Built-in development tools split by job (Grep searches content, Glob matches paths, Edit needs a unique match or falls back to Read then Write), MCP tools perform actions while MCP resources provide content, and MCP servers are configured at project scope in .mcp.json or user scope in .claude.json with credentials referenced through environment variables. // 에이전트 하나에 모든 툴을 주면 보안뿐 아니라 신뢰성이 떨어진다. 겹치는 툴이 많을수록 Claude 가 잘못 고를 확률이 커지므로, 각 에이전트에게는 역할에 필요한 가장 작은 툴 집합만 주고 tool choice(auto·any·강제)로 자유도를 통제한다. 내장 개발 툴은 역할이 나뉘고(Grep 은 내용, Glob 은 경로, Edit 는 유일 매칭일 때, 아니면 Read 후 Write), MCP tools 는 행동을 하고 MCP resources 는 내용을 주며, MCP server 설정은 프로젝트 범위 .mcp.json 과 사용자 범위 .claude.json 으로 나뉘고 credentials 는 환경 변수로 참조한다.",
+  "paragraphs": [
+    {
+      "en": "In the previous lesson, we improved individual tools.",
+      "ko": "지난 강의에서는 개별 툴을 개선했습니다."
+    },
+    {
+      "en": "Now we need to decide which tools an agent should actually have.",
+      "ko": "이제는 에이전트가 실제로 어떤 툴을 가져야 하는지 정해야 합니다."
+    },
+    {
+      "en": "A common mistake is giving one agent access to everything.",
+      "ko": "흔한 실수는 에이전트 하나에게 모든 것을 접근하게 주는 것입니다."
+    },
+    {
+      "en": "That sounds flexible, but it can make tool selection less reliable.",
+      "ko": "유연해 보이지만, 툴 선택의 신뢰도를 떨어뜨릴 수 있습니다."
+    },
+    {
+      "en": "Let's start with an over-provisioned ShopAssist support agent.",
+      "ko": "툴이 과하게 주어진 ShopAssist 지원 에이전트부터 봅시다."
+    },
+    {
+      "en": "This agent has too many tools.",
+      "ko": "이 에이전트는 툴이 너무 많습니다."
+    },
+    {
+      "en": "Some are useful for support.",
+      "ko": "일부는 고객 지원에 유용합니다."
+    },
+    {
+      "en": "Some belong to refunds, inventory, marketing, reporting, or internal operations.",
+      "ko": "일부는 환불, 재고, 마케팅, 리포팅, 내부 운영에 속합니다."
+    },
+    {
+      "en": "And some are risky, like run SQL query or write internal policy.",
+      "ko": "그리고 일부는 위험합니다. run SQL query 나 write internal policy 같은 것들이죠."
+    },
+    {
+      "en": "The issue is not only security.",
+      "ko": "문제는 보안만이 아닙니다."
+    },
+    {
+      "en": "It is also reliability.",
+      "ko": "신뢰성의 문제이기도 합니다."
+    },
+    {
+      "en": "When Claude sees too many tools, especially tools with overlapping purposes,",
+      "ko": "Claude 가 너무 많은 툴을, 특히 목적이 겹치는 툴들을 보면"
+    },
+    {
+      "en": "it has more chances to choose the wrong one.",
+      "ko": "잘못된 툴을 고를 가능성이 커집니다."
+    },
+    {
+      "en": "For a normal return conversation, the main support agent does not need",
+      "ko": "일반적인 반품 대화에서 메인 지원 에이전트는"
+    },
+    {
+      "en": "inventory updates, marketing emails, SQL access, or policy writing.",
+      "ko": "재고 수정, 마케팅 메일, SQL 접근, 정책 작성이 필요하지 않습니다."
+    },
+    {
+      "en": "A better design is scoped tool access.",
+      "ko": "더 나은 설계는 범위를 좁힌 툴 접근입니다."
+    },
+    {
+      "en": "This agent can identify the customer, look up an order,",
+      "ko": "이 에이전트는 고객을 확인하고, 주문을 조회하고,"
+    },
+    {
+      "en": "check refund eligibility, and escalate when needed.",
+      "ko": "환불 자격을 확인하고, 필요하면 상위로 넘길 수 있습니다."
+    },
+    {
+      "en": "That is enough for the main support role.",
+      "ko": "메인 지원 역할에는 이 정도면 충분합니다."
+    },
+    {
+      "en": "Other tools can belong to specialized agents.",
+      "ko": "나머지 툴은 전문 에이전트들이 가지면 됩니다."
+    },
+    {
+      "en": "This prevents cross-specialization misuse.",
+      "ko": "이렇게 하면 전문 영역을 넘나드는 오용을 막습니다."
+    },
+    {
+      "en": "The support agent should not accidentally update inventory.",
+      "ko": "지원 에이전트가 실수로 재고를 수정해서는 안 됩니다."
+    },
+    {
+      "en": "The inventory agent should not issue refunds.",
+      "ko": "재고 에이전트가 환불을 처리해서는 안 됩니다."
+    },
+    {
+      "en": "And the policy agent should not modify customer orders.",
+      "ko": "그리고 정책 에이전트가 고객 주문을 바꿔서는 안 됩니다."
+    },
+    {
+      "en": "Some tools can still be shared across roles.",
+      "ko": "그래도 역할끼리 공유하는 툴은 있을 수 있습니다."
+    },
+    {
+      "en": "For example, both the support agent and the refund agent may need lookup order by ID.",
+      "ko": "예를 들어 지원 에이전트와 환불 에이전트 모두 lookup order by ID 가 필요할 수 있습니다."
+    },
+    {
+      "en": "The goal is not to make every tool exclusive.",
+      "ko": "목표는 모든 툴을 배타적으로 만드는 게 아닙니다."
+    },
+    {
+      "en": "The goal is to give each agent the smallest useful set of tools for its job.",
+      "ko": "목표는 각 에이전트에게 자기 일에 쓸모 있는 가장 작은 툴 집합을 주는 것입니다."
+    },
+    {
+      "en": "Now let's connect this to tool choice.",
+      "ko": "이제 이것을 tool choice 와 연결해 봅시다."
+    },
+    {
+      "en": "In tool workflows, tool choice controls how much freedom Claude has.",
+      "ko": "툴 워크플로에서 tool choice 는 Claude 에게 얼마나 자유를 줄지 통제합니다."
+    },
+    {
+      "en": "Use auto for normal flexible conversations.",
+      "ko": "평범하고 유연한 대화에는 auto 를 씁니다."
+    },
+    {
+      "en": "Use any when the workflow requires some tool call before continuing.",
+      "ko": "진행 전에 어떤 툴이든 반드시 호출해야 하는 워크플로에는 any 를 씁니다."
+    },
+    {
+      "en": "For example, every refund decision may need back-end order data.",
+      "ko": "예를 들어 모든 환불 결정에는 백엔드 주문 데이터가 필요할 수 있습니다."
+    },
+    {
+      "en": "Use forced tool selection when the application already knows the exact next step.",
+      "ko": "애플리케이션이 다음 단계를 정확히 알고 있을 때는 특정 툴을 강제 지정합니다."
+    },
+    {
+      "en": "But do not overuse forced tool choice.",
+      "ko": "하지만 강제 tool choice 를 남용하지 마세요."
+    },
+    {
+      "en": "If the application forces the wrong tool, Claude cannot choose a better one.",
+      "ko": "애플리케이션이 잘못된 툴을 강제하면, Claude 는 더 나은 툴을 고를 수 없습니다."
+    },
+    {
+      "en": "Now let's talk about built-in tools.",
+      "ko": "이제 built-in tools 를 이야기해 봅시다."
+    },
+    {
+      "en": "In Claude Code style workflows, Claude may have tools like",
+      "ko": "Claude Code 스타일 워크플로에서 Claude 는 이런 툴들을 가질 수 있습니다."
+    },
+    {
+      "en": "Read, Write, Edit, Bash, Grep, and Glob.",
+      "ko": "Read, Write, Edit, Bash, Grep, Glob."
+    },
+    {
+      "en": "These are development tools, not ShopAssist business tools.",
+      "ko": "이것들은 개발용 툴이지, ShopAssist 의 업무용 툴이 아닙니다."
+    },
+    {
+      "en": "Read inspects a file.",
+      "ko": "Read 는 파일을 들여다봅니다."
+    },
+    {
+      "en": "Write creates or overrides a file.",
+      "ko": "Write 는 파일을 만들거나 덮어씁니다."
+    },
+    {
+      "en": "Edit makes targeted modifications.",
+      "ko": "Edit 는 특정 부분을 콕 집어 수정합니다."
+    },
+    {
+      "en": "Bash runs shell commands.",
+      "ko": "Bash 는 셸 명령을 실행합니다."
+    },
+    {
+      "en": "Grep searches inside file contents.",
+      "ko": "Grep 은 파일 내용 안을 검색합니다."
+    },
+    {
+      "en": "Glob matches file paths.",
+      "ko": "Glob 은 파일 경로를 매칭합니다."
+    },
+    {
+      "en": "For example, if Claude needs to find refund logic, use Grep.",
+      "ko": "예를 들어 Claude 가 환불 로직을 찾아야 하면 Grep 을 씁니다."
+    },
+    {
+      "en": "If Claude needs to find policy files by path, use Glob.",
+      "ko": "경로로 정책 파일을 찾아야 하면 Glob 을 씁니다."
+    },
+    {
+      "en": "The difference is simple.",
+      "ko": "차이는 간단합니다."
+    },
+    {
+      "en": "Grep searches content.",
+      "ko": "Grep 은 내용을 검색합니다."
+    },
+    {
+      "en": "Glob matches paths.",
+      "ko": "Glob 은 경로를 매칭합니다."
+    },
+    {
+      "en": "For code changes, Edit is usually best when there is a unique text match.",
+      "ko": "코드 수정에는, 텍스트가 유일하게 매칭될 때 보통 Edit 가 가장 좋습니다."
+    },
+    {
+      "en": "But if Edit cannot match the target text uniquely, Claude may need a safer fallback. Read the file.",
+      "ko": "하지만 Edit 가 대상 텍스트를 유일하게 매칭하지 못하면, 더 안전한 대안이 필요합니다. 파일을 Read 합니다."
+    },
+    {
+      "en": "Understand the current content.",
+      "ko": "현재 내용을 파악합니다."
+    },
+    {
+      "en": "Modify the content carefully.",
+      "ko": "내용을 조심스럽게 수정합니다."
+    },
+    {
+      "en": "Write the updated version back.",
+      "ko": "수정본을 Write 로 다시 씁니다."
+    },
+    {
+      "en": "This is why incremental code base understanding matters.",
+      "ko": "그래서 코드베이스를 점진적으로 이해하는 것이 중요합니다."
+    },
+    {
+      "en": "Claude should search, inspect, understand the surrounding code,",
+      "ko": "Claude 는 검색하고, 살펴보고, 주변 코드를 이해한 다음"
+    },
+    {
+      "en": "and then make the smallest safe change.",
+      "ko": "가장 작고 안전한 변경을 해야 합니다."
+    },
+    {
+      "en": "Now let's move to MCP configuration.",
+      "ko": "이제 MCP 설정으로 넘어갑시다."
+    },
+    {
+      "en": "MCP servers expose external capabilities to Claude.",
+      "ko": "MCP server 는 외부 기능을 Claude 에게 노출합니다."
+    },
+    {
+      "en": "These capabilities can be tools or resources.",
+      "ko": "이 기능들은 tools 일 수도, resources 일 수도 있습니다."
+    },
+    {
+      "en": "An MCP tool is something Claude can call to perform an action.",
+      "ko": "MCP tool 은 Claude 가 호출해서 행동을 수행하는 것입니다."
+    },
+    {
+      "en": "Get customer by email.",
+      "ko": "get customer by email."
+    },
+    {
+      "en": "Look up order by ID. Process refund.",
+      "ko": "look up order by ID. process refund."
+    },
+    {
+      "en": "An MCP resource is content Claude can read as context.",
+      "ko": "MCP resource 는 Claude 가 맥락으로 읽을 수 있는 내용입니다."
+    },
+    {
+      "en": "Refund policy MD.",
+      "ko": "refund-policy.md."
+    },
+    {
+      "en": "Shipping policy MD.",
+      "ko": "shipping-policy.md."
+    },
+    {
+      "en": "Support macro catalog MD.",
+      "ko": "support-macro-catalog.md."
+    },
+    {
+      "en": "So the distinction is tools do work.",
+      "ko": "그러니 구분은 이렇습니다. tools 는 일을 합니다."
+    },
+    {
+      "en": "Resources provide content.",
+      "ko": "resources 는 내용을 제공합니다."
+    },
+    {
+      "en": "For ShopAssist, customer lookup, order lookup, and refund processing should be MCP tools.",
+      "ko": "ShopAssist 에서는 고객 조회, 주문 조회, 환불 처리가 MCP tools 여야 합니다."
+    },
+    {
+      "en": "Policy documents and support playbooks can be MCP resources.",
+      "ko": "정책 문서와 지원 플레이북은 MCP resources 가 될 수 있습니다."
+    },
+    {
+      "en": "A project can define MCP servers in a project scoped .mcp.json file.",
+      "ko": "프로젝트는 프로젝트 범위의 .mcp.json 파일에 MCP server 를 정의할 수 있습니다."
+    },
+    {
+      "en": "This configuration belongs to the project.",
+      "ko": "이 설정은 프로젝트에 속합니다."
+    },
+    {
+      "en": "It lets the project define which MCP servers are available.",
+      "ko": "어떤 MCP server 를 쓸 수 있는지 프로젝트가 정하게 해 줍니다."
+    },
+    {
+      "en": "Notice the environment variable expansion.",
+      "ko": "환경 변수 확장에 주목하세요."
+    },
+    {
+      "en": "We do not hard code credentials in the config.",
+      "ko": "설정 파일에 credentials 를 하드코딩하지 않습니다."
+    },
+    {
+      "en": "The config references an environment variable,",
+      "ko": "설정은 환경 변수를 참조하고,"
+    },
+    {
+      "en": "and the actual secret comes from the developer's environment.",
+      "ko": "실제 비밀 값은 개발자의 환경에서 옵니다."
+    },
+    {
+      "en": "There can also be user-scoped MCP configuration in .claude.json.",
+      "ko": "사용자 범위의 MCP 설정도 .claude.json 에 둘 수 있습니다."
+    },
+    {
+      "en": "The difference is scope.",
+      "ko": "차이는 범위입니다."
+    },
+    {
+      "en": ".mcp.json belongs to the project.",
+      "ko": ".mcp.json 은 프로젝트에 속합니다."
+    },
+    {
+      "en": ".claude.json belongs to the individual developer's local Claude setup.",
+      "ko": ".claude.json 은 개발자 개인의 로컬 Claude 설정에 속합니다."
+    },
+    {
+      "en": "Multiple MCP servers can be available at the same time.",
+      "ko": "여러 MCP server 를 동시에 쓸 수 있습니다."
+    },
+    {
+      "en": "But that does not mean every agent should use every tool from every server.",
+      "ko": "하지만 그렇다고 모든 에이전트가 모든 서버의 모든 툴을 써야 한다는 뜻은 아닙니다."
+    },
+    {
+      "en": "The servers expose capabilities.",
+      "ko": "서버는 기능을 노출합니다."
+    },
+    {
+      "en": "The agent design still decides which tools are allowed for each role.",
+      "ko": "각 역할에 어떤 툴을 허용할지는 여전히 에이전트 설계가 정합니다."
+    },
+    {
+      "en": "Finally, MCP servers can be community built or custom built.",
+      "ko": "마지막으로, MCP server 는 커뮤니티가 만든 것일 수도, 직접 만든 것일 수도 있습니다."
+    },
+    {
+      "en": "Community MCP servers are useful for common integrations like file systems,",
+      "ko": "커뮤니티 MCP server 는 파일 시스템,"
+    },
+    {
+      "en": "GitHub, databases, or developer tools.",
+      "ko": "GitHub, 데이터베이스, 개발자 도구 같은 흔한 연동에 유용합니다."
+    },
+    {
+      "en": "Custom MCP servers are better for business-specific systems.",
+      "ko": "직접 만든 MCP server 는 업무 특화 시스템에 더 낫습니다."
+    },
+    {
+      "en": "For ShopAssist, we would likely build custom MCP servers for customers,",
+      "ko": "ShopAssist 라면 고객,"
+    },
+    {
+      "en": "orders, refunds, and support policies,",
+      "ko": "주문, 환불, 지원 정책용 MCP server 를 직접 만들 것입니다."
+    },
+    {
+      "en": "because those systems have specific permissions, schemas, and error behavior.",
+      "ko": "그 시스템들은 고유한 permissions, schema, 오류 동작을 갖기 때문입니다."
+    },
+    {
+      "en": "So the main lesson is do not give every agent every tool.",
+      "ko": "그래서 핵심 교훈은, 모든 에이전트에게 모든 툴을 주지 말라는 것입니다."
+    },
+    {
+      "en": "Give each agent the smallest useful tool set for its role.",
+      "ko": "각 에이전트에게 그 역할에 쓸모 있는 가장 작은 툴 집합을 주세요."
+    },
+    {
+      "en": "Use tool choice to control whether Claude may call tools,",
+      "ko": "tool choice 로 Claude 가 툴을 호출해도 되는지,"
+    },
+    {
+      "en": "must call a tool, or must call a specific tool.",
+      "ko": "반드시 호출해야 하는지, 특정 툴을 호출해야 하는지를 통제하세요."
+    },
+    {
+      "en": "Use built-in development tools carefully for reading,",
+      "ko": "built-in 개발 툴은 읽기,"
+    },
+    {
+      "en": "searching, editing, and running commands.",
+      "ko": "검색, 수정, 명령 실행에 신중하게 쓰세요."
+    },
+    {
+      "en": "Use MCP tools for actions.",
+      "ko": "행동에는 MCP tools 를 쓰세요."
+    },
+    {
+      "en": "Use MCP resources for content catalogs.",
+      "ko": "내용 카탈로그에는 MCP resources 를 쓰세요."
+    },
+    {
+      "en": "And configure MCP servers at the right scope,",
+      "ko": "그리고 MCP server 는 알맞은 범위에 설정하세요."
+    },
+    {
+      "en": "project level for shared project capabilities,",
+      "ko": "프로젝트 공용 기능은 프로젝트 수준,"
+    },
+    {
+      "en": "and user level for personal local setup.",
+      "ko": "개인 로컬 설정은 사용자 수준입니다."
+    },
+    {
+      "en": "For ShopAssist, the main support agent gets a small set of support tools.",
+      "ko": "ShopAssist 에서 메인 지원 에이전트는 작은 지원 툴 묶음만 받습니다."
+    },
+    {
+      "en": "Specialized sub-agents handle refunds, inventory, or policy work.",
+      "ko": "환불, 재고, 정책 업무는 전문 서브 에이전트가 맡습니다."
+    },
+    {
+      "en": "And backend systems are exposed through MCP servers with clear boundaries.",
+      "ko": "그리고 백엔드 시스템은 경계가 분명한 MCP server 를 통해 노출됩니다."
+    }
+  ],
+  "body": "### Over-provisioned vs scoped tool access\n- An over-provisioned agent holds support, refund, inventory, marketing, reporting, and internal tools at once, including risky ones like `run_sql_query` or `write_internal_policy`. // 툴을 다 주면 위험한 것까지 섞인다.\n- The problem is ==not only security, it is reliability==: more overlapping tools means more chances Claude picks the wrong one. // 보안뿐 아니라 신뢰성 문제.\n- Scoped access for the main support agent: ==identify customer, look up order, check refund eligibility, escalate==. That is enough. // 지원 역할에는 네 개면 충분.\n- Rule: ==give each agent the smallest useful set of tools for its job==. // 역할에 필요한 가장 작은 툴 집합.\n\n### Cross-specialization boundaries\n- The support agent must not update inventory; the inventory agent must not issue refunds; the policy agent must not modify orders. // 역할끼리 침범 금지.\n- Sharing is fine: both support and refund agents may need `lookup_order_by_id`. // 공유 툴은 있어도 된다.\n- The goal is ==not exclusivity, it is the smallest useful set==. // 배타성이 목적이 아니다.\n\n### Tool choice\n- `auto` — normal flexible conversation, Claude decides whether to call a tool. // 평소엔 auto.\n- `any` — the workflow ==requires some tool call== before continuing (every refund decision needs back-end order data). // 뭐든 하나는 호출.\n- **forced (specific tool)** — the application ==already knows the exact next step==. // 다음 단계를 앱이 알 때.\n- Do not overuse forcing: if the app forces the ==wrong tool, Claude cannot choose a better one==. // 강제 남용 금지.\n\n### Built-in development tools\n- These are ==development tools, not ShopAssist business tools==. // 업무 툴이 아니라 개발 툴.\n- `Read` inspects a file. `Write` creates or overwrites. `Edit` makes targeted modifications. `Bash` runs shell commands. // 읽기·쓰기·수정·실행.\n- ==`Grep` searches content, `Glob` matches paths==. Find refund logic → Grep. Find policy files by path → Glob. // Grep 은 내용, Glob 은 경로.\n- `Edit` is best when there is a ==unique text match==; if it cannot match uniquely, fall back to ((Read → understand → modify → Write)). // 유일 매칭이면 Edit, 아니면 Read 후 Write.\n- Incremental understanding: search, inspect, understand surrounding code, then make the ==smallest safe change==. // 가장 작고 안전한 변경.\n\n### MCP tools vs resources\n- ==Tools do work; resources provide content.== // 툴은 일하고, 리소스는 내용을 준다.\n- MCP tools for ShopAssist: `get_customer_by_email`, `lookup_order_by_id`, `process_refund`. // 조회·처리는 tool.\n- MCP resources for ShopAssist: `refund-policy.md`, `shipping-policy.md`, `support-macro-catalog.md`. // 정책 문서·플레이북은 resource.\n\n### MCP configuration scope\n- ==Project scope = `.mcp.json`==, checked into the project, defines which MCP servers the project makes available. // 프로젝트 공용은 .mcp.json.\n- ==User scope = `.claude.json`==, the individual developer's local Claude setup. // 개인 로컬은 .claude.json.\n- Credentials are ==never hard coded==: the config references an ==environment variable== and the real secret comes from the developer's environment. // 비밀 값은 환경 변수로.\n- Many servers can be available at once, but ==servers expose capabilities while agent design decides which tools each role may use==. // 노출과 허용은 별개.\n\n### Community vs custom servers\n- **Community servers** — common integrations: file systems, GitHub, databases, developer tools. // 흔한 연동은 커뮤니티.\n- **Custom servers** — business-specific systems (customers, orders, refunds, support policies) with their own ==permissions, schemas, and error behavior==. // 업무 시스템은 직접.\n",
+  "keyPoints": [
+    "Too many tools is a reliability problem, not only a security problem: overlapping tools raise the chance Claude calls the wrong one. // 툴 과다는 보안 문제이자 신뢰성 문제.",
+    "Give each agent the smallest useful tool set for its role; shared tools like lookup_order_by_id are fine, exclusivity is not the goal. // 역할별 최소 툴 집합, 공유는 허용.",
+    "tool_choice: auto for flexible conversation, any when some tool call is required first, forced when the app already knows the exact next step (do not overuse). // auto·any·강제의 쓰임.",
+    "Grep searches file contents, Glob matches file paths; Edit needs a unique text match, otherwise Read, understand, modify, Write. // Grep 은 내용, Glob 은 경로, Edit 실패 시 Read→Write.",
+    "MCP tools perform actions, MCP resources provide readable content; .mcp.json is project scope, .claude.json is user scope, and credentials come from environment variables. // tools 는 행동, resources 는 내용, 설정 범위는 프로젝트·사용자."
+  ],
+  "examTrends": {
+    "how": "Usually a scenario where one agent has been given far too many tools and the question asks what is wrong or what to do, and the correct answer restricts the agent to a small role-scoped set rather than adding rules or prompts. Other frequent shapes are picking the right tool_choice value for a workflow, separating Grep from Glob or Edit from Read-then-Write, separating MCP tools from MCP resources, and choosing project scope versus user scope for MCP configuration. // 보통 한 에이전트에 툴이 과하게 주어진 시나리오가 나오고, 정답은 프롬프트나 규칙을 더하는 게 아니라 역할에 맞게 툴을 줄이는 쪽이다. tool_choice 값 고르기, Grep·Glob 구분, Edit·Read 후 Write 구분, MCP tools·resources 구분, 프로젝트·사용자 설정 범위 고르기도 자주 나온다.",
+    "answerLooks": [
+      "\"Limit the agent to the smallest set of tools needed for its role\" // 역할에 필요한 최소 툴로 제한.",
+      "\"Move refund, inventory, and policy tools to specialized agents\" // 나머지는 전문 에이전트로 분리.",
+      "\"Use tool_choice any because the workflow requires backend data before deciding\" // 결정 전에 데이터가 필요하면 any.",
+      "\"Grep to search file contents, Glob to match file paths\" // 내용은 Grep, 경로는 Glob.",
+      "\"Expose actions as MCP tools and policy documents as MCP resources\" // 행동은 tool, 문서는 resource.",
+      "\"Define shared servers in the project .mcp.json and reference credentials through environment variables\" // 공용 서버는 .mcp.json, 비밀은 환경 변수."
+    ],
+    "traps": [
+      "\"Give the agent access to every tool so it stays flexible\": more overlapping tools make wrong tool selection more likely. // 유연함을 이유로 다 주면 오선택이 늘어난다.",
+      "\"Fix wrong tool selection by writing a longer system prompt\": the structural fix is removing the tools that do not belong to the role. // 프롬프트가 아니라 툴 목록을 줄이는 게 답.",
+      "\"Force a specific tool for every turn to be safe\": if the app forces the wrong tool, Claude cannot choose a better one. // 강제 남용은 더 나은 선택을 막는다.",
+      "\"Make every tool exclusive to one agent\": sharing lookup_order_by_id across support and refund agents is fine. // 완전 배타화는 목표가 아니다.",
+      "\"Use Glob to search inside file contents\" or \"Grep to match paths\": reversed; Grep reads content, Glob reads paths. // 두 툴 뒤바꾸기.",
+      "\"Store the API key directly in .mcp.json\": credentials are referenced as environment variables, never hard coded. // 설정 파일에 키를 직접 넣지 않는다.",
+      "\"Put shared project servers in .claude.json\" or \"personal setup in .mcp.json\": scopes reversed. // 범위 뒤바꾸기."
+    ],
+    "memorize": "Smallest useful tool set per role; auto / any / forced; Grep content, Glob path; tools act, resources inform; .mcp.json project, .claude.json user, secrets via env vars. // 역할별 최소 툴, auto·any·강제, Grep 은 내용 Glob 은 경로, tools 는 행동 resources 는 내용, .mcp.json 은 프로젝트 .claude.json 은 사용자, 비밀은 환경 변수."
+  },
+  "createdAt": "2026-09-09T13:00:00Z"
+}
