@@ -1,0 +1,49 @@
+{
+ "id": "q-029-1",
+ "kind": "question",
+ "order": 29.1,
+ "section": "Reliable Prompts & Structured Output",
+ "lecture": "29",
+ "title_en": "Contract obligations: precision through criteria and examples",
+ "title": "계약 의무 추출의 정밀도 — 기준과 예시로",
+ "domain": "프롬프트·평가",
+ "question_en": "A compliance team uses Claude to extract contractual obligations from vendor agreements into JSON. The current system passes schema validation, but it frequently extracts marketing statements such as \"we strive to respond quickly\" as binding commitments. What prompt change is the best approach to improve precision while keeping the output reliable for downstream systems?",
+ "question_ko": "컴플라이언스 팀이 Claude 로 벤더 계약서에서 계약상 의무를 JSON 으로 추출한다. 현재 시스템은 ==schema 검증은 통과하지만==, \"we strive to respond quickly\" 같은 ==마케팅 문구를 구속력 있는 약속으로 자주 뽑아낸다==. 다운스트림 시스템이 쓰기에 출력을 계속 신뢰할 수 있게 유지하면서 ==precision 을 올리는== 가장 좋은 프롬프트 변경은?",
+ "options": [
+  {
+   "key": "A",
+   "en": "Define precise inclusion and exclusion rules for extractable obligations, then add few-shot examples showing both valid obligations and similar-looking non-obligations, each in the exact JSON shape expected downstream.",
+   "ko": "추출 가능한 의무의 정확한 포함·제외 규칙을 정의하고, 진짜 의무와 비슷하게 생긴 비의무를 둘 다 보여 주는 few-shot 예시를 다운스트림이 기대하는 정확한 JSON 모양으로 추가한다."
+  }
+ ],
+ "answer": "A",
+ "explanation": "지문의 단서와 정답 문구를 짝지으면 된다.\n\n| 지문 단서 | 뜻 | 정답 문구 |\n|---|---|---|\n| schema 검증은 통과 | 모양 문제가 아니라 ==판단 문제== | 규칙과 예시로 판단을 고친다 |\n| 마케팅 문구를 의무로 뽑음 | false positive, 즉 ==precision== 문제 | ==inclusion / exclusion rules== |\n| 비슷하게 생긴 문구 | 경계 사례에서 흔들림 | ==valid obligations + similar-looking non-obligations== 대조 few-shot |\n| 다운스트림 신뢰성 유지 | 형식이 깨지면 안 됨 | 예시를 ==exact JSON shape== 로 |\n\n- **스키마는 shape, 기준은 quality.** \"노력하겠다\" 와 \"해야 한다\" 를 가르는 것은 스키마가 아니라 기준이다. 24강·29강의 핵심 구분.\n- **명시적 기준**: 예를 들어 `shall`, `must`, `will` + 구체 조건은 포함, `strive`, `aim`, `endeavor` 같은 노력 표현은 제외.\n- **대조 예시**: 정답 예시만 주면 모델은 여전히 마케팅 문구를 집어넣는다. 아닌 것도 같이 보여 줘야 경계가 선다.\n- **JSON 모양 그대로**: 예시를 산문으로 쓰면 출력 형식이 흔들려 다운스트림이 깨질 수 있다.",
+ "traps": [
+  {
+   "key": "스키마 강화",
+   "why": "필수 필드를 늘리거나 타입을 조여도 마케팅 문구는 여전히 유효한 JSON 으로 들어온다. 모양 문제가 아니다."
+  },
+  {
+   "key": "temperature 낮추기",
+   "why": "일관성은 올라가지만 잘못된 기준을 일관되게 적용할 뿐이다."
+  },
+  {
+   "key": "더 큰 모델",
+   "why": "\"의무\" 의 정의가 없으면 어떤 모델도 추측한다. 비용만 는다."
+  },
+  {
+   "key": "한 줄 지시 추가",
+   "why": "\"구속력 있는 것만 뽑아라\" 같은 막연한 지시는 정의와 대조 예시가 없어 경계 사례에서 흔들린다."
+  },
+  {
+   "key": "사람이 전부 검토",
+   "why": "precision 을 올리는 프롬프트 변경이 아니고 자동화 목적과 어긋난다."
+  }
+ ],
+ "keyPoints": [
+  "Schema passes but values are wrong = a judgment problem: fix it with explicit criteria and examples, not a stricter schema. // 스키마 통과 + 값 틀림 = 판단 문제.",
+  "Precision problems need inclusion and exclusion rules plus contrastive few-shot examples (valid vs similar-looking invalid). // 포함·제외 규칙 + 대조 예시.",
+  "Write few-shot examples in the exact output JSON shape so the fix does not break downstream parsing. // 예시는 목표 JSON 형식 그대로."
+ ],
+ "createdAt": "2026-09-09T07:30:00Z"
+}
