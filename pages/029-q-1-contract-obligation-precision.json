@@ -12,32 +12,39 @@
  "options": [
   {
    "key": "A",
+   "en": "Rely on a strict JSON Schema with required fields such as obligation_text, party, deadline, and source_span, since the schema will determine which items qualify for extraction.",
+   "ko": "obligation_text, party, deadline, source_span 같은 필수 필드를 가진 엄격한 JSON Schema 에 의존한다. 스키마가 어떤 항목이 추출 대상인지 결정할 것이므로."
+  },
+  {
+   "key": "B",
    "en": "Define precise inclusion and exclusion rules for extractable obligations, then add few-shot examples showing both valid obligations and similar-looking non-obligations, each in the exact JSON shape expected downstream.",
    "ko": "추출 가능한 의무의 정확한 포함·제외 규칙을 정의하고, 진짜 의무와 비슷하게 생긴 비의무를 둘 다 보여 주는 few-shot 예시를 다운스트림이 기대하는 정확한 JSON 모양으로 추가한다."
+  },
+  {
+   "key": "C",
+   "en": "Ask Claude to explain its reasoning before producing JSON and to remove any item it cannot justify, using the reasoning step as the primary guardrail against hallucinated extractions.",
+   "ko": "JSON 을 만들기 전에 Claude 가 이유를 설명하고 정당화할 수 없는 항목은 빼게 하며, 그 추론 단계를 잘못된 추출에 대한 주요 가드레일로 삼는다."
+  },
+  {
+   "key": "D",
+   "en": "Expand the prompt with a longer plain-language description of the business domain and tell Claude to extract only items that seem important, relevant, and high confidence.",
+   "ko": "비즈니스 도메인을 더 길게 평문으로 설명하고, 중요하고 관련 있고 확신이 높아 보이는 항목만 추출하라고 지시한다."
   }
  ],
- "answer": "A",
- "explanation": "지문의 단서와 정답 문구를 짝지으면 된다.\n\n| 지문 단서 | 뜻 | 정답 문구 |\n|---|---|---|\n| schema 검증은 통과 | 모양 문제가 아니라 ==판단 문제== | 규칙과 예시로 판단을 고친다 |\n| 마케팅 문구를 의무로 뽑음 | false positive, 즉 ==precision== 문제 | ==inclusion / exclusion rules== |\n| 비슷하게 생긴 문구 | 경계 사례에서 흔들림 | ==valid obligations + similar-looking non-obligations== 대조 few-shot |\n| 다운스트림 신뢰성 유지 | 형식이 깨지면 안 됨 | 예시를 ==exact JSON shape== 로 |\n\n- **스키마는 shape, 기준은 quality.** \"노력하겠다\" 와 \"해야 한다\" 를 가르는 것은 스키마가 아니라 기준이다. 24강·29강의 핵심 구분.\n- **명시적 기준**: 예를 들어 `shall`, `must`, `will` + 구체 조건은 포함, `strive`, `aim`, `endeavor` 같은 노력 표현은 제외.\n- **대조 예시**: 정답 예시만 주면 모델은 여전히 마케팅 문구를 집어넣는다. 아닌 것도 같이 보여 줘야 경계가 선다.\n- **JSON 모양 그대로**: 예시를 산문으로 쓰면 출력 형식이 흔들려 다운스트림이 깨질 수 있다.",
+ "answer": "B",
+ "explanation": "지문의 단서와 정답 문구를 짝지으면 된다.\n\n| 지문 단서 | 뜻 | 정답 문구 |\n|---|---|---|\n| schema 검증은 통과 | 모양 문제가 아니라 ==판단 문제== | 규칙과 예시로 판단을 고친다 |\n| 마케팅 문구를 의무로 뽑음 | false positive, 즉 ==precision== 문제 | ==inclusion / exclusion rules== |\n| 비슷하게 생긴 문구 | 경계 사례에서 흔들림 | ==valid obligations + similar-looking non-obligations== 대조 few-shot |\n| 다운스트림 신뢰성 유지 | 형식이 깨지면 안 됨 | 예시를 ==exact JSON shape== 로 |\n\n- **스키마는 shape, 기준은 quality.** \"노력하겠다\" 와 \"해야 한다\" 를 가르는 것은 스키마가 아니라 기준이다. 24강·29강의 핵심 구분.\n- **명시적 기준**: 예를 들어 `shall`, `must`, `will` + 구체 조건은 포함, `strive`, `aim`, `endeavor` 같은 노력 표현은 제외.\n- **대조 예시**: 정답 예시만 주면 모델은 여전히 마케팅 문구를 집어넣는다. 아닌 것도 같이 보여 줘야 경계가 선다.\n- **JSON 모양 그대로**: 예시를 산문으로 쓰면 출력 형식이 흔들려 다운스트림이 깨질 수 있다.\n\n| 보기 | 신뢰성을 어디에 맡기나 | 결과 |\n|---|---|---|\n| A | 스키마 | 모양만 검사, 의미 판단 불가 |\n| B | 명시적 규칙 + 대조 few-shot + JSON 형식 예시 | 의미 경계와 출력 형식을 동시에 가르침 |\n| C | 모델의 자기 추론 | 정의 없이는 오답도 정당화 |\n| D | 주관적 형용사 | 기준이 아니라 취향 |",
  "traps": [
   {
-   "key": "스키마 강화",
-   "why": "필수 필드를 늘리거나 타입을 조여도 마케팅 문구는 여전히 유효한 JSON 으로 들어온다. 모양 문제가 아니다."
+   "key": "A",
+   "why": "지문이 이미 ==schema 검증은 통과한다== 고 했다. 마케팅 문구도 필수 필드를 채우면 유효한 JSON 이다. 스키마는 모양만 검사하고 무엇이 의무인지는 결정하지 못한다."
   },
   {
-   "key": "temperature 낮추기",
-   "why": "일관성은 올라가지만 잘못된 기준을 일관되게 적용할 뿐이다."
+   "key": "C",
+   "why": "정의가 없으면 모델은 마케팅 문구에도 그럴듯한 이유를 붙여 정당화한다. 자기 추론이 자기 실수를 못 잡는 것은 자기 검토의 한계와 같다. 자유 서술을 주요 가드레일로 삼으면 다운스트림 신뢰성도 흔들린다."
   },
   {
-   "key": "더 큰 모델",
-   "why": "\"의무\" 의 정의가 없으면 어떤 모델도 추측한다. 비용만 는다."
-  },
-  {
-   "key": "한 줄 지시 추가",
-   "why": "\"구속력 있는 것만 뽑아라\" 같은 막연한 지시는 정의와 대조 예시가 없어 경계 사례에서 흔들린다."
-  },
-  {
-   "key": "사람이 전부 검토",
-   "why": "precision 을 올리는 프롬프트 변경이 아니고 자동화 목적과 어긋난다."
+   "key": "D",
+   "why": "important, relevant, high confidence 는 주관적 형용사라 기준이 아니다. 긴 배경 설명은 토큰만 늘리고 \"노력하겠다\" 와 \"해야 한다\" 의 경계를 그어 주지 않는다."
   }
  ],
  "keyPoints": [
