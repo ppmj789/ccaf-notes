@@ -2,24 +2,19 @@
 """로컬 개발 서버.
 
 - GET  /               dist/index.html (요청마다 build.py 를 다시 돌려 pages/ 변경을 바로 반영)
-- GET  /api/ping       {"ok": true, "claude": <claude CLI 사용 가능 여부>}
-- GET  /api/data       {"progress": {...}, "lectures": [...]}
+- GET  /api/ping       {"ok": true}
+- GET  /api/data       {"progress": {...}}
 - POST /api/progress   {"id": pageId, "data": {...}}      → data/progress.json
-- POST /api/lecture    {doc}                             → data/lectures/<id>.json
-- POST /api/lecture/delete {"id": ...}
-- POST /api/sample     {"prompt": "...", "model": "haiku"} → {"text": "..."} (claude -p 로 실행)
 
 사용법: python3 serve.py [포트]   (기본 8787)
 """
-import json, os, pathlib, shutil, subprocess, sys
+import json, pathlib, subprocess, sys
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 ROOT = pathlib.Path(__file__).parent.resolve()
 DIST = ROOT / 'dist'
 DATA = ROOT / 'data'
-LECTURES = DATA / 'lectures'
 PROGRESS = DATA / 'progress.json'
-CLAUDE = shutil.which('claude')
 
 
 def build():
@@ -38,17 +33,6 @@ def write_json(p, obj):
     tmp = p.with_suffix('.tmp')
     tmp.write_text(json.dumps(obj, ensure_ascii=False, indent=2), encoding='utf-8')
     tmp.replace(p)
-
-
-def run_claude(prompt, model='haiku'):
-    if not CLAUDE:
-        raise RuntimeError('claude CLI 를 찾을 수 없습니다')
-    env = {k: v for k, v in os.environ.items() if k not in ('CLAUDECODE', 'CLAUDE_CODE_ENTRYPOINT')}
-    r = subprocess.run([CLAUDE, '-p', '--model', model], input=prompt, text=True,
-                       capture_output=True, cwd=str(ROOT), env=env, timeout=600)
-    if r.returncode != 0:
-        raise RuntimeError((r.stderr or r.stdout or '').strip()[:800] or f'claude exit {r.returncode}')
-    return r.stdout.strip()
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -74,10 +58,9 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         if self.path == '/api/ping':
-            return self.send_json({'ok': True, 'claude': bool(CLAUDE)})
+            return self.send_json({'ok': True})
         if self.path == '/api/data':
-            lectures = [read_json(p, None) for p in sorted(LECTURES.glob('*.json'))]
-            return self.send_json({'progress': read_json(PROGRESS, {}), 'lectures': [l for l in lectures if l]})
+            return self.send_json({'progress': read_json(PROGRESS, {})})
         if self.path in ('/', '/index.html'):
             try:
                 build()
@@ -102,20 +85,6 @@ class Handler(SimpleHTTPRequestHandler):
                 prog[body['id']] = body['data']
                 write_json(PROGRESS, prog)
                 return self.send_json({'ok': True})
-            if self.path == '/api/lecture':
-                doc = body
-                if not doc.get('id'):
-                    return self.send_json({'error': 'id 없음'}, 400)
-                write_json(LECTURES / f"{doc['id']}.json", doc)
-                return self.send_json({'ok': True})
-            if self.path == '/api/lecture/delete':
-                p = LECTURES / f"{body['id']}.json"
-                if p.exists():
-                    p.unlink()
-                return self.send_json({'ok': True})
-            if self.path == '/api/sample':
-                text = run_claude(body['prompt'], body.get('model') or 'haiku')
-                return self.send_json({'text': text})
             return self.send_json({'error': 'unknown endpoint'}, 404)
         except Exception as e:  # noqa: BLE001
             return self.send_json({'error': str(e)}, 500)
@@ -124,5 +93,5 @@ class Handler(SimpleHTTPRequestHandler):
 if __name__ == '__main__':
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8787
     build()
-    print(f'미지의 CCAF 노트 → http://localhost:{port}   (claude CLI: {"있음" if CLAUDE else "없음"})')
+    print(f'미지의 CCAF 노트 → http://localhost:{port}')
     ThreadingHTTPServer(('127.0.0.1', port), Handler).serve_forever()
