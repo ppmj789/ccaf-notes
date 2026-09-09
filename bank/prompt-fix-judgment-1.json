@@ -1,0 +1,83 @@
+{
+  "id": "b-prompt-fix-judgment-1",
+  "order": 29.11,
+  "section": "Reliable Prompts & Structured Output",
+  "lecture": "29",
+  "patternId": "prompt-fix-judgment",
+  "source": "q-029-1 변형",
+  "title_en": "Precision fix for a security-finding extractor",
+  "title": "보안 취약점 추출기의 정밀도 개선",
+  "domain": "프롬프트·평가",
+  "question_en": "A security team uses Claude to extract ==confirmed vulnerabilities== from scanner reports into JSON. The output ==always passes schema validation==, but it ==frequently includes informational notices== such as \"consider updating this library\" ==as if they were exploitable findings==, which floods the ticket queue. What prompt change best ==improves precision== while keeping the JSON ==usable by the ticketing system==?",
+  "question_ko": "보안 팀이 Claude 로 스캐너 보고서에서 ==확인된 취약점==을 JSON 으로 추출한다. 출력은 ==항상 스키마 검증을 통과==하지만, \"이 라이브러리 업데이트를 고려하세요\" 같은 ==정보성 안내==를 ==마치 악용 가능한 취약점인 것처럼== 자주 포함해 티켓 큐가 넘친다. 티켓 시스템이 JSON 을 ==계속 쓸 수 있게== 하면서 ==정밀도를 높이는== 가장 좋은 프롬프트 변경은?",
+  "options": [
+    {
+      "key": "A",
+      "en": "Tighten the ==JSON Schema== by adding required fields like cvss_score and exploit_path, since ==the schema will filter== weak items.",
+      "ko": "==스키마가 약한 항목을 걸러 줄== 것이므로 cvss_score, exploit_path 같은 required 필드를 추가해 ==JSON Schema 를 조인다==."
+    },
+    {
+      "key": "B",
+      "en": "Tell Claude to extract only findings that seem ==serious, real, and important==.",
+      "ko": "==심각하고 진짜이며 중요해== 보이는 결과만 추출하라고 Claude 에게 말한다."
+    },
+    {
+      "key": "C",
+      "en": "Write ==explicit inclusion and exclusion criteria== for a confirmed vulnerability, and add ==few-shot examples in the target JSON shape== showing ==both true findings and look-alike informational notices== that must be excluded.",
+      "ko": "확인된 취약점의 ==명시적 포함·제외 기준==을 쓰고, ==진짜 취약점과 비슷해 보이는 정보성 안내== 둘 다를 보여 주는 ==목표 JSON 형식의 few-shot 예시==를 추가한다."
+    },
+    {
+      "key": "D",
+      "en": "Have Claude ==write a paragraph of reasoning== first and rely on that reasoning as the ==main filter== for what to include.",
+      "ko": "Claude 가 먼저 ==추론 문단을 쓰게== 하고 그 추론을 포함 여부의 ==주 필터==로 삼는다."
+    }
+  ],
+  "answer": "C",
+  "explanation": "기출 29번과 같은 판정 기준이다.\n- ==always passes schema validation== → 모양 문제가 아니다 → 스키마 보기(A) 탈락.\n- ==informational notices ... as if exploitable== → 틀린 것을 포함 = **false positive = precision 문제**.\n- \"consider updating\" 같은 권고 문구 vs 실제 취약점의 경계 → **포함·제외 규칙**으로 선을 긋는다.\n- 경계가 미묘하니 **대조 few-shot**(맞는 것 + 비슷한 틀린 것).\n- ==usable by the ticketing system== → 예시는 **목표 JSON 형식 그대로**.\n\n| 문제 종류 | 처방 |\n|---|---|\n| 모양(키·타입) 틀림 | 스키마 |\n| 뜻(판단) 틀림 | 규칙 + 대조 예시 |",
+  "traps": [
+    {
+      "key": "A",
+      "why": "스키마는 모양을 검사하지 뜻을 판단하지 않는다. 정보성 안내도 cvss_score 를 지어 넣으면 통과한다."
+    },
+    {
+      "key": "B",
+      "why": "주관적 형용사는 기준이 아니다. '심각해 보이는' 의 경계를 모델이 또 짐작하게 된다."
+    },
+    {
+      "key": "D",
+      "why": "자기 추론을 가드레일로 삼는 것은 검증이 아니다. 기준 없이 추론하면 같은 오판을 더 길게 설명할 뿐이다."
+    }
+  ],
+  "keyPoints": [
+    "Schema passes but values are wrong is a judgment problem: rules plus contrastive examples. // 스키마 통과 + 값 틀림 = 규칙 + 대조 예시.",
+    "Examples must be in the exact output shape to keep downstream parsing intact. // 예시는 목표 JSON 형식 그대로."
+  ],
+  "pattern": {
+    "type": "프롬프트 변경 선택(판단 기준)",
+    "asks": "값의 뜻이 틀리는 문제를 프롬프트로 어떻게 고칠지.",
+    "clues": [
+      {
+        "text": "always passes schema validation",
+        "means": "모양 문제 아님 → 스키마 탈락"
+      },
+      {
+        "text": "informational notices as if exploitable",
+        "means": "false positive = precision"
+      },
+      {
+        "text": "\"consider updating\"",
+        "means": "권고 vs 취약점 경계 → 포함·제외 규칙"
+      },
+      {
+        "text": "usable by the ticketing system",
+        "means": "예시는 목표 형식"
+      }
+    ],
+    "answerShape": "규칙(포함·제외) + 대조 few-shot + 목표 형식.",
+    "distractorShape": "스키마 조이기, 주관적 형용사, 자기 추론 가드레일."
+  },
+  "kind": "question",
+  "generated": true,
+  "reviewed": false,
+  "createdAt": "2026-09-09T13:00:00Z"
+}

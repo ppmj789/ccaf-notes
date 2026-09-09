@@ -1,4 +1,8 @@
 {
   "supabaseUrl": "",
-  "supabaseAnonKey": ""
+  "supabaseAnonKey": "",
+  "drillUrl": "https://ppmj789.github.io/ccaf-notes/drill/",
+  "notesUrl": "https://ppmj789.github.io/ccaf-notes/",
+  "drillArtifactUrl": "https://claude.ai/code/artifact/adc0af02-9f5e-4cfd-bfb9-5b101123ae44",
+  "notesArtifactUrl": "https://claude.ai/code/artifact/f38187b9-3a04-4fc3-a0db-c20d1fff34de"
 }

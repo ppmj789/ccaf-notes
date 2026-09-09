@@ -1,0 +1,83 @@
+{
+  "id": "b-model-placement-1",
+  "order": 1.01,
+  "section": "Unsorted",
+  "lecture": "",
+  "patternId": "model-placement",
+  "source": "q-001 변형",
+  "title_en": "Model tiers for an HR policy assistant",
+  "title": "사내 HR 정책 어시스턴트의 모델 티어 배치",
+  "domain": "모델 선택",
+  "question_en": "An internal HR assistant answers employee questions about ==leave, payroll corrections, and benefits enrollment== by calling tools such as get_employee_record and open_hr_ticket. Many questions are ==ambiguous== and require reading several policy documents before deciding whether the assistant can act or must ==open a ticket for HR staff==. Leadership wants ==predictable answers that follow policy== while keeping ==per-conversation cost and latency== acceptable across 20,000 employees. Which model configuration is best for the ==primary reasoning step==?",
+  "question_ko": "사내 HR 어시스턴트가 get_employee_record, open_hr_ticket 같은 툴을 호출해 ==휴가·급여 정정·복리후생 등록== 질문에 답한다. 질문 상당수가 ==모호해서== 정책 문서 여러 개를 읽고 직접 처리할지 ==HR 담당자 티켓을 열지== 판단해야 한다. 경영진은 ==정책을 따르는 예측 가능한 답변==을 원하면서 직원 2만 명 규모에서 ==대화당 비용과 지연==도 감당할 수 있기를 바란다. ==주 추론 단계==에 가장 적합한 모델 구성은?",
+  "options": [
+    {
+      "key": "A",
+      "en": "Use ==Haiku for every step== with a ==temperature of 1.0== so answers feel conversational and costs stay minimal.",
+      "ko": "답이 대화체로 느껴지고 비용이 최소가 되도록 ==모든 단계에 Haiku== 를 ==temperature 1.0== 으로 쓴다."
+    },
+    {
+      "key": "B",
+      "en": "Use ==Opus for every employee question== because HR decisions are sensitive and ==cost should not matter==.",
+      "ko": "HR 결정은 민감하므로 ==비용은 상관없이== ==모든 질문에 Opus== 를 쓴다."
+    },
+    {
+      "key": "C",
+      "en": "Use ==Sonnet with a low temperature== as the primary reasoning model, route ==simple intent classification to Haiku==, and ==test Opus only on the hardest policy edge cases==.",
+      "ko": "==Sonnet 을 낮은 temperature== 로 주 추론 모델로 쓰고, ==단순 의도 분류는 Haiku== 로 보내며, ==가장 어려운 정책 엣지 케이스에만 Opus 를 시험==한다."
+    },
+    {
+      "key": "D",
+      "en": "Use Sonnet with a ==high temperature== so the assistant can ==interpret policies flexibly== for unusual situations.",
+      "ko": "특이한 상황에서 ==정책을 유연하게 해석==하도록 Sonnet 을 ==높은 temperature== 로 쓴다."
+    }
+  ],
+  "answer": "C",
+  "explanation": "기출과 같은 뼈대다. ==일을 감당하는 가장 싼 티어를 주력으로, 위 티어는 좁게==.\n- ==ambiguous== + 툴 여러 번 호출 + 정책 문서 판단 → 가장 작은 모델로는 부족, 그렇다고 전부 Opus 는 비용·지연 위반.\n- ==predictable answers that follow policy== → **낮은 temperature**.\n- ==per-conversation cost and latency== → 단순 의도 분류는 **Haiku** 로 내려 보내고, Opus 는 ==가장 어려운 엣지 케이스에서만 시험==한다.\n\n| 지문 단서 | 정답 문구 |\n|---|---|\n| ambiguous, several policy documents | Sonnet 주력 |\n| predictable, follow policy | low temperature |\n| cost and latency, 20,000 employees | Haiku 로 분류 라우팅 |\n| hardest policy edge cases | Opus 는 좁게 시험 |",
+  "traps": [
+    {
+      "key": "A",
+      "why": "가장 작은 모델에 모호한 정책 판단까지 맡기면 정확도가 떨어지고, temperature 1.0 은 같은 질문에 다른 답을 낸다. '예측 가능' 조건 위반."
+    },
+    {
+      "key": "B",
+      "why": "지문이 명시한 비용·지연 조건을 버린다. '전부 최상위 모델' 은 거의 항상 오답 패턴."
+    },
+    {
+      "key": "D",
+      "why": "정책 적용에 '유연한 해석' 은 필요 없다. 높은 temperature 는 일관성을 깨뜨린다."
+    }
+  ],
+  "keyPoints": [
+    "Ambiguous, tool-heavy reasoning goes to the mid tier; classification goes to the small tier; the top tier is tested only on the hardest paths. // 모호한 판단은 중간 티어, 분류는 작은 티어, 최상위는 좁게.",
+    "Policy-following and predictability mean low temperature. // 정책·예측 가능 = 낮은 temperature."
+  ],
+  "pattern": {
+    "type": "모델 배치·파라미터 선택",
+    "asks": "주력 티어와 보조 티어의 역할, temperature 를 어떻게 잡을지.",
+    "clues": [
+      {
+        "text": "ambiguous ... several policy documents",
+        "means": "작은 모델로는 부족"
+      },
+      {
+        "text": "predictable answers that follow policy",
+        "means": "낮은 temperature"
+      },
+      {
+        "text": "cost and latency ... 20,000 employees",
+        "means": "전부 Opus 탈락, 분류는 Haiku"
+      },
+      {
+        "text": "primary reasoning step",
+        "means": "주력 모델을 묻는 것"
+      }
+    ],
+    "answerShape": "Sonnet 주력 + Haiku 분류 + Opus 좁게, 낮은 temperature.",
+    "distractorShape": "한 모델로 전부, 높은 temperature, '유연하게'."
+  },
+  "kind": "question",
+  "generated": true,
+  "reviewed": false,
+  "createdAt": "2026-09-09T13:00:00Z"
+}

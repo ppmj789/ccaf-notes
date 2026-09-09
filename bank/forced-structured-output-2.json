@@ -1,0 +1,83 @@
+{
+  "id": "b-forced-structured-output-2",
+  "order": 24.22,
+  "section": "Reliable Prompts & Structured Output",
+  "lecture": "24",
+  "patternId": "forced-structured-output",
+  "source": "q-024-2 변형",
+  "title_en": "Guaranteed triage output for a hospital intake bot",
+  "title": "병원 접수 봇의 보장된 분류 출력",
+  "domain": "툴·에이전트 루프",
+  "question_en": "A hospital intake assistant must produce a ==triage record== ==after each patient message==, which a scheduling system reads directly. The record needs ==urgency== from a ==fixed set of levels==, a ==department== from an approved list, ==symptom_summary== text, and ==insurance_id== that is often unknown and must then be ==null==. The current approach asks Claude in the prompt to \"reply in JSON,\" and the scheduler ==crashes== whenever Claude ==adds a greeting or uses a new urgency word==. Which change is most appropriate?",
+  "question_ko": "병원 접수 어시스턴트가 ==환자 메시지마다== 스케줄링 시스템이 바로 읽는 ==분류 기록==을 만들어야 한다. 기록에는 ==고정된 단계 집합==의 ==urgency==, 승인 목록의 ==department==, ==symptom_summary== 텍스트, 그리고 자주 알 수 없어서 그때는 ==null== 이어야 하는 ==insurance_id== 가 필요하다. 지금은 프롬프트에서 \"JSON 으로 답하라\" 고 하는데, Claude 가 ==인사말을 붙이거나 새로운 urgency 단어를 쓰면== 스케줄러가 ==죽는다==. 가장 적절한 변경은?",
+  "options": [
+    {
+      "key": "A",
+      "en": "Wrap the scheduler in a ==try/except== that ==skips== any record it cannot parse.",
+      "ko": "스케줄러를 ==try/except== 로 감싸 파싱 못 하는 기록은 ==건너뛰게== 한다."
+    },
+    {
+      "key": "B",
+      "en": "Add few-shot examples of ==perfect JSON== to the prompt and ask Claude to ==\"never greet the user\"==.",
+      "ko": "프롬프트에 ==완벽한 JSON== 예시를 몇 개 넣고 Claude 에게 ==\"절대 인사하지 말라\"== 고 한다."
+    },
+    {
+      "key": "C",
+      "en": "Store the whole reply as a ==text blob== and let the scheduling team ==search it manually== when needed.",
+      "ko": "답변 전체를 ==텍스트 덩어리==로 저장하고 필요할 때 스케줄링 팀이 ==수동으로 검색==하게 한다."
+    },
+    {
+      "key": "D",
+      "en": "Create a ==submit_triage tool== with an ==input_schema== where urgency and department are ==enum==, symptom_summary is a required string, insurance_id is ==nullable==, and set ==tool_choice== so the tool is called on every message.",
+      "ko": "urgency 와 department 를 ==enum==, symptom_summary 를 required 문자열, insurance_id 를 ==nullable== 로 둔 ==input_schema== 를 가진 ==submit_triage 툴==을 만들고, 메시지마다 그 툴이 호출되도록 ==tool_choice== 를 설정한다."
+    }
+  ],
+  "answer": "D",
+  "explanation": "지문 단서가 스키마 기능 이름을 거의 그대로 부른다.\n- ==fixed set of levels== / ==approved list== → **enum**. 새 urgency 단어는 enum 밖이라 나올 수 없다.\n- ==often unknown ... must be null== → **nullable**.\n- ==after each patient message== → **tool_choice** 로 매번 강제.\n- ==adds a greeting== → 툴 호출은 인자가 스키마 안에만 있으니 인사말이 섞일 자리가 없다.\n\n\"JSON 으로 답하라\" 는 프롬프트 접근이 이미 ==crashes== 를 냈다. 예시를 더 넣는 것(B)은 같은 접근의 반복이다.",
+  "traps": [
+    {
+      "key": "A",
+      "why": "오류를 숨길 뿐 기록이 사라진다. 환자 분류 기록을 건너뛰는 것은 문제를 키운다."
+    },
+    {
+      "key": "B",
+      "why": "프롬프트 접근 강화. 예시와 금지 문구는 enum·nullable 을 보장하지 못하고 새 단어를 막지 못한다."
+    },
+    {
+      "key": "C",
+      "why": "비구조화 저장. 스케줄러가 직접 읽어야 한다는 요구를 포기한 것이다."
+    }
+  ],
+  "keyPoints": [
+    "'Fixed set', 'approved list', 'often unknown' are enum, enum, nullable in a tool schema. // 고정 집합·승인 목록 = enum, 자주 모름 = nullable.",
+    "A forced tool call has no room for greetings or prose. // 강제 툴 호출에는 인사말이 낄 자리가 없다."
+  ],
+  "pattern": {
+    "type": "구조화 출력 강제",
+    "asks": "다운스트림이 직접 읽는 출력이 매번 정확한 구조로 나오게 하는 방법.",
+    "clues": [
+      {
+        "text": "fixed set of levels / approved list",
+        "means": "enum"
+      },
+      {
+        "text": "often unknown ... must be null",
+        "means": "nullable"
+      },
+      {
+        "text": "after each patient message",
+        "means": "tool_choice"
+      },
+      {
+        "text": "adds a greeting ... crashes",
+        "means": "프롬프트 JSON 실패 → 툴로"
+      }
+    ],
+    "answerShape": "스키마 툴 + enum·nullable·required + tool_choice.",
+    "distractorShape": "오류 무시, 예시·금지문 추가, 텍스트 덩어리 저장."
+  },
+  "kind": "question",
+  "generated": true,
+  "reviewed": false,
+  "createdAt": "2026-09-09T13:00:00Z"
+}

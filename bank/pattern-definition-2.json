@@ -1,0 +1,83 @@
+{
+  "id": "b-pattern-definition-2",
+  "order": 27.12,
+  "section": "Reliable Prompts & Structured Output",
+  "lecture": "27",
+  "patternId": "pattern-definition",
+  "source": "q-027-1 변형",
+  "title_en": "Which pattern: unknown policy number becomes null and a review task",
+  "title": "어떤 패턴인가: 모르는 증권 번호를 null 과 검토 작업으로",
+  "domain": "신뢰성",
+  "question_en": "An insurance intake agent extracts a claim into JSON. The customer's message ==never mentions a policy number==, and lookup tools ==return no match== for the name. Instead of retrying, the application ==accepts policy_number: null==, sets confidence to 0.4, and ==creates a task for a human agent== to confirm the policy before any payment step runs. ==What is this pattern== called, and why is it correct here?",
+  "question_ko": "보험 접수 에이전트가 청구를 JSON 으로 추출한다. 고객 메시지에 ==증권 번호가 전혀 없고==, 조회 툴도 이름으로 ==일치하는 것을 찾지 못한다==. 애플리케이션은 재시도하는 대신 ==policy_number: null== 을 받아들이고 confidence 를 0.4 로 두며, 지급 단계가 실행되기 전에 증권을 확인하도록 ==사람 담당자용 작업을 만든다==. 이 패턴은 ==무엇이라 부르며== 왜 여기서 맞는가?",
+  "options": [
+    {
+      "key": "A",
+      "en": "Retry with error feedback, because the application ==sends the missing field back== so the agent can ==fill it in== on the next attempt.",
+      "ko": "애플리케이션이 ==빠진 필드를 돌려보내== 에이전트가 다음 시도에 ==채우게== 하므로 retry with error feedback 이다."
+    },
+    {
+      "key": "B",
+      "en": "Tool result caching, because the ==failed lookup is stored== so it is not repeated.",
+      "ko": "==실패한 조회를 저장==해 반복하지 않으므로 tool result caching 이다."
+    },
+    {
+      "key": "C",
+      "en": "Null plus human review, because the ==fact does not exist in any available source==, so retrying would only ==invite a fabricated value==; the safe path is to ==record null and escalate== before an irreversible step.",
+      "ko": "==사실이 어떤 소스에도 없으므로== 재시도는 ==지어낸 값을 부를 뿐==이고, 되돌릴 수 없는 단계 전에 ==null 로 기록하고 에스컬레이션==하는 것이 안전하므로 null plus human review 다."
+    },
+    {
+      "key": "D",
+      "en": "Session pruning, because ==low-confidence fields are deleted== from the conversation history.",
+      "ko": "==낮은 confidence 필드를 대화 기록에서 삭제==하므로 session pruning 이다."
+    }
+  ],
+  "answer": "C",
+  "explanation": "기출의 거울상 문제다. 기출은 '고칠 정보가 있어서 retry', 이 문제는 ==고칠 정보가 없어서 null + 사람 검토==.\n- ==never mentions== + ==return no match== → 사실이 존재하지 않는다. retry 해도 모델은 지어낼 수밖에 없다.\n- ==policy_number: null== → 강의의 \"모르면 null, 지어내지 말 것\".\n- ==creates a task for a human== + ==before any payment step== → 되돌릴 수 없는 행동 전 **human review**.\n- confidence 0.4 는 낮은 확신을 사람에게 넘기는 신호.\n\n정의 매칭에서 retry 와 null+review 를 가르는 기준은 하나다. ==고칠 수 있는 정보가 이미 있는가==.",
+  "traps": [
+    {
+      "key": "A",
+      "why": "retry 는 정답 재료가 툴 결과 안에 있을 때 맞다. 여기서는 어디에도 없어서 재시도가 환각을 부른다."
+    },
+    {
+      "key": "B",
+      "why": "caching 은 지문의 행동(null 수용, 사람 작업 생성)을 설명하지 않는다."
+    },
+    {
+      "key": "D",
+      "why": "pruning 은 컨텍스트 삭제 기법이다. 지문은 아무것도 삭제하지 않고 오히려 null 을 기록해 남긴다."
+    }
+  ],
+  "keyPoints": [
+    "If the fact is missing from every source, do not retry: null plus human review before irreversible steps. // 사실이 없으면 retry 말고 null + 사람 검토.",
+    "Retry versus null is decided by whether corrective information already exists. // retry 냐 null 이냐는 고칠 정보 유무."
+  ],
+  "pattern": {
+    "type": "패턴 이름 맞히기(정의 매칭)",
+    "asks": "지문이 묘사하는 동작이 어떤 패턴이며 왜 맞는지.",
+    "clues": [
+      {
+        "text": "never mentions ... return no match",
+        "means": "고칠 정보가 없음"
+      },
+      {
+        "text": "policy_number: null",
+        "means": "모르면 null"
+      },
+      {
+        "text": "task for a human ... before any payment",
+        "means": "되돌릴 수 없는 단계 전 사람 검토"
+      },
+      {
+        "text": "instead of retrying",
+        "means": "retry 탈락"
+      }
+    ],
+    "answerShape": "용어 + 지문 행동과 일치하는 이유 설명.",
+    "distractorShape": "retry 오적용, caching·pruning 처럼 지문에 없는 행동."
+  },
+  "kind": "question",
+  "generated": true,
+  "reviewed": false,
+  "createdAt": "2026-09-09T13:00:00Z"
+}

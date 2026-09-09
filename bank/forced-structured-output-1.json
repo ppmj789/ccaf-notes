@@ -1,0 +1,87 @@
+{
+  "id": "b-forced-structured-output-1",
+  "order": 24.21,
+  "section": "Reliable Prompts & Structured Output",
+  "lecture": "24",
+  "patternId": "forced-structured-output",
+  "source": "q-024-2 변형",
+  "title_en": "Schema-conformant KYC decision records",
+  "title": "스키마에 맞는 KYC 심사 기록",
+  "domain": "툴·에이전트 루프",
+  "question_en": "A bank's onboarding agent must write a ==KYC decision record== ==for every reviewed applicant==. The record ==must always contain== applicant_id, risk_level, decision, and reviewer_note; ==risk_level and decision must come from approved lists==, and a missing document reference should be ==stored as null== rather than omitted. In testing, the ==prompt-only JSON== output sometimes has ==renamed keys, extra commentary before the JSON, or invented risk labels==. What is the best way to make every record ==conform to the schema==?",
+  "question_ko": "은행의 고객 등록 에이전트가 ==심사한 신청자마다== ==KYC 심사 기록==을 남겨야 한다. 기록에는 applicant_id, risk_level, decision, reviewer_note 가 ==항상 있어야== 하고, ==risk_level 과 decision 은 승인된 목록==의 값이어야 하며, 서류 참조가 없으면 빼지 말고 ==null 로 저장==해야 한다. 테스트에서 ==프롬프트만으로 만든 JSON== 은 가끔 ==키 이름이 바뀌거나, JSON 앞에 설명이 붙거나, 지어낸 risk 라벨==이 나온다. 모든 기록이 ==스키마에 맞게== 나오게 하는 가장 좋은 방법은?",
+  "options": [
+    {
+      "key": "A",
+      "en": "Add a ==stronger system instruction==: \"Return exactly one JSON object with these keys and ==no other text==.\"",
+      "ko": "==더 강한 시스템 지시==를 추가한다. \"정확히 이 키들로 된 JSON 객체 하나만, ==다른 텍스트 없이== 반환하라.\""
+    },
+    {
+      "key": "B",
+      "en": "Define a ==record_kyc_decision tool== whose ==JSON Schema== marks the four fields ==required==, makes document_ref ==nullable==, restricts risk_level and decision with ==enum==, and use ==tool_choice== to require that tool after every review.",
+      "ko": "네 필드를 ==required== 로, document_ref 를 ==nullable== 로, risk_level 과 decision 을 ==enum== 으로 제한한 ==JSON Schema== 를 가진 ==record_kyc_decision 툴==을 정의하고, 심사마다 ==tool_choice== 로 그 툴을 강제한다."
+    },
+    {
+      "key": "C",
+      "en": "Save the agent's ==free-text summary== and have a nightly job ==extract fields with regular expressions==.",
+      "ko": "에이전트의 ==자유 텍스트 요약==을 저장하고 야간 작업이 ==정규식으로 필드를 추출==하게 한다."
+    },
+    {
+      "key": "D",
+      "en": "Keep prompt-only JSON but add a ==post-processing mapper== that translates riskLevel, risk, and severity into the expected key.",
+      "ko": "프롬프트 JSON 은 유지하고 riskLevel, risk, severity 를 기대 키로 바꾸는 ==후처리 매퍼==를 추가한다."
+    }
+  ],
+  "answer": "B",
+  "explanation": "요구사항을 스키마 기능에 하나씩 대응시키면 정답이 만들어진다.\n\n| 지문 | 스키마 기능 |\n|---|---|\n| must always contain | required |\n| stored as null | nullable |\n| approved lists | enum |\n| for every reviewed applicant | tool_choice 강제 |\n\n==prompt-only JSON ... renamed keys, extra commentary, invented labels== 는 프롬프트 접근이 이미 실패했다는 뜻이다. 지시문을 더 세게 쓰는 것(A)은 같은 방법을 반복하는 것이고, 스키마를 가진 ==툴 호출==로 바꿔야 모델 출력이 구조를 벗어나지 못한다. 매번 나와야 하니 `tool_choice` 로 그 툴을 요구한다.",
+  "traps": [
+    {
+      "key": "A",
+      "why": "이미 실패한 '프롬프트만' 접근을 강화한 것. 지시문은 키 이름·enum·null 을 강제할 수 없다."
+    },
+    {
+      "key": "C",
+      "why": "비구조화 저장 후 정규식 추출은 문제를 다운스트림으로 미룬다. 지어낸 risk 라벨은 정규식이 못 거른다."
+    },
+    {
+      "key": "D",
+      "why": "동의어 매퍼는 키 이름 드리프트만 임시로 덮고, 새 동의어가 나올 때마다 깨진다. 생성 시점에 스키마로 막아야 한다."
+    }
+  ],
+  "keyPoints": [
+    "Required, nullable, enum in a tool's JSON Schema replace fragile prompt-only JSON. // required·nullable·enum 은 스키마 툴로.",
+    "Every-time output means tool_choice forcing that tool. // 매번 = tool_choice."
+  ],
+  "pattern": {
+    "type": "구조화 출력 강제",
+    "asks": "기록이 매번 스키마대로 나오게 하는 방법.",
+    "clues": [
+      {
+        "text": "must always contain",
+        "means": "required"
+      },
+      {
+        "text": "stored as null",
+        "means": "nullable"
+      },
+      {
+        "text": "approved lists",
+        "means": "enum"
+      },
+      {
+        "text": "for every reviewed applicant",
+        "means": "tool_choice 강제"
+      },
+      {
+        "text": "prompt-only JSON ... renamed keys, commentary",
+        "means": "지시 강화는 오답"
+      }
+    ],
+    "answerShape": "JSON Schema 툴 + required·nullable·enum + tool_choice.",
+    "distractorShape": "지시문 강화, 자유 텍스트 + 정규식, 후처리 매퍼."
+  },
+  "kind": "question",
+  "generated": true,
+  "reviewed": false,
+  "createdAt": "2026-09-09T13:00:00Z"
+}

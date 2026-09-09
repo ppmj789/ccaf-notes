@@ -1,0 +1,83 @@
+{
+  "id": "b-pattern-definition-1",
+  "order": 27.11,
+  "section": "Reliable Prompts & Structured Output",
+  "lecture": "27",
+  "patternId": "pattern-definition",
+  "source": "q-027-1 변형",
+  "title_en": "Which pattern: invalid shipping date sent back to the agent",
+  "title": "어떤 패턴인가: 잘못된 배송일을 에이전트에 돌려보냄",
+  "domain": "신뢰성",
+  "question_en": "A logistics agent, ==after calling get_order and get_warehouse_calendar==, proposes {\"action\":\"reschedule\",\"new_date\":\"2026-10-03\",\"confidence\":0.9}. Application code ==checks business rules== and finds that ==October 3 is a warehouse holiday==. The application sends the agent a follow-up containing the ==original request, the rejected action, and the message== \"new_date falls on a closure day; choose the next open day ==using the calendar you already retrieved==, do not guess.\" The agent returns a corrected date. ==Which pattern== does this describe?",
+  "question_ko": "물류 에이전트가 ==get_order 와 get_warehouse_calendar 를 호출한 뒤== {\"action\":\"reschedule\",\"new_date\":\"2026-10-03\",\"confidence\":0.9} 를 제안한다. 애플리케이션 코드가 ==비즈니스 규칙을 검사==해 ==10월 3일이 창고 휴무일==임을 발견한다. 애플리케이션은 ==원래 요청, 거부된 액션, 그리고== \"new_date 가 휴무일이다. ==이미 가져온 캘린더를 써서== 다음 영업일을 고르고 추측하지 말라\" 는 ==메시지==를 담아 후속 요청을 보낸다. 에이전트가 수정된 날짜를 반환한다. 이것은 ==어떤 패턴==인가?",
+  "options": [
+    {
+      "key": "A",
+      "en": "Retry with error feedback, because the application ==returns the specific rule violation== and asks for a ==corrected action at runtime== using facts already available.",
+      "ko": "이미 있는 사실을 써서 ==런타임에 수정된 액션==을 요청하며 ==구체적인 규칙 위반을 돌려주므로== retry with error feedback 이다."
+    },
+    {
+      "key": "B",
+      "en": "Context compaction, because the application ==summarizes earlier turns== before asking the agent to decide again.",
+      "ko": "애플리케이션이 다시 결정하게 하기 전에 ==이전 턴을 요약==하므로 context compaction 이다."
+    },
+    {
+      "key": "C",
+      "en": "Prompt caching, because the application ==reuses the same calendar prefix== across calls to save tokens.",
+      "ko": "토큰을 아끼려고 ==같은 캘린더 접두사를 재사용==하므로 prompt caching 이다."
+    },
+    {
+      "key": "D",
+      "en": "Human-in-the-loop review, because the ==holiday check is performed by a supervisor== before the agent continues.",
+      "ko": "에이전트가 계속하기 전에 ==휴무일 검사를 감독자가 수행==하므로 human-in-the-loop review 다."
+    }
+  ],
+  "answer": "A",
+  "explanation": "정의 매칭 문제는 지문의 행동과 보기의 설명을 한 줄씩 대조한다.\n- ==original request + rejected action + message== → retry 의 세 재료.\n- ==do not guess== → \"지어내지 말 것\" 정석 문구.\n- ==checks business rules ... holiday== → 스키마는 통과(날짜 형식은 맞음), **비즈니스 규칙(semantic) 검증**에서 걸림.\n- ==using the calendar you already retrieved== → 고칠 정보가 이미 있으니 retry 가 맞는 경우.\n\n오답 세 개는 용어는 그럴듯하지만 설명이 지문과 어긋난다. 요약도, 캐시도, 사람 검토도 지문에 없다.",
+  "traps": [
+    {
+      "key": "B",
+      "why": "compaction 은 컨텍스트를 줄이는 기법이다. 지문은 요약하지 않고 오히려 정보를 추가해 돌려보낸다."
+    },
+    {
+      "key": "C",
+      "why": "caching 은 비용 최적화이고, 지문의 핵심 행동(에러를 돌려주고 수정 요청)과 무관하다."
+    },
+    {
+      "key": "D",
+      "why": "휴무일 검사는 애플리케이션 코드가 결정론적으로 했다. 사람은 등장하지 않는다."
+    }
+  ],
+  "keyPoints": [
+    "Original request + failed action + specific error + 'do not guess' returned at runtime = retry with error feedback. // 네 재료가 있으면 retry with error feedback.",
+    "Business-rule failures after schema success are semantic validation done by code. // 스키마 통과 후 규칙 위반 = 코드의 semantic 검증."
+  ],
+  "pattern": {
+    "type": "패턴 이름 맞히기(정의 매칭)",
+    "asks": "지문이 묘사하는 동작이 어떤 패턴의 정의와 일치하는지.",
+    "clues": [
+      {
+        "text": "original request, rejected action, message",
+        "means": "retry 의 세 재료"
+      },
+      {
+        "text": "do not guess",
+        "means": "retry 지시문 정석"
+      },
+      {
+        "text": "checks business rules ... holiday",
+        "means": "semantic 검증에서 걸림"
+      },
+      {
+        "text": "using the calendar you already retrieved",
+        "means": "고칠 정보 있음 → retry"
+      }
+    ],
+    "answerShape": "지문 행동을 그대로 서술한 보기.",
+    "distractorShape": "그럴듯한 용어(compaction, caching, HITL)에 지문과 안 맞는 설명."
+  },
+  "kind": "question",
+  "generated": true,
+  "reviewed": false,
+  "createdAt": "2026-09-09T13:00:00Z"
+}

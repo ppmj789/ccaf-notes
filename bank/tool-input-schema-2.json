@@ -1,0 +1,83 @@
+{
+  "id": "b-tool-input-schema-2",
+  "order": 24.12,
+  "section": "Reliable Prompts & Structured Output",
+  "lecture": "24",
+  "patternId": "tool-input-schema",
+  "source": "q-024-1 변형",
+  "title_en": "Schema for a create_ticket tool used by a helpdesk agent",
+  "title": "헬프데스크 에이전트의 create_ticket 툴 스키마",
+  "domain": "툴·에이전트 루프",
+  "question_en": "An IT helpdesk agent creates tickets through a ==create_ticket== tool. The ticketing system ==only accepts priorities P1 through P4== and ==team names from a fixed list==, but Claude keeps sending ==priority \"urgent-ish\"== and ==team \"the network people\"==, so tickets ==fail on insert==. The ==problem_description== field, which holds the user's own words, has ==never caused an error==. Which input_schema design fixes the failures without making the tool brittle?",
+  "question_ko": "IT 헬프데스크 에이전트가 ==create_ticket== 툴로 티켓을 만든다. 티켓 시스템은 ==우선순위 P1~P4== 와 ==고정 목록의 팀 이름==만 받는데, Claude 가 계속 ==priority \"urgent-ish\"==, ==team \"the network people\"== 을 보내 티켓이 ==삽입 시 실패==한다. 사용자의 말을 그대로 담는 ==problem_description== 필드는 ==한 번도 오류를 낸 적이 없다==. 툴을 취약하게 만들지 않으면서 실패를 고치는 input_schema 설계는?",
+  "options": [
+    {
+      "key": "A",
+      "en": "Drop the schema entirely and let the ==backend guess== the priority and team from the description.",
+      "ko": "스키마를 아예 없애고 ==백엔드가 설명문에서== 우선순위와 팀을 ==추측==하게 한다."
+    },
+    {
+      "key": "B",
+      "en": "Add a prompt instruction saying ==\"use valid priorities and teams\"== and keep the schema fields as plain strings.",
+      "ko": "==\"유효한 우선순위와 팀을 써라\"== 는 프롬프트 지시를 추가하고 스키마 필드는 일반 문자열로 둔다."
+    },
+    {
+      "key": "C",
+      "en": "Define ==priority as an enum== of P1, P2, P3, P4 and ==team as an enum== of the allowed names, each with a ==description of when to use which value==, and keep ==problem_description as free text==.",
+      "ko": "==priority 를 P1~P4 enum== 으로, ==team 을 허용된 이름의 enum== 으로 정의하고 각각 ==언제 어떤 값을 쓰는지 설명==을 붙이며, ==problem_description 은 자유 텍스트==로 둔다."
+    },
+    {
+      "key": "D",
+      "en": "Require ==every field, including problem_description, to match a strict pattern== so no malformed ticket can be created.",
+      "ko": "잘못된 티켓이 생기지 않도록 ==problem_description 을 포함한 모든 필드가 엄격한 패턴==에 맞게 한다."
+    }
+  ],
+  "answer": "C",
+  "explanation": "단서와 정답을 짝지으면 다음과 같다.\n- ==only accepts P1 through P4== / ==team names from a fixed list== → 허용 값이 정해져 있다 → **enum**.\n- ==\"urgent-ish\"== / ==\"the network people\"== → 스키마가 허용 값을 안 알려 줘서 지어낸 값 → enum 으로 막는다.\n- ==when to use which value== → 설명이 있어야 P1 과 P2 를 구분한다.\n- ==problem_description has never caused an error== → 잘 되는 자연어 필드는 **그대로 자유롭게**.\n\n'취약하게 만들지 않으면서' 가 D 를 탈락시키는 단서다.",
+  "traps": [
+    {
+      "key": "A",
+      "why": "구조를 없애면 검증이 아예 불가능해지고, 백엔드 추측은 모델이 스키마로 정확히 줄 수 있는 값을 굳이 잃는 설계다."
+    },
+    {
+      "key": "B",
+      "why": "'유효한 값을 써라' 는 어떤 값이 유효한지 알려 주지 않는다. 지금 실패한 이유 그대로다."
+    },
+    {
+      "key": "D",
+      "why": "과잉 제약. 오류 없는 자연어 필드까지 패턴으로 묶어 정상 티켓을 거부하고 툴을 취약하게 만든다."
+    }
+  ],
+  "keyPoints": [
+    "Fixed allowed values in the backend map directly to enum in the schema, with descriptions for choosing among them. // 백엔드 고정 값 = enum + 선택 설명.",
+    "Do not constrain fields that work; brittleness is the cost of over-constraint. // 잘 되는 필드는 건드리지 않는다."
+  ],
+  "pattern": {
+    "type": "툴 입력 스키마 설계",
+    "asks": "백엔드가 거부하는 값을 스키마로 막는 방법.",
+    "clues": [
+      {
+        "text": "only accepts P1 through P4 / fixed list",
+        "means": "enum"
+      },
+      {
+        "text": "\"urgent-ish\" / \"the network people\"",
+        "means": "허용 값 안 알려 줌"
+      },
+      {
+        "text": "has never caused an error",
+        "means": "자연어 필드는 그대로"
+      },
+      {
+        "text": "without making the tool brittle",
+        "means": "과잉 제약 탈락"
+      }
+    ],
+    "answerShape": "enum + 설명, 자연어 필드는 자유.",
+    "distractorShape": "스키마 제거, 프롬프트 지시만, 전부 엄격 패턴."
+  },
+  "kind": "question",
+  "generated": true,
+  "reviewed": false,
+  "createdAt": "2026-09-09T13:00:00Z"
+}

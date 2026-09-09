@@ -1,0 +1,83 @@
+{
+  "id": "b-model-placement-2",
+  "order": 1.02,
+  "section": "Unsorted",
+  "lecture": "",
+  "patternId": "model-placement",
+  "source": "q-001 변형",
+  "title_en": "Temperature and tier for an insurance claims triage loop",
+  "title": "보험 청구 분류 루프의 temperature 와 티어",
+  "domain": "모델 선택",
+  "question_en": "An insurance company builds an agent that reads incoming ==claim submissions==, calls lookup_policy and check_coverage, and decides whether a claim is ==auto-approved, needs documents, or goes to an adjuster==. The same claim must ==receive the same routing decision== every time it is processed, and the team processes ==a high volume== daily. A separate first step only labels each message as ==claim, complaint, or question==. Which configuration best fits these requirements?",
+  "question_ko": "보험사가 ==청구 접수==를 읽고 lookup_policy·check_coverage 를 호출해 ==자동 승인, 서류 요청, 손해사정사 이관== 중 하나를 결정하는 에이전트를 만든다. 같은 청구는 처리할 때마다 ==같은 라우팅 결정==을 받아야 하고, 하루 ==처리량이 많다==. 별도의 첫 단계는 메시지를 ==청구·불만·질문== 으로만 라벨링한다. 이 요구에 가장 맞는 구성은?",
+  "options": [
+    {
+      "key": "A",
+      "en": "Run the ==labeling step on Haiku== and the coverage decision on ==Sonnet at temperature 0==, escalating to ==Opus only for disputed or unusual policies==.",
+      "ko": "==라벨링 단계는 Haiku== 로, 보장 판단은 ==Sonnet temperature 0== 으로 돌리고, ==분쟁이 있거나 특이한 약관에만 Opus== 로 올린다."
+    },
+    {
+      "key": "B",
+      "en": "Run both steps on ==Opus at temperature 0.9== so the agent can ==reason creatively== about unusual claims.",
+      "ko": "특이한 청구를 ==창의적으로 추론==하도록 두 단계 모두 ==Opus temperature 0.9== 로 돌린다."
+    },
+    {
+      "key": "C",
+      "en": "Run both steps on ==Haiku== and ==raise temperature== so the agent does not repeat the same wording to customers.",
+      "ko": "고객에게 같은 문구를 반복하지 않도록 두 단계 모두 ==Haiku== 로 돌리고 ==temperature 를 올린다==."
+    },
+    {
+      "key": "D",
+      "en": "Run the coverage decision on Sonnet with ==temperature and top_p both raised== to cover more edge cases.",
+      "ko": "더 많은 엣지 케이스를 다루도록 보장 판단을 ==temperature 와 top_p 를 둘 다 올린== Sonnet 으로 돌린다."
+    }
+  ],
+  "answer": "A",
+  "explanation": "단서 세 개가 각각 정답의 한 조각과 맞물린다.\n- ==same routing decision every time== → **temperature 0** (결정론).\n- ==high volume== → 주력은 Opus 가 아니라 **Sonnet**, 단순 라벨링은 **Haiku**.\n- ==claim, complaint, or question== 만 고르는 첫 단계 → 전형적인 **분류 하위 작업**, 작은 모델 자리.\n- 툴을 두 번 부르고 세 갈래를 판단하는 보장 결정은 중간 티어가 맞고, ==분쟁·특이 약관== 만 Opus 로 올린다.\n\n기출과 동일한 정답 모양이다. 티어를 계단처럼 쌓고, 정책 판단은 낮은 temperature.",
+  "traps": [
+    {
+      "key": "B",
+      "why": "처리량이 많은데 전부 Opus 는 비용·지연 위반이고, 0.9 는 같은 청구에 다른 결정을 낸다. '창의적으로' 는 오답 신호."
+    },
+    {
+      "key": "C",
+      "why": "보장 판단을 가장 작은 모델에 맡기면 정확도가 떨어지고, temperature 를 올리면 일관성 조건이 깨진다."
+    },
+    {
+      "key": "D",
+      "why": "temperature 와 top_p 는 둘 중 하나만 조정한다. 둘 다 올리는 것은 강의가 명시적으로 피하라고 한 설정이고, 일관성 조건에도 반한다."
+    }
+  ],
+  "keyPoints": [
+    "Same input, same decision means temperature 0; high volume means the mid tier as the workhorse. // 같은 결정 = temperature 0, 대량 = Sonnet 주력.",
+    "Adjust temperature or top_p, not both. // temperature 와 top_p 는 하나만."
+  ],
+  "pattern": {
+    "type": "모델 배치·파라미터 선택",
+    "asks": "분류 단계와 판단 단계에 어떤 티어와 temperature 를 쓸지.",
+    "clues": [
+      {
+        "text": "same routing decision every time",
+        "means": "temperature 0"
+      },
+      {
+        "text": "high volume",
+        "means": "Opus 전부 탈락"
+      },
+      {
+        "text": "labels each message as claim, complaint, or question",
+        "means": "분류 = Haiku"
+      },
+      {
+        "text": "disputed or unusual policies",
+        "means": "Opus 는 좁게"
+      }
+    ],
+    "answerShape": "Haiku 분류 + Sonnet 판단(낮은 temperature) + Opus 좁게.",
+    "distractorShape": "전부 한 모델, temperature 올리기, temperature 와 top_p 동시 조정."
+  },
+  "kind": "question",
+  "generated": true,
+  "reviewed": false,
+  "createdAt": "2026-09-09T13:00:00Z"
+}

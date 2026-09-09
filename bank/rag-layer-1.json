@@ -1,0 +1,83 @@
+{
+  "id": "b-rag-layer-1",
+  "order": 3.01,
+  "section": "Unsorted",
+  "lecture": "",
+  "patternId": "rag-layer",
+  "source": "q-003 변형",
+  "title_en": "Knowledge layer for a logistics tracking assistant",
+  "title": "물류 배송 조회 어시스턴트의 지식 계층",
+  "domain": "지식·RAG",
+  "question_en": "A logistics company wants Claude to answer shipper questions using ==tens of thousands of carrier rules, customs notices, and depot procedures== that ==change weekly==. Shippers ask ==vague questions== such as \"why is my pallet stuck?\" while also quoting ==exact tracking numbers and customs codes==. The prompt budget per request is limited. Which design lets Claude answer accurately ==without stuffing the prompt==?",
+  "question_ko": "물류 회사가 ==매주 바뀌는== ==수만 건의 운송사 규정·세관 공지·물류센터 절차==를 근거로 Claude 가 화주 질문에 답하게 하려 한다. 화주는 \"내 팔레트가 왜 멈췄나요?\" 같은 ==모호한 질문==을 하면서 ==정확한 송장 번호와 세관 코드==도 함께 말한다. 요청당 프롬프트 예산은 제한돼 있다. ==프롬프트를 채우지 않고== 정확히 답하게 하는 설계는?",
+  "options": [
+    {
+      "key": "A",
+      "en": "==Fine-tune== a model on the rule documents every week so the ==knowledge lives in the weights==.",
+      "ko": "==지식이 가중치에 들어가도록== 매주 규정 문서로 모델을 ==파인튜닝==한다."
+    },
+    {
+      "key": "B",
+      "en": "Use ==embedding similarity search only==, because semantic matching covers ==every kind of shipper question==.",
+      "ko": "의미 매칭이 ==모든 종류의 화주 질문==을 다루므로 ==임베딩 유사도 검색만== 쓴다."
+    },
+    {
+      "key": "C",
+      "en": "Load the ==entire rulebook into the system prompt== and rely on ==prompt caching== to keep it affordable.",
+      "ko": "==규정집 전체를 시스템 프롬프트에 넣고== ==prompt caching== 으로 비용을 감당한다."
+    },
+    {
+      "key": "D",
+      "en": "==Chunk== the documents into a ==searchable index==, use ==hybrid retrieval== so exact tracking numbers and codes match by keyword while vague questions match by meaning, and ==pass only the retrieved chunks== with the question.",
+      "ko": "문서를 ==청크로 나눠== ==검색 가능한 인덱스==에 넣고, 정확한 송장 번호·코드는 키워드로, 모호한 질문은 의미로 맞도록 ==하이브리드 검색==을 쓰고, ==검색된 청크만== 질문과 함께 보낸다."
+    }
+  ],
+  "answer": "D",
+  "explanation": "기출 3번과 단서가 그대로다.\n- ==tens of thousands ... change weekly== → 프롬프트에 다 못 넣고, 외우게 할 수도 없다 → **인덱스 + 검색**.\n- ==vague questions== → **의미(임베딩) 검색**.\n- ==exact tracking numbers and customs codes== → **키워드 검색**. 둘이 같이 오니 **하이브리드**.\n- ==without stuffing the prompt== → **검색된 청크만** 보낸다.\n\nprompt caching 은 같은 접두사를 반복할 때 비용을 줄이는 도구이지, 규정집 전체를 매번 컨텍스트에 넣어야 한다는 문제 자체를 없애지 않는다. 매주 바뀌면 캐시도 자주 깨진다.",
+  "traps": [
+    {
+      "key": "A",
+      "why": "매주 바뀌는 지식은 재학습 비용이 크고, 송장 번호 같은 값은 외운다고 맞힐 수 없다. 지식 갱신 문제에 파인튜닝은 오답."
+    },
+    {
+      "key": "B",
+      "why": "임베딩만으로는 'TRK-8841-KR' 같은 정확 문자열 매칭에 약하다. 식별자가 섞이면 하이브리드."
+    },
+    {
+      "key": "C",
+      "why": "지문이 명시적으로 금지한 '프롬프트 채우기' 다. 캐싱은 비용 완화이지 컨텍스트 한도와 잡음 문제의 해결이 아니다."
+    }
+  ],
+  "keyPoints": [
+    "Large, frequently changing corpora go into a searchable index; only retrieved chunks reach the prompt. // 많고 자주 바뀌면 인덱스, 프롬프트엔 청크만.",
+    "Exact identifiers plus vague questions in the same traffic means hybrid retrieval. // 식별자 + 모호 질문 = 하이브리드."
+  ],
+  "pattern": {
+    "type": "지식 접근 계층(RAG) 설계",
+    "asks": "대량·가변 문서를 프롬프트 과부하 없이 근거로 쓰는 방법.",
+    "clues": [
+      {
+        "text": "tens of thousands ... change weekly",
+        "means": "프롬프트 삽입·파인튜닝 탈락"
+      },
+      {
+        "text": "vague questions",
+        "means": "의미 검색"
+      },
+      {
+        "text": "exact tracking numbers and customs codes",
+        "means": "키워드 검색 → 하이브리드"
+      },
+      {
+        "text": "without stuffing the prompt",
+        "means": "검색된 청크만"
+      }
+    ],
+    "answerShape": "청킹 + 인덱스 + 하이브리드 검색 + 선택된 청크만 전달.",
+    "distractorShape": "파인튜닝, 임베딩만, 프롬프트에 전부 넣고 캐싱."
+  },
+  "kind": "question",
+  "generated": true,
+  "reviewed": false,
+  "createdAt": "2026-09-09T13:00:00Z"
+}

@@ -1,0 +1,83 @@
+{
+  "id": "b-architecture-constraint-2",
+  "order": 28.12,
+  "section": "Reliable Prompts & Structured Output",
+  "lecture": "28",
+  "patternId": "architecture-constraint",
+  "source": "q-028-1 변형",
+  "title_en": "Which parts of a code-migration job belong in a batch?",
+  "title": "코드 마이그레이션 작업 중 어느 부분이 배치에 맞는가",
+  "domain": "신뢰성",
+  "question_en": "An engineering team wants to ==save money== migrating ==40,000 legacy source files== overnight. For each file they plan a single Batch API item that would ==read the file, run the test suite, inspect failures, edit the code, and rerun tests until green==. A separate need is to ==summarize each file's purpose== for documentation. Which statement correctly identifies the ==constraint== that should shape the architecture?",
+  "question_ko": "엔지니어링 팀이 ==비용을 아끼려고== ==레거시 소스 파일 40,000개==를 밤사이 마이그레이션하려 한다. 파일마다 Batch API 항목 하나로 ==파일을 읽고, 테스트를 돌리고, 실패를 살피고, 코드를 고치고, 통과할 때까지 테스트를 재실행==하게 할 계획이다. 별도로 문서화를 위해 ==각 파일의 용도를 요약==할 필요도 있다. 아키텍처를 좌우해야 할 ==제약==을 바르게 짚은 것은?",
+  "options": [
+    {
+      "key": "A",
+      "en": "Batch items ==cannot process source code==, so both tasks must run synchronously.",
+      "ko": "배치 항목은 ==소스 코드를 처리할 수 없으므로== 두 작업 모두 동기 방식으로 돌려야 한다."
+    },
+    {
+      "key": "B",
+      "en": "Because batch is ==cheaper==, the ==test-fix-rerun loop== should be moved into batch and the summaries handled live.",
+      "ko": "배치가 ==더 싸므로== ==테스트-수정-재실행 루프==를 배치로 옮기고 요약은 실시간으로 처리한다."
+    },
+    {
+      "key": "C",
+      "en": "Batch has ==no latency guarantee== but is ideal for the interactive migration because engineers ==will not wait== anyway.",
+      "ko": "배치는 ==지연 보장이 없지만== 엔지니어가 어차피 ==기다리지 않으므로== 상호작용형 마이그레이션에 이상적이다."
+    },
+    {
+      "key": "D",
+      "en": "The ==test-fix-rerun loop needs repeated tool execution== inside one task, which a ==one-shot batch item cannot do==; put the ==independent file summaries== in the batch and run the migration loop in an agent loop.",
+      "ko": "==테스트-수정-재실행 루프는 한 작업 안에서 반복 툴 실행==이 필요한데 ==일회성 배치 항목은 그것을 못 한다==. ==독립적인 파일 요약==은 배치에 넣고 마이그레이션 루프는 에이전트 루프로 돌린다."
+    }
+  ],
+  "answer": "D",
+  "explanation": "이 변형은 두 작업을 나란히 주고 어느 쪽이 배치인지 고르게 한다.\n- ==read, run tests, inspect, edit, rerun until green== → 툴 실행이 **반복**되는 에이전트 루프. 배치 항목은 요청 하나에 응답 하나라 중간에 테스트를 돌릴 주체가 없다.\n- ==summarize each file's purpose== → 입력이 이미 있고 툴이 필요 없는 **독립 작업**. 40,000개를 밤새 싸게 처리하기에 배치가 딱 맞다.\n- ==save money== 는 미끼. 배치가 싸다고 루프까지 넣으면 루프 자체가 안 돈다.",
+  "traps": [
+    {
+      "key": "A",
+      "why": "배치 특성 오해. 배치는 내용 종류를 가리지 않는다. 문제는 코드가 아니라 툴 루프다."
+    },
+    {
+      "key": "B",
+      "why": "작업을 거꾸로 배치했다. 루프는 배치에서 돌지 않고, 독립적인 요약이야말로 배치감이다."
+    },
+    {
+      "key": "C",
+      "why": "기다리지 않는다는 것과 툴 루프가 가능하다는 것은 다른 얘기다. 지연이 아니라 루프 불가가 제약이다."
+    }
+  ],
+  "keyPoints": [
+    "Repeated tool execution inside one task is the signature of an agent loop, never a batch item. // 한 작업 안의 반복 툴 실행 = 에이전트 루프.",
+    "Independent, tool-free work over many inputs is the batch sweet spot. // 툴 없는 독립 작업 대량 = 배치."
+  ],
+  "pattern": {
+    "type": "아키텍처 제약 찾기",
+    "asks": "두 작업 중 어느 것이 배치의 한계에 걸리는지.",
+    "clues": [
+      {
+        "text": "save money / 40,000 / overnight",
+        "means": "배치 미끼"
+      },
+      {
+        "text": "run tests ... edit ... rerun until green",
+        "means": "반복 툴 실행 = 루프"
+      },
+      {
+        "text": "summarize each file's purpose",
+        "means": "독립 작업 = 배치 적합"
+      },
+      {
+        "text": "single Batch API item",
+        "means": "일회성 요청"
+      }
+    ],
+    "answerShape": "루프는 에이전트, 독립 요약은 배치로 분리.",
+    "distractorShape": "배치 특성 오해, 작업을 거꾸로 배치, 지연을 제약으로 착각."
+  },
+  "kind": "question",
+  "generated": true,
+  "reviewed": false,
+  "createdAt": "2026-09-09T13:00:00Z"
+}

@@ -322,6 +322,7 @@
   .tab.sage { background: var(--sage); }
   .tab.sky { background: var(--sky); }
   .tab.lavender { background: var(--lavender); }
+  .tab.orange { background: var(--orange); text-decoration: none; line-height: 1.7; }
   .tab.active, .tab:hover { opacity: 1; transform: translateY(-2px); }
   .book { margin-top: 34px; }
 
@@ -751,6 +752,7 @@
       <button class="tab sky" data-view="toc" title="강의와 문제 전체 목차">차례</button>
       <button class="tab lavender" data-view="lectures" title="강의 대본을 영어·한국어로 읽으며 인강 듣기">인강</button>
       <button class="tab sage" data-view="quiz" title="강의별 문제 풀기">문제</button>
+      <a class="tab orange" id="drilltab" href="drill/" title="기출·변형 문제를 패턴별로 계속 풀기 (문제풀이 앱)">문제풀이</a>
     </nav>
   </div>
 </div>
@@ -978,6 +980,7 @@
   function readHash() {
     const h = location.hash.slice(1);
     if (/^p\d+$/.test(h)) state.idx = Math.max(0, Math.min(parseInt(h.slice(1), 10) - 1, book().length - 1));
+    else if (h) { const i = pageIndex(decodeURIComponent(h)); if (i >= 0) state.idx = i; }
   }
 
   // ---------- render ----------
@@ -1181,6 +1184,7 @@
 
   // ---------- global ----------
   $('#homebtn').addEventListener('click', () => go(0));
+  (() => { const a = $('#drilltab'); const local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname); const pages = /github\.io$/.test(location.hostname); const art = !!window.claude; a.href = local ? '/drill/' : (pages ? 'drill/' : (art && site.drillArtifactUrl) || site.drillUrl || 'drill/'); if (!local && !pages) { a.target = '_blank'; a.rel = 'noopener'; } })();
   document.addEventListener('keydown', e => {
     if (e.target.matches('input, textarea, select')) return;
     if (e.key === 'ArrowRight') go(state.idx + 1);

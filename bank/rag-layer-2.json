@@ -1,0 +1,83 @@
+{
+  "id": "b-rag-layer-2",
+  "order": 3.02,
+  "section": "Unsorted",
+  "lecture": "",
+  "patternId": "rag-layer",
+  "source": "q-003 변형",
+  "title_en": "Retrieval design for a legal clause lookup tool",
+  "title": "법률 조항 조회 툴의 검색 설계",
+  "domain": "지식·RAG",
+  "question_en": "A law firm is building a Claude assistant over ==thousands of contract templates and internal precedent memos== that are ==updated as cases close==. Associates ask ==broad questions== like \"what do we usually do about late delivery penalties?\" but also search for ==specific clause IDs and case numbers==. They report that the current ==embedding-only== prototype ==often misses exact clause references==. What is the best improvement?",
+  "question_ko": "로펌이 ==사건이 종결될 때마다 갱신되는== ==수천 개의 계약 템플릿과 내부 선례 메모==를 대상으로 Claude 어시스턴트를 만든다. 변호사들은 \"지연 배상 조항은 보통 어떻게 하죠?\" 같은 ==넓은 질문==을 하면서 ==특정 조항 ID 와 사건 번호==도 검색한다. 현재 ==임베딩만 쓰는== 프로토타입이 ==정확한 조항 참조를 자주 놓친다==고 한다. 가장 좋은 개선은?",
+  "options": [
+    {
+      "key": "A",
+      "en": "Add ==keyword (lexical) retrieval alongside embeddings== so that clause IDs and case numbers match exactly, ==merge the results==, and send only the ==top-ranked chunks== to Claude.",
+      "ko": "조항 ID 와 사건 번호가 정확히 맞도록 ==임베딩 옆에 키워드(어휘) 검색을 추가==하고, ==결과를 합쳐== ==상위 청크만== Claude 에 보낸다."
+    },
+    {
+      "key": "B",
+      "en": "Replace retrieval with a ==system prompt that lists every clause ID== and its template text.",
+      "ko": "검색 대신 ==모든 조항 ID 와 템플릿 본문을 나열한 시스템 프롬프트==로 바꾼다."
+    },
+    {
+      "key": "C",
+      "en": "==Increase the number of embedding results== returned from 5 to 50 so the right clause is ==more likely to be somewhere== in the context.",
+      "ko": "맞는 조항이 ==컨텍스트 어딘가에 있을 확률==이 높아지도록 ==임베딩 결과 수==를 5에서 50으로 늘린다."
+    },
+    {
+      "key": "D",
+      "en": "==Fine-tune== the model on the precedent memos so it can ==recall clause numbers== without retrieval.",
+      "ko": "검색 없이 ==조항 번호를 기억==하도록 선례 메모로 모델을 ==파인튜닝==한다."
+    }
+  ],
+  "answer": "A",
+  "explanation": "이 변형은 정답을 '하이브리드로 바꿔라' 로 좁혀서 낸다.\n- ==embedding-only ... misses exact clause references== → 임베딩은 의미 유사도라 `CL-12.4` 같은 정확 문자열에 약하다 → **키워드 검색 추가**.\n- ==broad questions== 는 여전히 임베딩이 필요하니 대체가 아니라 **병행(하이브리드)**.\n- ==thousands ... updated as cases close== → 프롬프트 삽입·파인튜닝 탈락.\n- 합친 결과 중 **상위 청크만** 보내야 프롬프트 과부하가 없다.",
+  "traps": [
+    {
+      "key": "B",
+      "why": "수천 개 문서를 시스템 프롬프트에 나열하면 컨텍스트 한도와 비용을 넘고, 사건이 종결될 때마다 프롬프트를 고쳐야 한다."
+    },
+    {
+      "key": "C",
+      "why": "결과 수를 늘려도 임베딩이 정확 문자열을 못 잡는 근본 문제는 그대로이고, 컨텍스트만 잡음으로 채워 정확도가 떨어진다."
+    },
+    {
+      "key": "D",
+      "why": "자주 갱신되는 지식에 파인튜닝은 부적합하고, 조항 번호 같은 식별자는 가중치로 외워도 신뢰할 수 없다."
+    }
+  ],
+  "keyPoints": [
+    "Embedding-only misses exact identifiers; add lexical retrieval and merge, do not replace. // 임베딩만은 식별자에 약함, 키워드 추가해 병행.",
+    "More results is not better retrieval; ranking and selecting the top chunks is. // 결과 수 늘리기가 아니라 상위 청크 선별."
+  ],
+  "pattern": {
+    "type": "지식 접근 계층(RAG) 설계",
+    "asks": "임베딩만 쓰는 검색이 식별자를 놓칠 때의 개선.",
+    "clues": [
+      {
+        "text": "embedding-only ... misses exact clause references",
+        "means": "키워드 검색 추가"
+      },
+      {
+        "text": "broad questions",
+        "means": "임베딩은 유지 → 하이브리드"
+      },
+      {
+        "text": "thousands ... updated as cases close",
+        "means": "프롬프트 삽입·파인튜닝 탈락"
+      },
+      {
+        "text": "top-ranked chunks",
+        "means": "선택된 청크만"
+      }
+    ],
+    "answerShape": "키워드 + 임베딩 병행, 결과 병합, 상위 청크만 전달.",
+    "distractorShape": "프롬프트에 전부, 결과 수만 늘리기, 파인튜닝."
+  },
+  "kind": "question",
+  "generated": true,
+  "reviewed": false,
+  "createdAt": "2026-09-09T13:00:00Z"
+}

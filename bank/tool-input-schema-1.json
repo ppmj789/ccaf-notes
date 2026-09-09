@@ -1,0 +1,87 @@
+{
+  "id": "b-tool-input-schema-1",
+  "order": 24.11,
+  "section": "Reliable Prompts & Structured Output",
+  "lecture": "24",
+  "patternId": "tool-input-schema",
+  "source": "q-024-1 변형",
+  "title_en": "Input schema for a shared book_travel tool",
+  "title": "공용 book_travel 툴의 입력 스키마",
+  "domain": "툴·에이전트 루프",
+  "question_en": "Several travel-planning agents share a ==book_travel== tool. Logs show agents calling it with ==cabin_class \"the good one\"==, ==passengers \"a few\"==, and ==dates written in different formats==, so the booking backend ==rejects or misreads== many requests and ==cannot validate== them consistently. The tool's free-text ==trip_notes== field works well and should stay flexible. What is the best change to the tool's ==input_schema==?",
+  "question_ko": "여행 계획 에이전트 여럿이 ==book_travel== 툴을 공유한다. 로그를 보면 에이전트가 ==cabin_class \"the good one\"==, ==passengers \"a few\"==, ==형식이 제각각인 날짜==로 호출해서 예약 백엔드가 요청을 ==거부하거나 잘못 읽고== 일관되게 ==검증하지 못한다==. 자유 텍스트 ==trip_notes== 필드는 잘 작동하니 유연하게 남겨야 한다. ==input_schema== 에 가장 좋은 변경은?",
+  "options": [
+    {
+      "key": "A",
+      "en": "Make ==every field a regex-validated string==, including trip_notes, so ==nothing unexpected== can ever reach the backend.",
+      "ko": "==예상 밖의 값이 아무것도== 백엔드에 닿지 않도록 trip_notes 를 포함해 ==모든 필드를 정규식 검증 문자열==로 만든다."
+    },
+    {
+      "key": "B",
+      "en": "Give each field a ==description and example==, define cabin_class as an ==enum== (economy, premium, business, first), passengers as an ==integer with a 1 to 9 range==, and dates as ISO strings, while ==leaving trip_notes as free text==.",
+      "ko": "필드마다 ==설명과 예시==를 주고, cabin_class 는 ==enum==(economy, premium, business, first), passengers 는 ==1~9 범위 integer==, 날짜는 ISO 문자열로 정의하되 ==trip_notes 는 자유 텍스트로 둔다==."
+    },
+    {
+      "key": "C",
+      "en": "Keep the schema as ==bare field names== and add a system prompt line telling agents to ==be careful with values==.",
+      "ko": "스키마는 ==필드 이름만== 두고 에이전트에게 ==값을 조심하라==는 시스템 프롬프트 한 줄을 추가한다."
+    },
+    {
+      "key": "D",
+      "en": "Accept a ==single free-form object== so agents can pass whatever booking details they have and the ==backend sorts it out==.",
+      "ko": "에이전트가 가진 예약 정보를 무엇이든 넘기고 ==백엔드가 알아서 정리==하도록 ==자유 형식 객체 하나==를 받는다."
+    }
+  ],
+  "answer": "B",
+  "explanation": "지어낸 값은 모델 탓이 아니라 ==스키마가 허용 범위를 안 알려 준== 탓이다.\n- ==\"the good one\"== → 허용 값 목록이 없었다 → **enum**.\n- ==\"a few\"== → 타입·범위가 없었다 → **integer + 1~9**.\n- ==dates in different formats== → 형식 예시가 없었다 → **설명 + 예시(ISO)**.\n- ==cannot validate== → 스키마가 검증 기준을 줘야 한다.\n- ==trip_notes should stay flexible== → 자연어 필드는 **자유롭게**. 과잉 제약(전부 정규식)은 정상 호출을 거부한다.\n\n정답 모양: 필드마다 설명·예시·enum·범위, 자연어만 자유.",
+  "traps": [
+    {
+      "key": "A",
+      "why": "과잉 제약. 지문이 '유연하게 남겨야 한다' 고 한 trip_notes 까지 정규식으로 묶어 정상 요청을 대량 거부한다."
+    },
+    {
+      "key": "C",
+      "why": "지금 실패한 이유가 '이름만 있고 값은 추론에 맡겨서' 다. 프롬프트 한 줄은 검증 기준이 아니다."
+    },
+    {
+      "key": "D",
+      "why": "구조가 없으면 에이전트마다 다른 키를 넘기고 백엔드는 아무것도 검증할 수 없다. '검증하지 못한다' 를 더 악화시킨다."
+    }
+  ],
+  "keyPoints": [
+    "Invented values mean the schema never said what is allowed: add description, example, enum, type and range per field. // 지어낸 값 = 스키마 부족, 필드별 설명·예시·enum·범위.",
+    "Keep natural-language fields free; regex on everything rejects legitimate calls. // 자연어 필드는 자유, 전부 정규식은 과잉 제약."
+  ],
+  "pattern": {
+    "type": "툴 입력 스키마 설계",
+    "asks": "에이전트가 지어낸 값을 못 넣게 하려면 스키마를 어떻게 쓸지.",
+    "clues": [
+      {
+        "text": "\"the good one\"",
+        "means": "허용 값 없음 → enum"
+      },
+      {
+        "text": "\"a few\"",
+        "means": "타입·범위 없음 → integer + 범위"
+      },
+      {
+        "text": "dates in different formats",
+        "means": "형식 예시 필요"
+      },
+      {
+        "text": "cannot validate",
+        "means": "스키마가 검증 기준"
+      },
+      {
+        "text": "trip_notes should stay flexible",
+        "means": "자연어는 자유"
+      }
+    ],
+    "answerShape": "필드마다 설명 + 예시 + enum + 범위, 자연어 필드만 자유.",
+    "distractorShape": "너무 약함(이름만 + 프롬프트), 너무 강함(전부 정규식), 아예 없음(자유 객체)."
+  },
+  "kind": "question",
+  "generated": true,
+  "reviewed": false,
+  "createdAt": "2026-09-09T13:00:00Z"
+}

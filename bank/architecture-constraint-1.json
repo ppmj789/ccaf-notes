@@ -1,0 +1,83 @@
+{
+  "id": "b-architecture-constraint-1",
+  "order": 28.11,
+  "section": "Reliable Prompts & Structured Output",
+  "lecture": "28",
+  "patternId": "architecture-constraint",
+  "source": "q-028-1 변형",
+  "title_en": "Batch API for a nightly loan-application backlog?",
+  "title": "야간 대출 신청 적체에 Batch API 를 쓸까?",
+  "domain": "신뢰성",
+  "question_en": "A lender wants to ==cut cost== by pushing a ==nightly backlog of 25,000== stalled loan applications through the ==Batch API==. Each batch item would ask Claude to ==pull the applicant's credit file, verify income documents, decide approval, call issue_offer==, and then ==flag exceptions for underwriters==. ==Which constraint== should most strongly shape this design?",
+  "question_ko": "대출사가 ==비용을 줄이려고== 정체된 대출 신청 ==야간 적체 25,000건==을 ==Batch API== 로 처리하려 한다. 배치 항목마다 Claude 가 ==신청자의 신용 파일을 가져오고, 소득 서류를 검증하고, 승인을 결정하고, issue_offer 를 호출==한 뒤 ==예외를 심사역에게 표시==하게 할 계획이다. 이 설계를 가장 강하게 좌우해야 할 ==제약==은?",
+  "options": [
+    {
+      "key": "A",
+      "en": "Batch requests ==cannot return JSON==, so the approval decision must be plain text.",
+      "ko": "배치 요청은 ==JSON 을 반환할 수 없으므로== 승인 결정은 일반 텍스트여야 한다."
+    },
+    {
+      "key": "B",
+      "en": "A batch item is a ==one-shot request with no mid-request tool loop==, so use batch for ==independent steps== such as classifying or summarizing pre-gathered documents, and run the ==multi-step verify-decide-issue flow== in a real-time agent loop.",
+      "ko": "배치 항목은 ==요청 중간에 툴 루프가 없는 일회성 요청==이므로, 미리 모은 서류를 분류·요약하는 ==독립 단계==에는 배치를 쓰고, ==검증-결정-발급 다단계 흐름==은 실시간 에이전트 루프로 돌린다."
+    },
+    {
+      "key": "C",
+      "en": "The Batch API is designed for ==faster responses==, so it should also handle ==live applicant chats==.",
+      "ko": "Batch API 는 ==더 빠른 응답==을 위해 설계됐으므로 ==실시간 신청자 채팅==도 처리해야 한다."
+    },
+    {
+      "key": "D",
+      "en": "Submit each application as one batch item and let it ==run the full tool sequence== overnight exactly as the daytime agent does.",
+      "ko": "각 신청을 배치 항목 하나로 제출하고 주간 에이전트와 똑같이 ==전체 툴 시퀀스를 돌리게== 한다."
+    }
+  ],
+  "answer": "B",
+  "explanation": "==cut cost== / ==25,000== / ==nightly== 는 배치가 맞아 보이게 하는 미끼다. 작업 내용을 보면 ==pull ... verify ... decide ... call issue_offer ... flag== 로 **툴 왕복이 여러 번** 필요한 에이전트 루프다.\n- 배치 항목 = 툴 실행 루프가 없는 **일회성 요청**. 결과가 최대 24시간 뒤에 오고 중간에 툴을 실행할 주체가 없다.\n- 그래서 정답은 작업을 **둘로 나눈다**. 미리 모은 서류 분류·요약 같은 독립 작업은 배치, 다단계 결정은 실시간 루프.\n\n| 보기 | 문제 |\n|---|---|\n| A | 배치 특성 오해(JSON 불가는 거짓) |\n| C | 배치 특성 오해(응답 시간용 아님) |\n| D | 제안 설계를 그대로 승인 |",
+  "traps": [
+    {
+      "key": "A",
+      "why": "배치는 형식과 무관하게 일반 요청과 같은 출력을 낸다. JSON 불가는 사실이 아니다."
+    },
+    {
+      "key": "C",
+      "why": "배치는 비용·처리량용이고 지연 SLA 가 없다(최대 24시간). 실시간 채팅에는 절대 쓰지 않는다."
+    },
+    {
+      "key": "D",
+      "why": "배치 항목 안에서는 툴 루프가 돌지 않는다. 주간 에이전트 흐름을 그대로 옮길 수 없다."
+    }
+  ],
+  "keyPoints": [
+    "A batch item cannot run a mid-request tool loop; split independent work to batch, tool-using flows to real time. // 배치엔 툴 루프 없음, 독립 작업만 배치.",
+    "Cost and volume clues are bait; read what the job actually does. // 비용·규모 미끼에 넘어가지 말 것."
+  ],
+  "pattern": {
+    "type": "아키텍처 제약 찾기",
+    "asks": "배치의 장점이 아니라 배치가 못 하는 것이 무엇인지.",
+    "clues": [
+      {
+        "text": "cut cost / 25,000 / nightly",
+        "means": "배치 미끼"
+      },
+      {
+        "text": "pull ... verify ... decide ... call issue_offer",
+        "means": "툴 왕복 여러 번 = 에이전트 루프"
+      },
+      {
+        "text": "each batch item would",
+        "means": "항목 하나 = 일회성 요청"
+      },
+      {
+        "text": "which constraint",
+        "means": "한계를 묻는 질문"
+      }
+    ],
+    "answerShape": "작업을 둘로 나눔. 독립 작업은 배치, 툴 루프는 실시간.",
+    "distractorShape": "배치 특성 오해(JSON 불가, 응답 시간용), 제안 설계 승인."
+  },
+  "kind": "question",
+  "generated": true,
+  "reviewed": false,
+  "createdAt": "2026-09-09T13:00:00Z"
+}

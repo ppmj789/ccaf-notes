@@ -8,13 +8,14 @@
 
 사용법: python3 serve.py [포트]   (기본 8787)
 """
-import json, pathlib, subprocess, sys
+import json, pathlib, subprocess, sys, threading
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 ROOT = pathlib.Path(__file__).parent.resolve()
 DIST = ROOT / 'dist'
 DATA = ROOT / 'data'
 PROGRESS = DATA / 'progress.json'
+LOCK = threading.Lock()  # 드릴이 여러 문제를 한꺼번에 저장할 때 tmp 파일 경합 방지
 
 
 def build():
@@ -61,7 +62,7 @@ class Handler(SimpleHTTPRequestHandler):
             return self.send_json({'ok': True})
         if self.path == '/api/data':
             return self.send_json({'progress': read_json(PROGRESS, {})})
-        if self.path in ('/', '/index.html'):
+        if self.path in ('/', '/index.html', '/drill/', '/drill/index.html'):
             try:
                 build()
             except subprocess.CalledProcessError as e:
@@ -81,9 +82,10 @@ class Handler(SimpleHTTPRequestHandler):
         try:
             body = self.read_body()
             if self.path == '/api/progress':
-                prog = read_json(PROGRESS, {})
-                prog[body['id']] = body['data']
-                write_json(PROGRESS, prog)
+                with LOCK:
+                    prog = read_json(PROGRESS, {})
+                    prog[body['id']] = body['data']
+                    write_json(PROGRESS, prog)
                 return self.send_json({'ok': True})
             return self.send_json({'error': 'unknown endpoint'}, 404)
         except Exception as e:  # noqa: BLE001

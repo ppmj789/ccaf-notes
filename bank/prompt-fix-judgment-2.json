@@ -1,0 +1,83 @@
+{
+  "id": "b-prompt-fix-judgment-2",
+  "order": 29.12,
+  "section": "Reliable Prompts & Structured Output",
+  "lecture": "29",
+  "patternId": "prompt-fix-judgment",
+  "source": "q-029-1 변형",
+  "title_en": "Stopping a travel bot from logging wishes as bookings",
+  "title": "여행 봇이 희망 사항을 예약으로 기록하지 않게 하기",
+  "domain": "프롬프트·평가",
+  "question_en": "A travel agency's assistant extracts ==confirmed booking requests== from customer chats into a JSON action list. The list ==validates cleanly== every time, yet agents notice it ==often records tentative remarks== like \"maybe Lisbon in spring\" ==as confirmed bookings==, so staff must undo reservations. Which prompt change is the best approach to ==reduce these false positives== without breaking the ==downstream reservation pipeline==?",
+  "question_ko": "여행사 어시스턴트가 고객 채팅에서 ==확정된 예약 요청==을 JSON 액션 목록으로 추출한다. 목록은 매번 ==깨끗하게 검증을 통과==하지만, 담당자들은 \"봄에 리스본이면 좋겠다\" 같은 ==잠정적인 말==을 ==확정 예약으로 자주 기록==해서 예약을 취소해야 한다고 한다. ==다운스트림 예약 파이프라인==을 깨지 않으면서 ==이런 false positive 를 줄이는== 가장 좋은 프롬프트 변경은?",
+  "options": [
+    {
+      "key": "A",
+      "en": "Define ==what counts as a confirmed request== (explicit dates, named traveler, clear intent to book) and ==what does not== (wishes, hypotheticals, questions), then add ==contrastive few-shot examples in the same JSON format== showing both.",
+      "ko": "==확정 요청의 조건==(명시된 날짜, 여행자 이름, 분명한 예약 의사)과 ==아닌 것==(희망, 가정, 질문)을 정의하고, 둘 다 보여 주는 ==같은 JSON 형식의 대조 few-shot 예시==를 추가한다."
+    },
+    {
+      "key": "B",
+      "en": "Add a ==stricter schema== with a required ==confirmation_code== field so unconfirmed items ==cannot be emitted==.",
+      "ko": "확정되지 않은 항목이 ==나올 수 없도록== required ==confirmation_code== 필드를 가진 ==더 엄격한 스키마==를 추가한다."
+    },
+    {
+      "key": "C",
+      "en": "Ask Claude to ==think step by step== about each remark and ==trust that reasoning== to decide what is a booking.",
+      "ko": "각 발언에 대해 ==단계별로 생각==하게 하고 ==그 추론을 신뢰==해 예약 여부를 정하게 한다."
+    },
+    {
+      "key": "D",
+      "en": "Expand the system prompt with a ==long description of the travel business== and ask for only ==relevant and meaningful== bookings.",
+      "ko": "시스템 프롬프트에 ==여행 사업에 대한 긴 설명==을 넣고 ==관련 있고 의미 있는== 예약만 뽑으라고 한다."
+    }
+  ],
+  "answer": "A",
+  "explanation": "단서 세 개가 정답의 세 조각과 맞물린다.\n- ==validates cleanly== → 모양은 멀쩡하다 → 스키마 보기(B) 탈락.\n- ==tentative remarks ... as confirmed bookings== → **false positive**, 즉 precision 문제. \"maybe\" 와 확정의 경계를 **포함·제외 규칙**으로 명시한다.\n- 경계가 미묘하니 **대조 예시**. 맞는 예약과 비슷하게 생긴 희망 사항을 나란히 보여 준다.\n- ==without breaking the downstream pipeline== → 예시는 **같은 JSON 형식**.\n\n'뜻이 틀리면 규칙과 예시, 모양이 틀리면 스키마' 를 그대로 적용한 문제다.",
+  "traps": [
+    {
+      "key": "B",
+      "why": "모델이 confirmation_code 를 지어 넣으면 그대로 통과한다. 스키마는 '확정인가' 라는 판단을 대신하지 못한다."
+    },
+    {
+      "key": "C",
+      "why": "기준 없는 추론은 가드레일이 아니다. 어디까지가 확정인지 알려 주지 않으면 추론도 같은 오판을 한다."
+    },
+    {
+      "key": "D",
+      "why": "'관련 있고 의미 있는' 은 주관적 형용사이고, 긴 도메인 설명은 경계를 긋지 않는다."
+    }
+  ],
+  "keyPoints": [
+    "False positives with clean validation call for inclusion and exclusion rules plus contrastive examples. // 검증 통과 + false positive = 규칙 + 대조 예시.",
+    "A stricter schema cannot decide intent; the model can always fill a required field. // 스키마는 의도를 판단 못 한다."
+  ],
+  "pattern": {
+    "type": "프롬프트 변경 선택(판단 기준)",
+    "asks": "확정과 잠정을 구분 못 하는 판단 문제를 프롬프트로 고치는 방법.",
+    "clues": [
+      {
+        "text": "validates cleanly",
+        "means": "스키마 문제 아님"
+      },
+      {
+        "text": "tentative remarks as confirmed bookings",
+        "means": "false positive = precision"
+      },
+      {
+        "text": "\"maybe Lisbon in spring\"",
+        "means": "희망 vs 확정 경계 → 규칙"
+      },
+      {
+        "text": "without breaking the downstream pipeline",
+        "means": "예시는 같은 JSON 형식"
+      }
+    ],
+    "answerShape": "포함·제외 규칙 + 대조 few-shot + 목표 형식.",
+    "distractorShape": "스키마 조이기, 자기 추론 신뢰, 주관적 형용사 + 긴 설명."
+  },
+  "kind": "question",
+  "generated": true,
+  "reviewed": false,
+  "createdAt": "2026-09-09T13:00:00Z"
+}
