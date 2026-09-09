@@ -602,13 +602,58 @@
   const lsGet = (k, d) => { try { return JSON.parse(localStorage.getItem(k) || 'null') ?? d; } catch { return d; } };
   const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
 
+  // local backend (serve.py): files in data/, translation via claude CLI
+  const local = {
+    ok: false, claude: false,
+    async ping() {
+      try { const r = await fetch('/api/ping', { cache: 'no-store' }); if (!r.ok) return false; const j = await r.json(); this.ok = !!j.ok; this.claude = !!j.claude; return this.ok; } catch { return false; }
+    },
+    async post(path, body) {
+      const r = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || j.error) throw { code: 'local', message: j.error || ('HTTP ' + r.status) };
+      return j;
+    },
+    async load() { const r = await fetch('/api/data', { cache: 'no-store' }); return r.json(); },
+  };
+  function parseJsonLoose(text) {
+    const tries = [text, (text.match(/```(?:json)?\s*([\s\S]*?)```/) || [])[1], text.slice(Math.min(...['[', '{'].map(c => { const i = text.indexOf(c); return i < 0 ? Infinity : i; })), Math.max(text.lastIndexOf(']'), text.lastIndexOf('}')) + 1)];
+    for (const t of tries) { if (!t) continue; try { return JSON.parse(t); } catch {} }
+    throw { code: 'invalid_json', message: 'JSON 을 읽지 못했어요', text };
+  }
+  function makeLocalSample() {
+    const fn = async (prompt, opts = {}) => {
+      const j = await local.post('/api/sample', { prompt, model: opts.modelTier === 'quick' ? 'haiku' : 'sonnet' });
+      if (opts.onText) opts.onText({ text: j.text, delta: j.text });
+      return { text: j.text, truncated: false };
+    };
+    fn.json = async (prompt, opts) => parseJsonLoose((await fn(prompt, opts)).text);
+    return fn;
+  }
+
   async function connect() {
     state.progress = lsGet(LS.progress, {});
     state.lectures = lsGet(LS.lectures, []);
     render();
     let db = null;
     try { db = window.claude?.use ? await claude.use('db') : null; } catch { db = null; }
-    if (!db) { $('#dbmsg').textContent = '이 브라우저에만 저장'; return; }
+    if (!db) {
+      if (await local.ping()) {
+        try {
+          const d = await local.load();
+          state.progress = d.progress || {}; state.lectures = d.lectures || [];
+        } catch {}
+        state.backend = 'local';
+        if (local.claude) state.sample = makeLocalSample();
+        $('#dbdot').classList.add('on');
+        $('#dbmsg').textContent = local.claude ? '프로젝트 폴더에 저장 · Claude CLI 연결됨' : '프로젝트 폴더에 저장 · Claude CLI 없음';
+        render();
+        return;
+      }
+      $('#dbmsg').textContent = '이 브라우저에만 저장';
+      return;
+    }
+    state.backend = 'db';
     state.db = db;
     $('#dbdot').classList.add('on');
     $('#dbmsg').textContent = '저장됨';
@@ -628,11 +673,12 @@
   function saveProgress(pageId, patch) {
     state.progress[pageId] = { ...(state.progress[pageId] || {}), ...patch, studiedAt: new Date().toISOString() };
     lsSet(LS.progress, state.progress);
-    if (!state.db) return;
+    if (!state.db && state.backend !== 'local') return;
     clearTimeout(saveTimers[pageId]);
     saveTimers[pageId] = setTimeout(async () => {
       try {
-        await state.db.doc('progress/' + pageId).set(state.progress[pageId]);
+        if (state.db) await state.db.doc('progress/' + pageId).set(state.progress[pageId]);
+        else await local.post('/api/progress', { id: pageId, data: state.progress[pageId] });
         const s = pageEl.querySelector('.saved'); if (s) s.textContent = '저장됨 ' + new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
       } catch (e) {
         const s = pageEl.querySelector('.saved'); if (s) s.textContent = '저장 실패: ' + (e?.message || e?.code || '');
@@ -643,12 +689,14 @@
     if (state.db) { await state.db.doc('lectures/' + doc.id).set(doc); return; }
     const i = state.lectures.findIndex(l => l.id === doc.id);
     if (i >= 0) state.lectures[i] = doc; else state.lectures.push(doc);
-    lsSet(LS.lectures, state.lectures);
+    if (state.backend === 'local') await local.post('/api/lecture', doc);
+    else lsSet(LS.lectures, state.lectures);
   }
   async function deleteLecture(id) {
     if (state.db) { await state.db.doc('lectures/' + id).delete(); return; }
     state.lectures = state.lectures.filter(l => l.id !== id);
-    lsSet(LS.lectures, state.lectures);
+    if (state.backend === 'local') await local.post('/api/lecture/delete', { id });
+    else lsSet(LS.lectures, state.lectures);
   }
 
   // ---------- routing ----------
@@ -796,7 +844,7 @@
           <div><b><i class="tag" style="background:var(--sky)"></i>차례</b><span>섹션별로 강의 노트와 문제를 한눈에 보고 바로 펼친다.</span></div>
           <div><b><i class="tag" style="background:var(--lavender)"></i>한 장씩 공부</b><span>강의 노트를 읽고 문제를 풀며 한 장씩 넘긴다. 메모는 자동 저장.</span></div>
           <div><b><i class="tag" style="background:var(--sage)"></i>틀린 문제</b><span>틀린 문제만 모아 다시 푼다.</span></div>
-          <div><b><i class="tag" style="background:var(--paper-deep);border:1px solid var(--line)"></i>인강 듣기</b><span>영어 대본을 붙여 넣으면 Claude 가 한국어 번역과 요약을 만들어 저장한다.</span></div>
+          <div><b><i class="tag" style="background:var(--paper-deep);border:1px solid var(--line)"></i>인강 듣기</b><span>영어 대본을 붙여 넣으면 Claude 가 문단마다 한국어 번역을 달고 요약을 만들어 저장한다.</span></div>
         </div>
       </div>
       ${pager(state.idx, total)}`;
@@ -906,7 +954,7 @@
         <button class="btn" data-translate ${state.sample ? '' : 'disabled'}>${hasKo ? '한국어 다시 만들기' : '한국어 번역·요약 만들기'}</button>
         <button class="btn ghost" data-back>목록으로</button>
         <button class="btn ghost" data-del style="color:var(--wrong);border-color:var(--wrong)">삭제</button>
-        <span class="hint" style="font-size:13px;color:var(--ink-faint)">${state.sample ? '문단마다 영어 밑에 한국어가 붙고, 위에 요약이 생겨요.' : 'claude.ai 에서 열면 번역과 요약을 만들 수 있어요.'}</span>
+        <span class="hint" style="font-size:13px;color:var(--ink-faint)">${state.sample ? '문단마다 영어 밑에 한국어가 붙고, 위에 요약이 생겨요.' : 'python3 serve.py 로 열거나 claude.ai 에서 열면 번역과 요약을 만들 수 있어요.'}</span>
       </div>
       <div class="working" data-working></div>
       <div class="err" data-err></div>
