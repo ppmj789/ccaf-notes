@@ -689,8 +689,8 @@
     <button class="brand" id="homebtn" title="표지로">미지의 CCAF 노트</button>
     <span class="status">
       <select id="palette" title="테마" aria-label="테마">
-        <option value="white">화이트 노트</option>
         <option value="paper">종이</option>
+        <option value="white">화이트 노트</option>
         <option value="mint">민트</option>
         <option value="midnight">미드나잇</option>
       </select>
@@ -730,7 +730,7 @@
   const LS_KEY = 'ccaf-notes-progress';
   const PALETTE_KEY = 'ccaf-palette';
   (() => {
-    let pal = 'white'; try { pal = localStorage.getItem(PALETTE_KEY) || pal; } catch {}
+    let pal = 'paper'; try { pal = localStorage.getItem(PALETTE_KEY) || pal; } catch {}
     document.documentElement.dataset.palette = pal;
     const sel = document.getElementById('palette'); sel.value = pal;
     sel.addEventListener('change', () => { document.documentElement.dataset.palette = sel.value; try { localStorage.setItem(PALETTE_KEY, sel.value); } catch {} });
