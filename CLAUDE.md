@@ -13,7 +13,7 @@ Udemy 강의 대본과 기출 문제를 "한 장씩 넘기는 다이어리" 웹�
 - `serve.py` — 로컬 서버 (`python3 serve.py` → http://localhost:8787, 새로고침마다 자동 빌드). 답·메모는 `data/progress.json`.
 - 아티팩트(claude.ai): https://claude.ai/code/artifact/f38187b9-3a04-4fc3-a0db-c20d1fff34de — `dist/index.html` 을 이 `url` 로 재발행, capabilities `{"db": {}}` 만.
 - `site.json` — Supabase 접속 정보(`supabaseUrl`, `supabaseAnonKey`). build 가 `/*__SITE__*/` 에 심는다. anon key 는 공개용이라 커밋해도 된다. 진도 저장 우선순위: 아티팩트 db → Supabase(로그인 필요, `supabase/schema.sql` 의 `progress` 테이블, RLS 로 본인 행만) → 로컬 serve.py → localStorage.
-- `.github/workflows/pages.yml` — push 마다 build 해서 GitHub Pages 로 배포. 휴대폰은 이 주소로 본다.
+- GitHub: https://github.com/ppmj789/ccaf-notes (공개, 기본 브랜치 `master`). `.github/workflows/pages.yml` 이 push 마다 build 해서 GitHub Pages 로 배포 → https://ppmj789.github.io/ccaf-notes/ (휴대폰은 이 주소). Pages 환경 허용 브랜치에 `master` 를 추가해 두었다.
 
 책 구조: 표지 → 차례 → **Part 1 인강**(섹션 간지 → 강의 장) → **Part 2 문제**(섹션 간지 → 문제 장). 인강과 문제는 섞지 않는다.
 
