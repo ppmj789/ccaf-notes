@@ -1,0 +1,602 @@
+{
+ "id": "l-030",
+ "kind": "lesson",
+ "order": 30,
+ "section": "Tools, MCP, and Agentic Loop",
+ "lecture": "30",
+ "title_en": "The Tool Use Loop",
+ "title": "툴 사용 루프",
+ "domain": "툴·에이전트 루프",
+ "summary": "Claude decides a tool should be used, your application executes it and returns a tool_result with the same tool_use_id, and the loop repeats while stop_reason is tool_use and ends on end_turn; the backend, not the model, enforces permissions and business rules. // Claude 가 툴 사용을 결정하면 애플리케이션이 실행하고 같은 tool_use_id 로 tool_result 를 돌려주며, stop_reason 이 tool_use 인 동안 반복하고 end_turn 에서 끝난다. 권한과 비즈니스 규칙은 모델이 아니라 백엔드가 강제한다.",
+ "paragraphs": [
+  {
+   "en": "In the previous lessons, we introduced tools, schemas, and structured output.",
+   "ko": "지난 강의들에서 툴, schema, 구조화 출력을 소개했습니다."
+  },
+  {
+   "en": "Now, let's connect those pieces into the full tool use loop.",
+   "ko": "이제 그 조각들을 완전한 툴 사용 루프로 연결해 봅시다."
+  },
+  {
+   "en": "This is the mechanism that allows Claude to act as part of an autonomous workflow.",
+   "ko": "이것이 Claude 가 자율 워크플로우의 일부로 동작하게 하는 메커니즘입니다."
+  },
+  {
+   "en": "But the most important thing to remember is this.",
+   "ko": "하지만 가장 중요하게 기억할 것은 이겁니다."
+  },
+  {
+   "en": "Claude does not execute tools by itself.",
+   "ko": "Claude 는 스스로 툴을 실행하지 않습니다."
+  },
+  {
+   "en": "Claude decides that a tool should be used.",
+   "ko": "Claude 는 툴을 써야 한다고 결정합니다."
+  },
+  {
+   "en": "Your application executes the tool.",
+   "ko": "여러분의 애플리케이션이 툴을 실행합니다."
+  },
+  {
+   "en": "Then your application sends the result back to Claude.",
+   "ko": "그다음 애플리케이션이 결과를 Claude 에 돌려보냅니다."
+  },
+  {
+   "en": "And Claude decides what to do next.",
+   "ko": "그리고 Claude 가 다음에 무엇을 할지 결정합니다."
+  },
+  {
+   "en": "Let's look at how this works.",
+   "ko": "어떻게 돌아가는지 봅시다."
+  },
+  {
+   "en": "When Claude wants to use a tool, the assistant response does not contain only normal text.",
+   "ko": "Claude 가 툴을 쓰고 싶을 때, assistant 응답에는 일반 텍스트만 있지 않습니다."
+  },
+  {
+   "en": "It can contain a tool use block.",
+   "ko": "tool_use 블록이 들어 있을 수 있습니다."
+  },
+  {
+   "en": "That block tells your application three things.",
+   "ko": "그 블록은 애플리케이션에 세 가지를 알려줍니다."
+  },
+  {
+   "en": "The name of the tool Claude wants to call.",
+   "ko": "Claude 가 부르고 싶은 툴의 이름."
+  },
+  {
+   "en": "The input arguments for that tool.",
+   "ko": "그 툴의 입력 인자."
+  },
+  {
+   "en": "And a tool use ID.",
+   "ko": "그리고 tool_use_id."
+  },
+  {
+   "en": "The tool use ID is important because it connects the tool request with the tool result.",
+   "ko": "tool_use_id 가 중요한 이유는 툴 요청과 툴 결과를 연결하기 때문입니다."
+  },
+  {
+   "en": "For example, in ShopAssist, Claude might receive a customer message like",
+   "ko": "예를 들어 ShopAssist 에서 Claude 는 이런 고객 메시지를 받을 수 있습니다."
+  },
+  {
+   "en": "I want a refund for my last order.",
+   "ko": "\"지난 주문 환불받고 싶어요."
+  },
+  {
+   "en": "It arrived damaged.",
+   "ko": "망가진 채로 왔어요.\""
+  },
+  {
+   "en": "Claude should not guess the customer record.",
+   "ko": "Claude 는 고객 레코드를 추측하면 안 됩니다."
+  },
+  {
+   "en": "It may request a tool call like get_customer.",
+   "ko": "get_customer 같은 툴 호출을 요청할 수 있습니다."
+  },
+  {
+   "en": "With the customer email or account identifier as input.",
+   "ko": "고객 이메일이나 계정 식별자를 입력으로."
+  },
+  {
+   "en": "At this point, the API response usually has stop reason tool use.",
+   "ko": "이 시점에 API 응답의 stop_reason 은 보통 tool_use 입니다."
+  },
+  {
+   "en": "This means Claude is not finished yet.",
+   "ko": "이건 Claude 가 아직 안 끝났다는 뜻입니다."
+  },
+  {
+   "en": "It is asking your application to run a tool before it can continue.",
+   "ko": "계속하기 전에 애플리케이션에 툴을 실행해 달라고 요청하는 겁니다."
+  },
+  {
+   "en": "Now, your backend executes the requested tool.",
+   "ko": "이제 백엔드가 요청된 툴을 실행합니다."
+  },
+  {
+   "en": "Maybe it looks up the customer in your database.",
+   "ko": "데이터베이스에서 고객을 조회할 수도 있고,"
+  },
+  {
+   "en": "Maybe it calls an order service.",
+   "ko": "주문 서비스를 호출할 수도 있고,"
+  },
+  {
+   "en": "Maybe it checks whether the refund is allowed.",
+   "ko": "환불이 허용되는지 확인할 수도 있습니다."
+  },
+  {
+   "en": "The model is not doing any of that directly.",
+   "ko": "모델은 그중 어떤 것도 직접 하지 않습니다."
+  },
+  {
+   "en": "Your application is responsible for permissions,",
+   "ko": "애플리케이션이 권한,"
+  },
+  {
+   "en": "business rules, authentication, validation, rate limits, and safety checks.",
+   "ko": "비즈니스 규칙, 인증, validation, 속도 제한, 안전 검사를 책임집니다."
+  },
+  {
+   "en": "After your application runs the tool, it sends the tool result back to Claude.",
+   "ko": "애플리케이션이 툴을 실행한 뒤, 툴 결과를 Claude 에 돌려보냅니다."
+  },
+  {
+   "en": "This result is added to the conversation history as a user message containing a tool result block.",
+   "ko": "이 결과는 tool_result 블록을 담은 user 메시지로 대화 기록에 추가됩니다."
+  },
+  {
+   "en": "That result must include the same tool use ID.",
+   "ko": "그 결과에는 같은 tool_use_id 가 들어 있어야 합니다."
+  },
+  {
+   "en": "This is how Claude knows which tool request the result belongs to.",
+   "ko": "그래야 Claude 가 이 결과가 어느 툴 요청의 것인지 압니다."
+  },
+  {
+   "en": "Then we call Claude again with the updated conversation history.",
+   "ko": "그다음 갱신된 대화 기록으로 Claude 를 다시 부릅니다."
+  },
+  {
+   "en": "Now Claude can inspect the tool result and decide the next step.",
+   "ko": "이제 Claude 는 툴 결과를 살펴보고 다음 단계를 정할 수 있습니다."
+  },
+  {
+   "en": "Maybe it needs to call lookup_order.",
+   "ko": "lookup_order 를 불러야 할 수도 있고,"
+  },
+  {
+   "en": "Maybe it has enough information to call process_refund.",
+   "ko": "process_refund 를 부를 만큼 정보가 충분할 수도 있고,"
+  },
+  {
+   "en": "Maybe the order is outside the refund window, so it should call escalate_to_human.",
+   "ko": "주문이 환불 기간 밖이라 escalate_to_human 을 불러야 할 수도 있고,"
+  },
+  {
+   "en": "Or maybe it has enough information to answer the customer directly.",
+   "ko": "아니면 고객에게 바로 답할 만큼 정보가 충분할 수도 있습니다."
+  },
+  {
+   "en": "This is the agentic loop.",
+   "ko": "이것이 에이전트 루프입니다."
+  },
+  {
+   "en": "The loop is simple.",
+   "ko": "루프는 단순합니다."
+  },
+  {
+   "en": "Send the current conversation to Claude.",
+   "ko": "현재 대화를 Claude 에 보낸다."
+  },
+  {
+   "en": "If Claude returns stop reason tool use, execute the requested tool.",
+   "ko": "Claude 가 stop_reason tool_use 를 돌려주면, 요청된 툴을 실행한다."
+  },
+  {
+   "en": "Append the tool result to the conversation history.",
+   "ko": "툴 결과를 대화 기록에 추가한다."
+  },
+  {
+   "en": "Call Claude again.",
+   "ko": "Claude 를 다시 부른다."
+  },
+  {
+   "en": "Continue until Claude returns stop reason end turn.",
+   "ko": "Claude 가 stop_reason end_turn 을 돌려줄 때까지 계속한다."
+  },
+  {
+   "en": "When Claude returns end turn, that means it has produced the final assistant message for this turn.",
+   "ko": "Claude 가 end_turn 을 돌려주면, 이번 턴의 최종 assistant 메시지를 만들었다는 뜻입니다."
+  },
+  {
+   "en": "That is the response we can show to the customer.",
+   "ko": "그것이 고객에게 보여줄 수 있는 응답입니다."
+  },
+  {
+   "en": "This is also why we should not parse natural language to decide whether the task is complete.",
+   "ko": "그래서 작업이 끝났는지 판단하려고 자연어를 파싱하면 안 됩니다."
+  },
+  {
+   "en": "For example, we should not look for phrases like I'm done.",
+   "ko": "예를 들어 \"I'm done\","
+  },
+  {
+   "en": "Here is the final answer.",
+   "ko": "\"Here is the final answer\","
+  },
+  {
+   "en": "No more tools needed.",
+   "ko": "\"No more tools needed\" 같은 문구를 찾으면 안 됩니다."
+  },
+  {
+   "en": "That is fragile.",
+   "ko": "그건 깨지기 쉽습니다."
+  },
+  {
+   "en": "The reliable signal is the API response itself.",
+   "ko": "믿을 수 있는 신호는 API 응답 자체입니다."
+  },
+  {
+   "en": "If the stop reason is tool use, continue the tool loop.",
+   "ko": "stop_reason 이 tool_use 면 툴 루프를 계속한다."
+  },
+  {
+   "en": "If the stop reason is end turn, return the final response.",
+   "ko": "stop_reason 이 end_turn 이면 최종 응답을 돌려준다."
+  },
+  {
+   "en": "In real systems, we may still add a maximum iteration limit as a safety guard.",
+   "ko": "실제 시스템에서는 안전장치로 최대 반복 횟수를 둘 수 있습니다."
+  },
+  {
+   "en": "But that should not be the primary stopping mechanism.",
+   "ko": "하지만 그것이 주된 종료 메커니즘이어서는 안 됩니다."
+  },
+  {
+   "en": "The primary stopping mechanism is model-driven completion through end turn.",
+   "ko": "주된 종료 메커니즘은 end_turn 을 통한 모델 주도 완료입니다."
+  },
+  {
+   "en": "The iteration cap is only protection against bugs,",
+   "ko": "반복 상한은 버그,"
+  },
+  {
+   "en": "unexpected tool behavior, or poorly designed loops.",
+   "ko": "예상 밖의 툴 동작, 잘못 설계된 루프에 대한 보호일 뿐입니다."
+  },
+  {
+   "en": "This is different from a hard-coded decision tree.",
+   "ko": "이건 하드코딩된 결정 트리와 다릅니다."
+  },
+  {
+   "en": "In a hard-coded flow, we might write",
+   "ko": "하드코딩된 흐름에서는 이렇게 쓸 겁니다."
+  },
+  {
+   "en": "First call get_customer.",
+   "ko": "먼저 get_customer 를 부르고,"
+  },
+  {
+   "en": "Then call lookup_order.",
+   "ko": "그다음 lookup_order 를 부르고,"
+  },
+  {
+   "en": "Then call process_refund. Then respond.",
+   "ko": "그다음 process_refund 를 부르고, 그다음 답한다."
+  },
+  {
+   "en": "That can work for simple cases.",
+   "ko": "단순한 케이스에는 통할 수 있습니다."
+  },
+  {
+   "en": "But customer support conversations are often messy.",
+   "ko": "하지만 고객지원 대화는 대개 지저분합니다."
+  },
+  {
+   "en": "The customer may ask about a refund, a damaged item,",
+   "ko": "고객은 한 메시지에 환불, 파손 상품,"
+  },
+  {
+   "en": "a duplicate charge, and a policy exception in one message.",
+   "ko": "중복 청구, 정책 예외를 한꺼번에 물을 수 있습니다."
+  },
+  {
+   "en": "A tool-enabled assistant can choose the next action based on the current conversation",
+   "ko": "툴을 쓸 수 있는 어시스턴트는 현재 대화와"
+  },
+  {
+   "en": "and previous tool results.",
+   "ko": "이전 툴 결과를 바탕으로 다음 행동을 고를 수 있습니다."
+  },
+  {
+   "en": "For ShopAssist, we can expose tools like get_customer,",
+   "ko": "ShopAssist 에는 get_customer,"
+  },
+  {
+   "en": "lookup_order, process_refund, escalate_to_human.",
+   "ko": "lookup_order, process_refund, escalate_to_human 같은 툴을 열어 줄 수 있습니다."
+  },
+  {
+   "en": "Claude decides which tool is appropriate.",
+   "ko": "Claude 는 어떤 툴이 적절한지 결정합니다."
+  },
+  {
+   "en": "Your backend decides whether the requested tool call is allowed.",
+   "ko": "백엔드는 요청된 툴 호출이 허용되는지 결정합니다."
+  },
+  {
+   "en": "This distinction is very important.",
+   "ko": "이 구분이 아주 중요합니다."
+  },
+  {
+   "en": "Claude can make model-driven decisions.",
+   "ko": "Claude 는 모델 주도 결정을 내릴 수 있습니다."
+  },
+  {
+   "en": "But your application still enforces deterministic rules.",
+   "ko": "하지만 애플리케이션은 여전히 결정론적 규칙을 강제합니다."
+  },
+  {
+   "en": "For example, even if Claude requests process_refund,",
+   "ko": "예를 들어 Claude 가 process_refund 를 요청해도,"
+  },
+  {
+   "en": "your backend should reject that call if the customer has not been verified,",
+   "ko": "고객이 검증되지 않았거나,"
+  },
+  {
+   "en": "if the refund amount exceeds a limit, or if the order is not eligible.",
+   "ko": "환불 금액이 한도를 넘거나, 주문이 자격이 없으면 백엔드는 그 호출을 거부해야 합니다."
+  },
+  {
+   "en": "So the agentic loop does not mean let the model do anything.",
+   "ko": "그러니 에이전트 루프는 \"모델이 뭐든 하게 두라\" 는 뜻이 아닙니다."
+  },
+  {
+   "en": "It means let Claude decide the next reasonable step.",
+   "ko": "Claude 가 다음 합리적인 단계를 정하게 하고,"
+  },
+  {
+   "en": "Let your application execute tools safely.",
+   "ko": "애플리케이션이 툴을 안전하게 실행하고,"
+  },
+  {
+   "en": "Then return the result to Claude so it can continue.",
+   "ko": "그 결과를 Claude 에 돌려줘 계속하게 한다는 뜻입니다."
+  },
+  {
+   "en": "In this example, ShopAssist has access to four tools.",
+   "ko": "이 예제에서 ShopAssist 는 네 가지 툴을 씁니다."
+  },
+  {
+   "en": "get_customer returns a customer object based on the customer email.",
+   "ko": "get_customer 는 고객 이메일로 고객 객체를 돌려줍니다."
+  },
+  {
+   "en": "lookup_order returns order details based on the order ID.",
+   "ko": "lookup_order 는 주문 ID 로 주문 상세를 돌려줍니다."
+  },
+  {
+   "en": "process_refund processes a refund when the order is eligible.",
+   "ko": "process_refund 는 주문이 자격이 있을 때 환불을 처리합니다."
+  },
+  {
+   "en": "And escalate_to_human creates an escalation when the case should not be handled automatically.",
+   "ko": "그리고 escalate_to_human 은 자동 처리하면 안 되는 케이스에 에스컬레이션을 만듭니다."
+  },
+  {
+   "en": "These tool definitions describe what Claude is allowed to request.",
+   "ko": "이 툴 정의들은 Claude 가 요청할 수 있는 것을 설명합니다."
+  },
+  {
+   "en": "Each tool has a name, a description, and an input schema.",
+   "ko": "각 툴에는 이름, 설명, 입력 schema 가 있습니다."
+  },
+  {
+   "en": "But the tool definition itself does not run anything.",
+   "ko": "하지만 툴 정의 자체는 아무것도 실행하지 않습니다."
+  },
+  {
+   "en": "It only tells Claude what structured tool calls are available.",
+   "ko": "어떤 구조화된 툴 호출이 가능한지 Claude 에 알려줄 뿐입니다."
+  },
+  {
+   "en": "Now let's look at the actual implementation of these functions.",
+   "ko": "이제 이 함수들의 실제 구현을 봅시다."
+  },
+  {
+   "en": "In this demo, get_customer simply returns test customer data.",
+   "ko": "이 데모에서 get_customer 는 그냥 테스트 고객 데이터를 돌려줍니다."
+  },
+  {
+   "en": "In a real application, this could be a database query or an API call to a customer service.",
+   "ko": "실제 애플리케이션에서는 데이터베이스 쿼리나 고객 서비스 API 호출일 수 있습니다."
+  },
+  {
+   "en": "lookup_order returns a fake order object with the order status, item name, and refund eligibility.",
+   "ko": "lookup_order 는 주문 상태, 상품명, 환불 자격이 담긴 가짜 주문 객체를 돌려줍니다."
+  },
+  {
+   "en": "In production, this could call an order management system.",
+   "ko": "프로덕션에서는 주문 관리 시스템을 호출할 수 있습니다."
+  },
+  {
+   "en": "process_refund returns a fake approved refund result.",
+   "ko": "process_refund 는 가짜 승인 환불 결과를 돌려줍니다."
+  },
+  {
+   "en": "In a real system, this would usually call a payment provider or internal refund service.",
+   "ko": "실제 시스템에서는 보통 결제 제공자나 내부 환불 서비스를 호출합니다."
+  },
+  {
+   "en": "And escalate_to_human returns a simple escalation object.",
+   "ko": "그리고 escalate_to_human 은 간단한 에스컬레이션 객체를 돌려줍니다."
+  },
+  {
+   "en": "In production, this could create a ticket in Zendesk, Salesforce, Jira, or any other support platform.",
+   "ko": "프로덕션에서는 Zendesk, Salesforce, Jira 같은 지원 플랫폼에 티켓을 만들 수 있습니다."
+  },
+  {
+   "en": "Next, we have the tool functions dictionary.",
+   "ko": "다음은 tool_functions 딕셔너리입니다."
+  },
+  {
+   "en": "This is the bridge between Claude's tool request and our Python code.",
+   "ko": "이것이 Claude 의 툴 요청과 우리 Python 코드 사이의 다리입니다."
+  },
+  {
+   "en": "Claude may request a tool by name, like lookup_order.",
+   "ko": "Claude 는 lookup_order 처럼 이름으로 툴을 요청합니다."
+  },
+  {
+   "en": "Our application uses this dictionary to find the matching Python function and execute it.",
+   "ko": "애플리케이션은 이 딕셔너리로 맞는 Python 함수를 찾아 실행합니다."
+  },
+  {
+   "en": "After that, we define the starting customer message.",
+   "ko": "그다음 시작 고객 메시지를 정의합니다."
+  },
+  {
+   "en": "The customer provides an email, an order ID, and says the item arrived damaged.",
+   "ko": "고객은 이메일, 주문 ID 를 주고 상품이 망가진 채로 왔다고 말합니다."
+  },
+  {
+   "en": "So Claude has enough context to decide which tool to use first.",
+   "ko": "그래서 Claude 는 어떤 툴을 먼저 쓸지 정할 만큼 컨텍스트가 있습니다."
+  },
+  {
+   "en": "Now we get to the main loop.",
+   "ko": "이제 메인 루프입니다."
+  },
+  {
+   "en": "On each iteration, we send the current message history to Claude together with the tool definitions.",
+   "ko": "매 반복마다 현재 메시지 기록을 툴 정의와 함께 Claude 에 보냅니다."
+  },
+  {
+   "en": "Claude can either return a final answer or request a tool.",
+   "ko": "Claude 는 최종 답을 돌려주거나 툴을 요청할 수 있습니다."
+  },
+  {
+   "en": "If Claude returns stop reason end turn, the task is finished.",
+   "ko": "Claude 가 stop_reason end_turn 을 돌려주면 작업이 끝난 겁니다."
+  },
+  {
+   "en": "We print the final customer facing response and exit the loop.",
+   "ko": "고객에게 보여줄 최종 응답을 출력하고 루프를 빠져나옵니다."
+  },
+  {
+   "en": "If Claude returns stop reason tool use, then Claude is asking our application to run a tool.",
+   "ko": "Claude 가 stop_reason tool_use 를 돌려주면, 애플리케이션에 툴을 실행해 달라는 겁니다."
+  },
+  {
+   "en": "The code looks through Claude's response blocks and finds each tool use block.",
+   "ko": "코드는 Claude 의 응답 블록들을 훑어 각 tool_use 블록을 찾습니다."
+  },
+  {
+   "en": "From that block, we read the tool name, the tool input, and the tool use ID.",
+   "ko": "그 블록에서 툴 이름, 툴 입력, tool_use_id 를 읽습니다."
+  },
+  {
+   "en": "Then we execute the matching Python function from tool functions.",
+   "ko": "그다음 tool_functions 에서 맞는 Python 함수를 실행합니다."
+  },
+  {
+   "en": "Once the function returns data, we send that data back to Claude as a tool result.",
+   "ko": "함수가 데이터를 돌려주면 그 데이터를 tool_result 로 Claude 에 보냅니다."
+  },
+  {
+   "en": "The tool result includes the same tool use ID,",
+   "ko": "tool_result 에는 같은 tool_use_id 가 들어 있어서"
+  },
+  {
+   "en": "so Claude can connect the result to the original tool request.",
+   "ko": "Claude 가 결과를 원래 툴 요청과 연결할 수 있습니다."
+  },
+  {
+   "en": "Then we append the tool result to the conversation history and continue the loop.",
+   "ko": "그다음 tool_result 를 대화 기록에 추가하고 루프를 계속합니다."
+  },
+  {
+   "en": "Claude now sees the new tool result and decides what to do next.",
+   "ko": "이제 Claude 는 새 툴 결과를 보고 다음에 뭘 할지 정합니다."
+  },
+  {
+   "en": "It may request another tool, or it may return the final answer.",
+   "ko": "다른 툴을 요청할 수도, 최종 답을 돌려줄 수도 있습니다."
+  },
+  {
+   "en": "That is the core mechanic behind tool use.",
+   "ko": "그것이 툴 사용의 핵심 메커니즘입니다."
+  },
+  {
+   "en": "Assistant messages can contain tool use blocks.",
+   "ko": "assistant 메시지에는 tool_use 블록이 들어 있을 수 있다."
+  },
+  {
+   "en": "Each tool call has a tool use ID.",
+   "ko": "각 툴 호출에는 tool_use_id 가 있다."
+  },
+  {
+   "en": "Your backend executes the tool.",
+   "ko": "백엔드가 툴을 실행한다."
+  },
+  {
+   "en": "Tool results are returned to Claude.",
+   "ko": "툴 결과는 Claude 에 돌려보낸다."
+  },
+  {
+   "en": "Tool results are appended to the conversation history.",
+   "ko": "툴 결과는 대화 기록에 추가된다."
+  },
+  {
+   "en": "The loop continues while Claude returns tool use.",
+   "ko": "Claude 가 tool_use 를 돌려주는 동안 루프는 계속된다."
+  },
+  {
+   "en": "The loop ends when Claude returns end turn.",
+   "ko": "Claude 가 end_turn 을 돌려주면 루프가 끝난다."
+  },
+  {
+   "en": "Once you understand this pattern, tool use becomes much easier to reason about.",
+   "ko": "이 패턴을 이해하면 툴 사용이 훨씬 쉽게 이해됩니다."
+  },
+  {
+   "en": "You're not building magic.",
+   "ko": "마법을 만드는 게 아닙니다."
+  },
+  {
+   "en": "You're building a controlled loop between Claude, your application, and your backend systems.",
+   "ko": "Claude, 애플리케이션, 백엔드 시스템 사이의 통제된 루프를 만드는 겁니다."
+  }
+ ],
+ "body": "### The one thing to remember\n- ==Claude does not execute tools==. Claude decides a tool should be used, your application executes it, sends the result back, and Claude decides what comes next. // 결정은 Claude, 실행은 앱.\n- You are not building magic: a ==controlled loop== between Claude, your application, and your backend systems. // 통제된 루프.\n\n### The tool_use block\n- When Claude wants a tool, the assistant response contains a **tool_use block** with three things: the tool ==name==, the ==input== arguments, and a ==tool_use_id==. // 이름, 입력, ID.\n- The API response then has ==stop_reason: tool_use==, meaning \"not finished, run this tool before I continue\". // 아직 안 끝남.\n- ShopAssist: \"I want a refund, it arrived damaged\" → Claude should not guess the customer record; it requests `get_customer` with the email. // 추측 대신 툴 요청.\n\n### Your backend runs it and sends a tool_result\n- The app looks up the customer, calls the order service, checks whether the refund is allowed. The model does none of that directly. // 실행은 전부 앱.\n- The application owns ==permissions, business rules, authentication, validation, rate limits, safety checks==. // 앱이 책임지는 것들.\n- The result goes back as a **user message containing a tool_result block** with the ==same tool_use_id==, so Claude knows which request it answers. // 같은 ID 로 짝짓기.\n- Call Claude again with the updated history; it may call lookup_order, process_refund, escalate_to_human, or answer directly. // 다음 단계는 Claude 가 결정.\n\n### The agentic loop\n- Send the conversation → if ==stop_reason == tool_use== run the tool and append the result → call again → repeat until ==stop_reason == end_turn==. // 루프 다섯 줄.\n- end_turn means the final assistant message for this turn is ready to show the customer. // end_turn = 고객에게 보여줄 답.\n- ((Do not parse natural language)) like \"I'm done\" or \"no more tools needed\" to detect completion. That is fragile. The reliable signal is the ==API stop_reason itself==. // 문구 파싱 금지, stop_reason 이 신호.\n- A __maximum iteration limit__ is a safety guard against bugs, unexpected tool behavior, or bad loops. It is ==not the primary stopping mechanism==; model-driven end_turn is. // 반복 상한은 보호용일 뿐.\n\n### Loop vs hard-coded decision tree\n- Hard-coded: get_customer → lookup_order → process_refund → respond. Works for simple cases only. // 고정 순서는 단순 케이스만.\n- Real support messages mix refund, damaged item, duplicate charge, policy exception in one message. A tool-enabled assistant ==chooses the next action from the current conversation and previous tool results==. // 대화와 결과를 보고 다음 행동 선택.\n\n### Claude decides, the backend enforces\n- Claude decides ==which tool is appropriate==. The backend decides ==whether the call is allowed==. // 적절성은 Claude, 허용은 백엔드.\n- Even if Claude requests process_refund, reject it when the customer is not verified, the amount exceeds a limit, or the order is not eligible. // 검증 안 됨·한도 초과·자격 없음이면 거부.\n- Agentic loop does not mean \"let the model do anything\": let Claude pick the next reasonable step, let the app execute safely, return the result. // 뭐든 하게 두는 게 아니다.\n\n### The demo code\n- Four tool definitions (name, description, input schema): get_customer, lookup_order, process_refund, escalate_to_human. Definitions ==describe what Claude may request; they run nothing==. // 정의는 실행하지 않는다.\n- Demo implementations return fake data; in production they call a database, an order management system, a payment provider, or create a ticket in Zendesk / Salesforce / Jira. // 실제로는 DB·결제·티켓 시스템.\n- `tool_functions` dictionary maps a requested tool name to the Python function: the ==bridge between Claude's request and your code==. // 이름 → 함수.\n- Main loop: send history + tool definitions; on end_turn print and exit; on tool_use read name / input / id from each tool_use block, run the function, send a tool_result with the same id, append, continue. // 메인 루프 순서.",
+ "keyPoints": [
+  "Claude decides, your application executes, the result goes back, Claude decides again. Claude never runs a tool itself. // 결정은 Claude, 실행은 앱.",
+  "tool_use block = name + input + tool_use_id; the tool_result must carry the same tool_use_id inside a user message. // 같은 ID 로 요청과 결과를 연결.",
+  "Loop while stop_reason is tool_use; stop on end_turn. Never detect completion by parsing phrases like \"I'm done\". // stop_reason 이 신호, 문구 파싱 금지.",
+  "An iteration cap is a safety guard, not the primary stop; model-driven end_turn is. // 반복 상한은 보호용.",
+  "Claude picks the tool, the backend decides if the call is allowed: verification, limits, eligibility are deterministic rules. // 적절성은 모델, 허용은 백엔드."
+ ],
+ "examTrends": {
+  "how": "Mechanics questions about what happens after Claude asks for a tool: who executes it, what the response looks like, how the result is sent back, when the loop stops, and where permissions are enforced. Scenarios contrast the loop with hard-coded sequences and with unsafe \"let the model do anything\" designs. // Claude 가 툴을 요청한 뒤의 메커니즘을 묻는다. 누가 실행하는지, 응답 형태, 결과 반환 방식, 루프 종료 시점, 권한 강제 위치. 고정 순서나 \"모델이 뭐든 하게\" 설계와 대비시킨다.",
+  "answerLooks": [
+   "The application executes the tool and returns a tool_result block with the matching tool_use_id in a user message. // 앱이 실행, 같은 tool_use_id 로 tool_result 반환.",
+   "Continue while stop_reason is tool_use; return the final response on end_turn. // tool_use 면 계속, end_turn 이면 종료.",
+   "The backend enforces authentication, limits, and eligibility even when Claude requests the tool. // 백엔드가 규칙 강제.",
+   "A max-iteration cap as a safeguard, with end_turn as the real stopping signal. // 상한은 보조, end_turn 이 본 신호."
+  ],
+  "traps": [
+   "\"Claude executes the tool and returns the data\" confuses deciding with executing. // Claude 가 실행한다는 보기는 오답.",
+   "\"Stop the loop when the response text says the task is complete\" parses natural language instead of stop_reason. // 문구 파싱으로 종료 판단은 오답.",
+   "\"Use a fixed iteration count as the primary way to end the loop\" replaces model-driven completion with a guardrail. // 반복 횟수를 주 종료 조건으로 쓰는 보기는 오답.",
+   "\"If Claude requests process_refund, execute it since the model decided\" drops backend validation. // 모델이 정했으니 실행한다는 보기는 오답."
+  ],
+  "memorize": "Claude asks (tool_use + id) → app runs → tool_result with same id → repeat until end_turn. Model decides, backend allows. // Claude 요청 → 앱 실행 → 같은 id 로 결과 → end_turn 까지 반복. 결정은 모델, 허용은 백엔드."
+ },
+ "createdAt": "2026-09-09T10:00:00Z"
+}
