@@ -2,7 +2,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>미지의 CCAF 노트</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Gowun+Batang:wght@400;700&family=Gaegu:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Gowun+Batang:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
   :root {
     --paper: #F7F6F2;
@@ -26,7 +26,9 @@
     --ring-hole: #D5D2C8;
     --note: #FFF4B8;
     --pen: #D6483A;
-    --pen-blue: #3B6BB3;
+    --pen-blue: #2F5FA8;
+    --teal: #A8DED8;
+    --orange: #FFC98A;
     --card: #FFFDF7;
     --card-rule: #C9D8EA;
     --shadow: 0 18px 40px rgba(38, 50, 74, 0.14), 0 2px 6px rgba(38, 50, 74, 0.08);
@@ -56,6 +58,8 @@
       --note: #4A4322;
       --pen: #F0866F;
       --pen-blue: #8FB4F0;
+      --teal: #2F6B66;
+      --orange: #8A5A22;
       --card: #2B3042;
       --card-rule: #3F4A62;
       --shadow: 0 18px 40px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
@@ -85,6 +89,8 @@
     --note: #4A4322;
     --pen: #F0866F;
     --pen-blue: #8FB4F0;
+    --teal: #2F6B66;
+    --orange: #8A5A22;
     --card: #2B3042;
     --card-rule: #3F4A62;
     --shadow: 0 18px 40px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
@@ -110,53 +116,36 @@
   code { background: var(--paper-deep); padding: 0 5px; border-radius: 4px; }
   mark, .hlsweep {
     color: var(--hl-ink);
-    background: linear-gradient(104deg, transparent 0.8%, var(--hl) 2.6%, color-mix(in srgb, var(--hl) 72%, transparent) 6%, color-mix(in srgb, var(--hl) 92%, transparent) 92%, transparent 96.5%);
-    padding: 0.08em 0.38em; margin: 0 -0.12em;
-    border-radius: 0.9em 0.25em 0.8em 0.3em;
+    background: linear-gradient(transparent 8%, var(--hl) 8%, var(--hl) 90%, transparent 90%);
+    padding: 0 0.15em; border-radius: 2px;
     box-decoration-break: clone; -webkit-box-decoration-break: clone;
   }
+  /* 형광펜 띠 제목: 글자 아래쪽에 두꺼운 색 띠 */
+  .bar { display: inline; padding: 0 6px; background: linear-gradient(transparent 52%, var(--teal) 52%); box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+  .bar.orange { background: linear-gradient(transparent 52%, var(--orange) 52%); }
+  .bar.yellow { background: linear-gradient(transparent 52%, var(--hl) 52%); }
+  .bar.pink { background: linear-gradient(transparent 52%, color-mix(in srgb, var(--pink) 70%, var(--paper)) 52%); }
   /* ---------- hand marks: pen underline, circle, star, scribble ---------- */
-  u.pen { text-decoration: underline wavy var(--pen); text-decoration-thickness: 1.4px; text-underline-offset: 3px; }
-  .circ {
-    display: inline-block; padding: 0 0.4em; margin: 0 0.05em; line-height: 1.25;
-    border: 2px solid var(--pen);
-    border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
-    transform: rotate(-1.2deg);
-  }
+  u.pen { text-decoration: underline; text-decoration-color: var(--pen); text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
+  .circ { display: inline; padding: 0 0.35em; border: 1.5px solid var(--pen); border-radius: 4px; color: var(--pen); }
   .star { width: 18px; height: 18px; color: var(--pen); vertical-align: -3px; }
-  :root { --scribble: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 10' preserveAspectRatio='none'%3E%3Cpath d='M3 6 C 40 2.5, 70 8.5, 110 5 S 170 3.5, 197 7' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E"); }
-  .scrib { position: relative; display: inline-block; }
-  .scrib::after {
-    content: ""; display: block; height: 8px; margin: -4px -6px 0 -3px;
-    background: var(--pen);
-    -webkit-mask: var(--scribble) no-repeat center / 100% 100%; mask: var(--scribble) no-repeat center / 100% 100%;
-    opacity: 0.85;
-  }
-  .scrib.blue::after { background: var(--pen-blue); }
-  .doodle {
-    font-family: "Gaegu", sans-serif; font-weight: 700; font-size: 17px; color: var(--pen);
-    display: inline-block; transform: rotate(-5deg); white-space: nowrap; line-height: 1.2;
-  }
+  .scrib { display: inline; padding: 0 6px; background: linear-gradient(transparent 52%, var(--teal) 52%); box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+  .doodle { display: none; }
   .jump {
-    font-family: "Gaegu", sans-serif; font-size: 17px; font-weight: 700; color: var(--pen);
-    background: color-mix(in srgb, var(--hl) 55%, var(--paper));
-    border: 1.6px dashed var(--pen);
-    border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
-    padding: 1px 13px; line-height: 1.5; white-space: nowrap;
-    transform: rotate(-3deg); transition: transform 120ms;
+    font-family: "Gowun Dodum", sans-serif; font-size: 14px; font-weight: 700; color: var(--pen-blue);
+    background: none; border: 1.5px solid var(--pen-blue); border-radius: 999px;
+    padding: 1px 12px; line-height: 1.6; white-space: nowrap;
   }
-  .jump:hover { transform: rotate(-3deg) scale(1.06); }
-  .jump.small { font-size: 15px; background: none; transform: rotate(2deg); padding: 0 10px; }
-  .jump.small:hover { transform: rotate(2deg) scale(1.06); }
+  .jump:hover { background: color-mix(in srgb, var(--pen-blue) 10%, transparent); }
+  .jump.small { font-size: 13px; }
   .titlerow { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin: 0 0 18px; }
   .titlerow h1.title { margin: 0; }
   .titlerow + .subtitle { margin-top: -10px; }
-  .prose strong { box-shadow: inset 0 -0.5em 0 color-mix(in srgb, var(--sky) 50%, transparent); padding: 0 1px; }
-  .prose h3.scrib { margin: 22px 0 8px; }
-  .prose h3.scrib::after { margin-top: -5px; }
+  .prose strong { color: var(--pen-blue); font-weight: 700; }
+  .prose h3.scrib { margin: 24px 0 8px; font-size: 17px; font-weight: 700; }
   h2.sec .rule { flex: 1; height: 1px; background: var(--line); }
   h2.sec.withbtn::after { display: none; }
-  .hand { font-family: "Gaegu", "Gowun Dodum", sans-serif; }
+  .hand { font-family: "Gowun Dodum", sans-serif; }
   .serif { font-family: "Gowun Batang", "Gowun Dodum", serif; }
 
   /* ---------- desk + book ---------- */
@@ -174,7 +163,7 @@
     color: var(--ink-soft);
     font-size: 14px;
   }
-  .topbar .brand { font-family: "Gaegu", sans-serif; font-size: 22px; color: var(--ink); font-weight: 700; }
+  .topbar .brand { font-family: "Gowun Dodum", sans-serif; font-size: 22px; color: var(--ink); font-weight: 700; }
   .topbar .status { font-size: 13px; display: flex; gap: 10px; align-items: center; }
   .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--ink-faint); }
   .dot.on { background: var(--correct); }
@@ -232,7 +221,6 @@
     left: 44%;
     width: 130px;
     height: 26px;
-    transform: rotate(-3deg);
     background: repeating-linear-gradient(135deg, var(--pink) 0 8px, color-mix(in srgb, var(--pink) 60%, var(--paper)) 8px 16px);
     opacity: 0.85;
     border-radius: 2px;
@@ -257,7 +245,7 @@
     border: none;
     padding: 14px 8px;
     border-radius: 0 10px 10px 0;
-    font-family: "Gaegu", sans-serif;
+    font-family: "Gowun Dodum", sans-serif;
     font-size: 17px;
     font-weight: 700;
     color: var(--ink);
@@ -274,7 +262,7 @@
 
   /* ---------- page furniture ---------- */
   .eyebrow {
-    font-family: "Gaegu", sans-serif;
+    font-family: "Gowun Dodum", sans-serif;
     font-size: 17px;
     color: var(--ink-soft);
     display: flex;
@@ -302,7 +290,7 @@
     text-wrap: balance;
   }
   h2.sec {
-    font-family: "Gaegu", sans-serif;
+    font-family: "Gowun Dodum", sans-serif;
     font-size: 21px;
     font-weight: 700;
     margin: 28px 0 8px;
@@ -315,7 +303,7 @@
   .prose p { margin: 0 0 10px; }
   .prose ul { margin: 0 0 10px; padding-left: 20px; }
   .prose li { margin: 0 0 4px; }
-  .prose h3 { font-family: "Gaegu", sans-serif; font-size: 20px; margin: 22px 0 6px; }
+  .prose h3 { font-family: "Gowun Dodum", sans-serif; font-size: 20px; margin: 22px 0 6px; }
   .prose table { border-collapse: collapse; font-size: 15px; margin: 6px 0 12px; }
   .prose th, .prose td { border: 1px solid var(--line); padding: 4px 10px; text-align: left; vertical-align: top; }
   .prose th { background: var(--paper-deep); font-weight: 600; }
@@ -330,7 +318,7 @@
   }
   .prose p .sub, .prose li .sub { margin-top: 1px; }
   .subtitle {
-    font-family: "Gaegu", sans-serif;
+    font-family: "Gowun Dodum", sans-serif;
     font-size: 19px;
     color: var(--ink-soft);
     margin: -12px 0 18px;
@@ -341,7 +329,7 @@
     font-size: 16px;
     line-height: 1.75;
   }
-  .summary .lbl { font-family: "Gaegu", sans-serif; font-size: 19px; font-weight: 700; color: var(--pen); margin-right: 8px; }
+  .summary .lbl { font-family: "Gowun Dodum", sans-serif; font-size: 15px; font-weight: 700; color: var(--pen-blue); margin-right: 8px; }
   .summary .sub { margin-top: 5px; padding-left: 4px; }
 
   /* ---------- options ---------- */
@@ -360,7 +348,7 @@
   }
   .opt:hover:not([disabled]) { border-color: var(--ink-faint); }
   .opt .key {
-    font-family: "Gaegu", sans-serif;
+    font-family: "Gowun Dodum", sans-serif;
     font-size: 20px;
     font-weight: 700;
     width: 30px; height: 30px;
@@ -385,17 +373,7 @@
     margin: 14px 0 4px;
     min-height: 44px;
   }
-  .stamp {
-    font-family: "Gaegu", sans-serif;
-    font-size: 22px;
-    font-weight: 700;
-    padding: 2px 14px;
-    border: 2.5px solid currentColor;
-    border-radius: 12px;
-    transform: rotate(-6deg);
-    letter-spacing: 0.06em;
-    opacity: 0.9;
-  }
+  .stamp { font-size: 16px; font-weight: 700; padding: 1px 12px; border: 2px solid currentColor; border-radius: 6px; letter-spacing: 0.04em; }
   .stamp.ok { color: var(--correct); }
   .stamp.no { color: var(--wrong); }
   .verdict .why { color: var(--ink-soft); font-size: 15px; }
@@ -403,30 +381,15 @@
   .reveal { display: none; }
   .reveal.open { display: block; }
   .traps li { margin-bottom: 6px; }
-  .traps b { font-family: "Gaegu", sans-serif; font-size: 18px; font-weight: 700; margin-right: 4px; }
-  .keypoints {
-    position: relative;
-    background: var(--card);
-    background-image: repeating-linear-gradient(to bottom, transparent 0 27px, var(--card-rule) 27px 28px);
-    background-origin: content-box;
-    border-radius: 4px;
-    padding: 46px 22px 16px 52px;
-    margin: 26px 0 10px;
-    transform: rotate(-0.6deg);
-    box-shadow: 2px 4px 12px rgba(0,0,0,0.10);
-    max-width: 62ch;
-  }
-  .keypoints::before { content: ""; position: absolute; left: 0; right: 0; top: 40px; border-top: 2px solid color-mix(in srgb, var(--pen) 60%, transparent); }
-  .keypoints::after { content: ""; position: absolute; left: 42px; top: 0; bottom: 0; border-left: 1.5px solid color-mix(in srgb, var(--pen) 35%, transparent); }
-  .keypoints .lbl { position: absolute; top: 8px; left: 52px; font-family: "Gaegu", sans-serif; font-size: 21px; font-weight: 700; color: var(--pen); }
-  .keypoints .stars { position: absolute; top: 9px; right: 18px; display: flex; gap: 2px; }
-  .keypoints .stars .star:nth-child(1) { transform: rotate(-12deg); } .keypoints .stars .star:nth-child(2) { transform: rotate(6deg) translateY(-2px); } .keypoints .stars .star:nth-child(3) { transform: rotate(-4deg); }
-  .keypoints ul { margin: 0; padding: 0; list-style: none; position: relative; z-index: 1; }
-  .keypoints li { position: relative; margin: 0; font-size: 16px; line-height: 28px; }
-  .keypoints li .star { position: absolute; left: -32px; top: 5px; }
-  .keypoints li:nth-child(even) .star { transform: rotate(14deg); }
-  .keypoints li .sub { font-size: 14px; line-height: 28px; margin: 0; }
-  .keypoints .washi { top: -12px; left: 38%; width: 96px; height: 20px; transform: rotate(-2deg); }
+  .traps b { font-family: "Gowun Dodum", sans-serif; font-size: 18px; font-weight: 700; margin-right: 4px; }
+
+  .keypoints { max-width: 62ch; margin: 22px 0 6px; }
+  .keypoints .lbl { display: block; margin: 0 0 10px; font-size: 17px; font-weight: 700; }
+  .keypoints .lbl span { display: inline; padding: 0 6px; background: linear-gradient(transparent 52%, var(--teal) 52%); }
+  .keypoints ul { margin: 0; padding: 0 0 0 26px; list-style: none; }
+  .keypoints li { position: relative; margin: 0 0 8px; font-size: 16px; line-height: 1.6; }
+  .keypoints li .star { position: absolute; left: -26px; top: 4px; width: 16px; height: 16px; }
+  .keypoints li .sub { font-size: 14px; }
 
   /* ---------- my note ---------- */
   .mynote {
@@ -444,7 +407,7 @@
     background-image: repeating-linear-gradient(to bottom, transparent 0 27px, var(--line) 27px 28px);
     line-height: 28px;
     padding: 0 4px;
-    font-family: "Gaegu", sans-serif;
+    font-family: "Gowun Dodum", sans-serif;
     font-size: 19px;
   }
   textarea.note::placeholder { color: var(--ink-faint); }
@@ -464,7 +427,7 @@
   .pager button {
     border: none;
     background: transparent;
-    font-family: "Gaegu", sans-serif;
+    font-family: "Gowun Dodum", sans-serif;
     font-size: 19px;
     color: var(--ink);
     padding: 4px 8px;
@@ -474,14 +437,14 @@
 
   /* ---------- table of contents ---------- */
   .toc { list-style: none; padding: 0; margin: 0 0 18px; display: grid; gap: 4px; }
-  .sechead { font-family: "Gaegu", sans-serif; font-size: 20px; font-weight: 700; margin: 18px 0 4px; display: flex; align-items: center; gap: 10px; }
+  .sechead { font-family: "Gowun Dodum", sans-serif; font-size: 20px; font-weight: 700; margin: 18px 0 4px; display: flex; align-items: center; gap: 10px; }
   .sechead::after { content: ""; flex: 1; height: 1px; background: var(--line); }
   .toc .sum { grid-column: 2 / -1; font-size: 13.5px; color: var(--ink-soft); margin-top: -2px; }
   .toc li { display: grid; grid-template-columns: 26px 1fr auto; gap: 10px; align-items: baseline; padding: 8px 6px; border-bottom: 1px dotted var(--line); }
   .toc li button { border: none; background: none; text-align: left; padding: 0; line-height: 1.5; }
   .toc li button:hover { text-decoration: underline; }
   .toc .n { font-family: "IBM Plex Mono", monospace; color: var(--ink-faint); font-size: 13px; }
-  .toc .st { font-family: "Gaegu", sans-serif; font-size: 16px; }
+  .toc .st { font-family: "Gowun Dodum", sans-serif; font-size: 16px; }
   .st.ok { color: var(--correct); } .st.no { color: var(--wrong); } .st.todo { color: var(--ink-faint); }
   .st.lesson { color: var(--ink-soft); }
   .toc .dom { font-size: 13px; color: var(--ink-soft); margin-left: 6px; }
@@ -490,7 +453,7 @@
   .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 10px 0 20px; max-width: 520px; }
   .stat { text-align: center; padding: 12px 8px; border: 1.5px solid var(--line); border-radius: 12px; }
   .stat .big { font-family: "Gowun Batang", serif; font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
-  .stat .lbl { font-family: "Gaegu", sans-serif; font-size: 17px; color: var(--ink-soft); }
+  .stat .lbl { font-family: "Gowun Dodum", sans-serif; font-size: 17px; color: var(--ink-soft); }
   .bar { height: 12px; background: var(--paper-deep); border-radius: 999px; overflow: hidden; max-width: 520px; }
   .bar i { display: block; height: 100%; background: var(--sage); }
   .domains { display: grid; gap: 6px; margin-top: 16px; max-width: 520px; }
@@ -514,7 +477,7 @@
   .authform input { padding: 8px 10px; border: 1.5px solid var(--line); border-radius: 8px; background: var(--paper-deep); color: var(--ink); font-size: 15px; }
   .authform .err { color: var(--wrong); font-size: 13px; min-height: 18px; }
   .authform .row { display: flex; justify-content: flex-end; gap: 8px; }
-  .authform button { border: 1.5px solid var(--line); background: none; border-radius: 999px; padding: 4px 14px; font-family: "Gaegu", sans-serif; font-size: 17px; }
+  .authform button { border: 1.5px solid var(--line); background: none; border-radius: 999px; padding: 4px 14px; font-family: "Gowun Dodum", sans-serif; font-size: 17px; }
   .authform button.primary { background: var(--sky); border-color: var(--sky); }
 
   @media (max-width: 720px) {
@@ -549,30 +512,30 @@
     background: color-mix(in srgb, var(--paper) 85%, transparent);
     position: relative;
   }
-  .cover .kicker { font-family: "Gaegu", sans-serif; font-size: 18px; letter-spacing: 0.2em; color: var(--ink-soft); }
+  .cover .kicker { font-family: "Gowun Dodum", sans-serif; font-size: 18px; letter-spacing: 0.2em; color: var(--ink-soft); }
   .cover h1 { font-family: "Gowun Batang", serif; font-size: clamp(30px, 5vw, 44px); font-weight: 700; margin: 6px 0 4px; line-height: 1.2; }
   .cover .full { font-family: "IBM Plex Mono", monospace; font-size: 13px; color: var(--ink-soft); letter-spacing: 0.04em; }
-  .cover .owner { margin-top: 22px; display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; text-align: left; font-family: "Gaegu", sans-serif; font-size: 19px; }
+  .cover .owner { margin-top: 22px; display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; text-align: left; font-family: "Gowun Dodum", sans-serif; font-size: 19px; }
   .cover .owner span:nth-child(odd) { color: var(--ink-soft); }
   .cover .owner span:nth-child(even) { border-bottom: 1px solid var(--line); min-width: 160px; }
   .cover .sticker {
     position: absolute; right: -26px; top: -22px;
     background: var(--pink); color: var(--ink);
-    font-family: "Gaegu", sans-serif; font-weight: 700; font-size: 17px; line-height: 1.25;
-    padding: 12px 14px; border-radius: 50%; transform: rotate(8deg);
+    font-family: "Gowun Dodum", sans-serif; font-weight: 700; font-size: 17px; line-height: 1.25;
+    padding: 12px 14px; border-radius: 50%;
     box-shadow: 2px 3px 8px rgba(0,0,0,0.12); text-align: center; min-width: 88px;
   }
   :root[data-theme="dark"] .cover .sticker { color: var(--paper); }
   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .cover .sticker { color: var(--paper); } }
   .legend { display: grid; gap: 6px; max-width: 520px; text-align: left; font-size: 14.5px; margin-top: 8px; }
   .legend div { display: grid; grid-template-columns: 110px 1fr; gap: 12px; align-items: baseline; }
-  .legend b { font-family: "Gaegu", sans-serif; font-size: 18px; font-weight: 700; }
+  .legend b { font-family: "Gowun Dodum", sans-serif; font-size: 18px; font-weight: 700; }
   .legend .tag { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
 
-  .crumb { font-family: "Gaegu", sans-serif; font-size: 18px; color: var(--ink-soft); margin-bottom: 2px; }
+  .crumb { font-family: "Gowun Dodum", sans-serif; font-size: 18px; color: var(--ink-soft); margin-bottom: 2px; }
   .crumb button { border: none; background: none; padding: 0; font: inherit; color: var(--ink-soft); text-decoration: underline; }
   .statusline { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 0 0 12px; font-size: 14px; color: var(--ink-soft); }
-  .pill { display: inline-block; padding: 0 10px; border-radius: 999px; font-family: "Gaegu", sans-serif; font-size: 16px; font-weight: 700; line-height: 1.6; }
+  .pill { display: inline-block; padding: 0 10px; border-radius: 999px; font-family: "Gowun Dodum", sans-serif; font-size: 16px; font-weight: 700; line-height: 1.6; }
   .pill.run { background: color-mix(in srgb, var(--hl) 60%, var(--paper)); color: var(--hl-ink); }
   .pill.done { background: color-mix(in srgb, var(--sage) 45%, var(--paper)); color: var(--correct); }
   .pill.none { background: var(--paper-deep); color: var(--ink-faint); }
@@ -584,19 +547,19 @@
   .newbtn { margin: 0 0 12px; }
 
   .divider { min-height: 520px; display: grid; align-content: center; gap: 14px; padding: 10px 0; }
-  .divider .secno { font-family: "Gaegu", sans-serif; font-size: 20px; letter-spacing: 0.18em; color: var(--ink-soft); }
+  .divider .secno { font-family: "Gowun Dodum", sans-serif; font-size: 20px; letter-spacing: 0.18em; color: var(--ink-soft); }
   .divider h1 { font-family: "Gowun Batang", serif; font-size: clamp(26px, 4vw, 36px); font-weight: 700; margin: 0; line-height: 1.25; text-wrap: balance; }
   .divider .lect { list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 6px; max-width: 560px; }
   .divider .lect li { display: grid; grid-template-columns: 44px 1fr auto; gap: 10px; align-items: baseline; padding: 6px 0; border-bottom: 1px dotted var(--line); }
   .divider .lect .no { font-family: "IBM Plex Mono", monospace; color: var(--ink-faint); font-size: 13px; }
   .divider .lect button { border: none; background: none; text-align: left; padding: 0; font: inherit; line-height: 1.5; }
   .divider .lect button:hover { text-decoration: underline; }
-  .divider .lect .cnt { font-family: "Gaegu", sans-serif; font-size: 15px; color: var(--ink-soft); }
+  .divider .lect .cnt { font-family: "Gowun Dodum", sans-serif; font-size: 15px; color: var(--ink-soft); }
   .lecthead { display: grid; grid-template-columns: 44px 1fr; gap: 10px; align-items: baseline; margin: 14px 0 2px; }
   .lecthead .no { font-family: "IBM Plex Mono", monospace; color: var(--ink-faint); font-size: 13px; }
   .lecthead .t { font-family: "Gowun Batang", serif; font-weight: 700; font-size: 16px; }
   .lecthead .links { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
-  .lnk { border: 1px solid var(--line); background: none; border-radius: 999px; padding: 0 10px; font-family: "Gaegu", sans-serif; font-size: 15px; line-height: 1.7; color: var(--ink); }
+  .lnk { border: 1px solid var(--line); background: none; border-radius: 999px; padding: 0 10px; font-family: "Gowun Dodum", sans-serif; font-size: 15px; line-height: 1.7; color: var(--ink); }
   .lnk.ok { border-color: var(--sage); } .lnk.no { border-color: var(--wrong); } .lnk.todo { color: var(--ink-soft); }
   .lnk:hover { background: var(--paper-deep); }
   .toc.inlect { margin: 0 0 6px 54px; }
@@ -605,68 +568,62 @@
   .para:hover { border-left-color: var(--sky); }
   .para .en { display: block; font-size: 17px; line-height: 1.5; }
   .para .sub { font-size: 14px; margin-top: 2px; line-height: 1.5; }
-  .postit {
-    max-width: 62ch; margin: 18px 0 4px; padding: 16px 20px 14px;
-    background: color-mix(in srgb, var(--pink) 45%, var(--paper));
-    border-radius: 3px 3px 14px 3px; transform: rotate(-0.5deg);
-    box-shadow: 2px 4px 10px rgba(0,0,0,0.10);
-  }
-  .postit .lbl { font-family: "Gaegu", sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 6px; }
-  .postit h4 { font-family: "Gaegu", sans-serif; font-size: 17px; margin: 10px 0 2px; color: var(--ink-soft); font-weight: 700; }
-  .postit p { margin: 0 0 6px; }
-  .postit ul { margin: 0; padding-left: 18px; }
-  .postit li { margin: 0 0 4px; }
-  .postit .lbl { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
-  .postit .lbl .doodle { font-size: 16px; transform: rotate(-4deg) translateY(-2px); }
-  .postit ul.ticks, .postit ul.crosses { list-style: none; padding-left: 24px; }
-  .postit ul.ticks li, .postit ul.crosses li { position: relative; }
-  .postit ul.ticks li::before, .postit ul.crosses li::before {
     position: absolute; left: -24px; top: -2px;
-    font-family: "Gaegu", sans-serif; font-size: 21px; font-weight: 700; line-height: 1.3;
+    font-family: "Gowun Dodum", sans-serif; font-size: 21px; font-weight: 700; line-height: 1.3;
   }
-  .postit ul.ticks li::before { content: "✓"; color: var(--correct); transform: rotate(-8deg); }
-  .postit ul.crosses li::before { content: "✗"; color: var(--pen); transform: rotate(6deg); }
-  .postit .memo {
     position: relative; margin: 18px 4px 6px; padding: 8px 14px 6px;
-    font-family: "Gaegu", sans-serif; font-size: 18px; font-weight: 700;
+    font-family: "Gowun Dodum", sans-serif; font-size: 18px; font-weight: 700;
     border: 2px solid var(--pen);
     border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
-    transform: rotate(0.8deg);
   }
-  .postit .memo .doodle { position: absolute; top: -16px; left: 12px; font-size: 16px; background: none; transform: rotate(-6deg); }
-  .postit .memo .sub { font-weight: 400; }
   /* ---------- question: sentence numbers + analysis ---------- */
   .qtext .sent { display: inline; }
-  .sn { font-style: normal; font-family: "Gaegu", sans-serif; font-weight: 700; color: var(--pen); font-size: 15px; margin-right: 3px; vertical-align: 2px; }
-  details.analysis { max-width: 62ch; margin: 6px 0 14px; padding: 10px 16px 12px; border: 1.5px dashed color-mix(in srgb, var(--pen) 55%, transparent); border-radius: 12px; background: color-mix(in srgb, var(--hl) 12%, var(--paper)); }
-  details.analysis summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 10px; font-family: "Gaegu", sans-serif; font-size: 20px; font-weight: 700; color: var(--pen); }
+  .sn { font-style: normal; font-weight: 700; color: var(--pen-blue); font-size: 14px; margin-right: 3px; vertical-align: 1px; }
+  details.analysis { max-width: 62ch; margin: 6px 0 14px; padding: 10px 16px 12px; border: 1px solid var(--line); border-radius: 8px; background: color-mix(in srgb, var(--paper-deep) 60%, var(--paper)); }
+  details.analysis summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 10px; font-family: "Gowun Dodum", sans-serif; font-size: 16px; font-weight: 700; color: var(--ink); }
   details.analysis summary::before { content: "▸"; font-size: 13px; }
   details[open].analysis summary::before { content: "▾"; }
   details.analysis summary .chip { font-family: "Gowun Dodum", sans-serif; color: var(--ink); font-weight: 400; }
   .analysis .asks { margin: 8px 0 6px; font-size: 15px; }
-  .analysis .asks b, .analysis .shapes b { font-family: "Gaegu", sans-serif; font-size: 17px; color: var(--ink-soft); margin-right: 6px; font-weight: 700; }
+  .analysis .asks b, .analysis .shapes b { font-family: "Gowun Dodum", sans-serif; font-size: 14px; color: var(--pen-blue); margin-right: 6px; font-weight: 700; }
   .analysis ul.clues { list-style: none; padding: 0; margin: 4px 0 8px; display: grid; gap: 6px; }
   .analysis ul.clues li { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 4px 12px; align-items: baseline; font-size: 15px; }
   .analysis ul.clues .kw { font-family: "Gowun Dodum", sans-serif; }
-  .analysis ul.clues .means { font-family: "Gaegu", sans-serif; font-size: 17px; color: var(--pen); line-height: 1.35; }
+  .analysis ul.clues .means { font-family: "Gowun Dodum", sans-serif; font-size: 14px; color: var(--pen); line-height: 1.45; }
   .analysis ul.clues .means::before { content: "→ "; }
   .analysis .shapes { display: grid; gap: 4px; font-size: 14.5px; border-top: 1px dashed var(--line); padding-top: 8px; }
   .analysis .shapes .ok b { color: var(--correct); } .analysis .shapes .no b { color: var(--wrong); }
   details.script { max-width: 66ch; margin: 0 0 6px; }
-  details.script > summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 8px; font-family: "Gaegu", sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+  details.script > summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 8px; font-family: "Gowun Dodum", sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 8px; }
   details.script > summary::before { content: "▸"; font-size: 13px; color: var(--ink-soft); }
   details[open].script > summary::before { content: "▾"; }
   details.script > summary .cnt { font-family: "Gowun Dodum", sans-serif; font-size: 13px; color: var(--ink-faint); font-weight: 400; }
   @media (max-width: 720px) { .analysis ul.clues li { grid-template-columns: 1fr; } }
   .core { margin-top: 30px; scroll-margin-top: 20px; }
   .core > h2.sec { margin-top: 0; }
-  .core > h2.sec .doodle { margin-left: 6px; }
+  h2.sec { font-size: 17px; }
+  h2.sec .scrib { background: linear-gradient(transparent 52%, var(--hl) 52%); }
+  .postit { max-width: 62ch; margin: 26px 0 6px; }
+  .postit .lbl { display: block; margin: 0 0 8px; font-size: 17px; font-weight: 700; }
+  .postit .lbl span.t { display: inline; padding: 0 6px; background: linear-gradient(transparent 52%, var(--orange) 52%); }
+  .postit h4 { font-size: 15px; margin: 12px 0 4px; color: var(--pen-blue); font-weight: 700; }
+  .postit p { margin: 0 0 6px; }
+  .postit ul { margin: 0; padding-left: 18px; }
+  .postit li { margin: 0 0 5px; }
+  .postit ul.ticks, .postit ul.crosses { list-style: none; padding-left: 22px; }
+  .postit ul.ticks li, .postit ul.crosses li { position: relative; }
+  .postit ul.ticks li::before, .postit ul.crosses li::before { position: absolute; left: -22px; top: 0; font-weight: 700; }
+  .postit ul.ticks li::before { content: "✓"; color: var(--correct); }
+  .postit ul.crosses li::before { content: "✗"; color: var(--pen); }
+  .postit .memo { margin: 14px 0 0; padding: 8px 12px; border: 1.5px solid var(--pen); border-radius: 6px; font-weight: 700; }
+  .postit .memo .sub { font-weight: 400; }
+  .postit .memo::before { content: "외우기"; display: block; font-size: 12px; color: var(--pen); font-weight: 700; letter-spacing: 0.08em; margin-bottom: 2px; }
   .part { min-height: 520px; display: grid; align-content: center; justify-items: center; text-align: center; gap: 10px; }
-  .part .kicker { font-family: "Gaegu", sans-serif; font-size: 20px; letter-spacing: 0.2em; color: var(--ink-soft); }
+  .part .kicker { font-family: "Gowun Dodum", sans-serif; font-size: 20px; letter-spacing: 0.2em; color: var(--ink-soft); }
   .part h1 { font-family: "Gowun Batang", serif; font-size: clamp(34px, 6vw, 52px); font-weight: 700; margin: 0; }
   .part p { color: var(--ink-soft); max-width: 46ch; margin: 0; }
   details.notes { max-width: 66ch; margin: 18px 0 0; border-top: 1px dashed var(--line); padding-top: 8px; }
-  details.notes summary { cursor: pointer; font-family: "Gaegu", sans-serif; font-size: 21px; font-weight: 700; list-style: none; display: flex; align-items: center; gap: 8px; }
+  details.notes summary { cursor: pointer; font-family: "Gowun Dodum", sans-serif; font-size: 16px; font-weight: 700; list-style: none; display: flex; align-items: center; gap: 8px; }
   details.notes summary::before { content: "▸"; font-size: 14px; color: var(--ink-soft); }
   details[open].notes summary::before { content: "▾"; }
 </style>
@@ -955,16 +912,16 @@
   }
   function kp(p) {
     if (!p.keyPoints?.length) return '';
-    return `<div class="keypoints"><div class="washi purple"></div><div class="lbl">Exam points</div><div class="stars">${STAR}${STAR}${STAR}</div>
+    return `<div class="keypoints"><div class="lbl"><span>Exam points</span></div>
       <ul>${p.keyPoints.map(k => '<li>' + STAR + bi(k) + '</li>').join('')}</ul></div>`;
   }
   function trends(p) {
     const t = p.examTrends; if (!t) return '';
-    return `<div class="postit"><div class="lbl">시험 경향 <span class="doodle">이렇게 나온다!</span></div>
+    return `<div class="postit"><div class="lbl"><span class="t">시험 경향</span></div>
       ${t.how ? `<h4>How it is asked</h4><p>${bi(t.how)}</p>` : ''}
       ${t.answerLooks?.length ? `<h4>What the right answer looks like</h4><ul class="ticks">${t.answerLooks.map(x => '<li>' + bi(x) + '</li>').join('')}</ul>` : ''}
       ${t.traps?.length ? `<h4>Trap patterns</h4><ul class="crosses">${t.traps.map(x => '<li>' + bi(x) + '</li>').join('')}</ul>` : ''}
-      ${t.memorize ? `<div class="memo"><span class="doodle">외우기!</span>${bi(t.memorize)}</div>` : ''}</div>`;
+      ${t.memorize ? `<div class="memo">${bi(t.memorize)}</div>` : ''}</div>`;
   }
   function noteBlock(pr) {
     return `<div class="mynote">
@@ -1051,13 +1008,13 @@
     pageEl.innerHTML = `<div class="washi purple"></div>
       ${eyebrow(p, '인강')}
       ${titleBlock(p, hasCore && hasScript ? '<button class="jump" data-scroll="core" title="대본을 건너뛰고 정리·시험 포인트로">요약 보기 ↓</button>' : '')}
-      ${p.summary ? `<div class="summary"><span class="lbl">Summary</span>${bi(p.summary, 'hlsweep')}</div>` : ''}
+      ${p.summary ? `<div class="summary"><span class="lbl">Summary</span>${bi(p.summary)}</div>` : ''}
       ${hasScript
         ? `<details class="script" ${scriptOpen() ? 'open' : ''}><summary>대본 <span class="cnt">${p.paragraphs.length}줄 · 접었다 펼 수 있어요</span></summary>
            <div class="prose">${p.paragraphs.map(x => `<p class="para"><span class="en">${inline(x.en)}</span>${x.ko ? `<span class="sub">${inline(x.ko)}</span>` : ''}</p>`).join('')}</div></details>`
         : ''}
       ${hasCore ? `<section class="core" id="core">
-        <h2 class="sec withbtn"><span class="scrib">핵심 정리</span><span class="doodle">여기부터 시험 ★</span><i class="rule"></i>${hasScript ? '<button class="jump small" data-scroll="top">대본으로 ↑</button>' : ''}</h2>
+        <h2 class="sec withbtn"><span class="scrib">핵심 정리</span><i class="rule"></i>${hasScript ? '<button class="jump small" data-scroll="top">대본으로 ↑</button>' : ''}</h2>
         ${p.body ? `<details class="notes" ${hasScript ? '' : 'open'}><summary>정리 노트</summary><div class="prose">${md(p.body)}</div></details>` : ''}
         ${kp(p)}
         ${trends(p)}
@@ -1092,9 +1049,9 @@
         : `<span class="stamp no">다시</span><span class="why">고른 답 ${esc(pr.chosen)}, 정답은 ${esc(p.answer)}</span>`) : '<span class="why hand" style="font-size:18px">보기를 고르면 풀이가 펼쳐져요</span>'}
         ${answered ? '<button class="btn ghost" data-retry style="margin-left:auto">다시 풀기</button>' : ''}</div>
       <div class="reveal ${answered ? 'open' : ''}">
-        <h2 class="sec">Why this answer</h2>
+        <h2 class="sec"><span class="bar orange">Why this answer</span></h2>
         <div class="prose">${md(p.explanation)}</div>
-        ${p.traps?.length ? `<h2 class="sec">Traps</h2><ul class="traps prose">${p.traps.map(t => `<li><b>${esc(t.key)}</b> ${bi(t.why)}</li>`).join('')}</ul>` : ''}
+        ${p.traps?.length ? `<h2 class="sec"><span class="bar pink">Traps</span></h2><ul class="traps prose">${p.traps.map(t => `<li><b>${esc(t.key)}</b> ${bi(t.why)}</li>`).join('')}</ul>` : ''}
         ${kp(p)}
         ${noteBlock(pr)}
       </div>
