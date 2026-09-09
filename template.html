@@ -415,18 +415,17 @@
     transform: rotate(-0.6deg);
     box-shadow: 2px 4px 12px rgba(0,0,0,0.10);
     max-width: 62ch;
-    font-family: "Gaegu", "Gowun Dodum", sans-serif;
   }
   .keypoints::before { content: ""; position: absolute; left: 0; right: 0; top: 40px; border-top: 2px solid color-mix(in srgb, var(--pen) 60%, transparent); }
   .keypoints::after { content: ""; position: absolute; left: 42px; top: 0; bottom: 0; border-left: 1.5px solid color-mix(in srgb, var(--pen) 35%, transparent); }
-  .keypoints .lbl { position: absolute; top: 8px; left: 52px; font-size: 21px; font-weight: 700; color: var(--pen); }
+  .keypoints .lbl { position: absolute; top: 8px; left: 52px; font-family: "Gaegu", sans-serif; font-size: 21px; font-weight: 700; color: var(--pen); }
   .keypoints .stars { position: absolute; top: 9px; right: 18px; display: flex; gap: 2px; }
   .keypoints .stars .star:nth-child(1) { transform: rotate(-12deg); } .keypoints .stars .star:nth-child(2) { transform: rotate(6deg) translateY(-2px); } .keypoints .stars .star:nth-child(3) { transform: rotate(-4deg); }
   .keypoints ul { margin: 0; padding: 0; list-style: none; position: relative; z-index: 1; }
-  .keypoints li { position: relative; margin: 0; font-size: 19px; line-height: 28px; }
+  .keypoints li { position: relative; margin: 0; font-size: 16px; line-height: 28px; }
   .keypoints li .star { position: absolute; left: -32px; top: 5px; }
   .keypoints li:nth-child(even) .star { transform: rotate(14deg); }
-  .keypoints li .sub { font-family: inherit; font-size: 16px; line-height: 28px; margin: 0; }
+  .keypoints li .sub { font-size: 14px; line-height: 28px; margin: 0; }
   .keypoints .washi { top: -12px; left: 38%; width: 96px; height: 20px; transform: rotate(-2deg); }
 
   /* ---------- my note ---------- */
