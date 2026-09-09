@@ -687,10 +687,10 @@
       });
       const loose = state.pages.filter(p => p.section === sec.title && !used.has(p.id));
       loose.forEach(p => used.add(p.id));
-      return { no: si + 1, title: sec.title, lectures, loose };
+      return { no: sec.no != null ? String(sec.no) : String(si + 1), title: sec.title, lectures, loose };
     });
     const rest = state.pages.filter(p => !used.has(p.id));
-    if (rest.length) secs.push({ no: secs.length + 1, title: 'Unsorted', unsorted: true, lectures: [], loose: rest });
+    if (rest.length) secs.push({ no: 'x', title: 'Unsorted', unsorted: true, lectures: [], loose: rest });
     return secs;
   }
   // Book: cover, toc, PART 1 인강 (section divider → lecture pages), PART 2 문제 (section divider → quizzes).

@@ -6,7 +6,7 @@ Udemy 강의 대본과 기출 문제를 "한 장씩 넘기는 다이어리" 웹�
 
 ## 구조
 
-- `course.json` — Udemy 목차 정본 (`sections[].lectures[{no, title}]`). 책 순서가 여기서 나온다.
+- `course.json` — Udemy 목차 정본 (`sections[{no, title, lectures[{no, title}]}]`). 책 순서가 여기서 나온다. 섹션 `no` 는 Udemy 섹션 번호(사용자는 섹션 1·2 를 노트 없이 들었으므로 3부터 시작). 없으면 순서대로 매긴다.
 - `pages/NNN-l-<slug>.json` — 인강 장 (강의 하나 = 파일 하나). `NNN` 은 강의 번호 3자리.
 - `pages/NNN-q-<slug>.json` — 문제 장. `NNN` 은 소속 강의 번호, 뒤에 `-1`, `-2` 로 구분.
 - `template.html` — 디자인과 동작. `build.py` 가 `pages/` + `course.json` 을 심어 `dist/index.html` 을 만든다.
@@ -28,7 +28,7 @@ Udemy 강의 대본과 기출 문제를 "한 장씩 넘기는 다이어리" 웹�
 
 입력: 섹션 이름, 강의 번호·제목, Transcript 전체. (섹션·번호가 없으면 물어보되, 대본 작업은 먼저 진행.)
 
-1. `course.json` 에 섹션·강의가 없으면 추가한다. 섹션 제목은 Udemy 표기 그대로, `no` 는 문자열.
+1. `course.json` 에 섹션·강의가 없으면 추가한다. 섹션 제목은 Udemy 표기 그대로, 섹션 `no` 는 정수, 강의 `no` 는 문자열.
 2. `pages/NNN-l-<slug>.json` 을 만든다. 필드:
    - `id`: `l-NNN`, `kind`: `lesson`, `order`: 강의 번호(정수), `section`, `lecture`(문자열 번호)
    - `title_en`, `title`(한국어 제목), `domain`(시험 영역: 모델 선택 · 프롬프트·평가 · 툴·에이전트 루프 · 지식·RAG · 멀티에이전트 · Claude Code · 신뢰성)

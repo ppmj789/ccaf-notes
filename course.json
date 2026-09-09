@@ -2,6 +2,7 @@
   "title": "Claude Certified Architect - Foundations (Udemy)",
   "sections": [
     {
+      "no": 3,
       "title": "Reliable Prompts & Structured Output",
       "lectures": [
         {
@@ -27,6 +28,7 @@
       ]
     },
     {
+      "no": 4,
       "title": "Tools, MCP, and Agentic Loop",
       "lectures": [
         {
