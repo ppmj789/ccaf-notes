@@ -44,4 +44,31 @@ assert '/*__PAGES__*/' in tpl and '/*__COURSE__*/' in tpl and '/*__SITE__*/' in 
 out = ROOT / 'dist' / 'index.html'
 out.parent.mkdir(exist_ok=True)
 out.write_text(tpl.replace('/*__PAGES__*/', esc(pages)).replace('/*__COURSE__*/', esc(course)).replace('/*__SITE__*/', esc(site)), encoding='utf-8')
+
+# PWA: 아이콘과 manifest 를 dist 로 (휴대폰 홈 화면 아이콘)
+ICONS = ['icon-192.png', 'icon-512.png', 'apple-touch-icon.png']
+manifest = {
+    'name': '미지의 CCAF 노트',
+    'short_name': 'CCAF 노트',
+    'description': 'Claude Certified Architect - Foundations 공부 노트',
+    'start_url': './',
+    'scope': './',
+    'display': 'standalone',
+    'orientation': 'portrait',
+    'background_color': '#7CC924',
+    'theme_color': '#7CC924',
+    'lang': 'ko',
+    'icons': [
+        {'src': 'icon-192.png', 'sizes': '192x192', 'type': 'image/png', 'purpose': 'any maskable'},
+        {'src': 'icon-512.png', 'sizes': '512x512', 'type': 'image/png', 'purpose': 'any maskable'},
+    ],
+}
+for name in ICONS:
+    srcp = ROOT / 'assets' / name
+    if srcp.exists():
+        (out.parent / name).write_bytes(srcp.read_bytes())
+    else:
+        print(f'경고: assets/{name} 이 없습니다 (PWA 아이콘 빠짐)')
+(out.parent / 'manifest.webmanifest').write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding='utf-8')
+
 print(f'{out}: {len(pages)} pages ({sum(p["kind"]=="question" for p in pages)} questions, {sum(p["kind"]=="lesson" for p in pages)} lessons)')

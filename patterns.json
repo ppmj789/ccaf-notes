@@ -1,0 +1,137 @@
+[
+  {
+    "id": "model-placement",
+    "name": "모델 배치·파라미터 선택",
+    "domain": "모델 선택",
+    "official": "D1",
+    "formula": "중간 티어(Sonnet) 주력 + 작은 모델은 분류·라우팅 + 큰 모델은 가장 어려운 경로만, 정책·툴·구조화 출력은 낮은 temperature.",
+    "clueWords": [
+      "balance cost, speed, quality",
+      "consistent policy-following",
+      "ambiguous cases with tools",
+      "main decision loop",
+      "classification / routing subtask"
+    ],
+    "answerShape": "티어를 계단처럼 나눠 쓰고 temperature 를 낮게 잡는 보기.",
+    "distractorShape": "한 모델로 전부(전부 Opus, 전부 Haiku), 높은 temperature, \"창의적으로\".",
+    "memorize": "Haiku 는 분류, Sonnet 이 주력, Opus 는 좁게, 정책은 낮은 temperature."
+  },
+  {
+    "id": "eval-workflow",
+    "name": "평가 워크플로우 선택",
+    "domain": "프롬프트·평가",
+    "official": "D4",
+    "formula": "고정 평가 세트(현실적 사례 + 기대 결과) → 모든 버전을 전수 실행 → 실패 분석 → 같은 세트로 재실행(회귀).",
+    "clueWords": [
+      "which change actually improves",
+      "without increasing bad outputs",
+      "competing prompt drafts",
+      "regression",
+      "measure"
+    ],
+    "answerShape": "고정 세트·라벨·전수 실행·실패 분석·재실행 다섯 요소가 다 있는 보기.",
+    "distractorShape": "\"느낌으로\" 몇 개 손으로 보기, 프로덕션에 배포해서 관찰, 이상적 예시 두어 개로 비교.",
+    "memorize": "고정 세트 + 정답 라벨 + 전수 실행 + 실패 분석 + 같은 세트 재실행."
+  },
+  {
+    "id": "rag-layer",
+    "name": "지식 접근 계층(RAG) 설계",
+    "domain": "지식·RAG",
+    "official": "D5",
+    "formula": "문서가 많고 자주 바뀌면 청킹 + 인덱스 + 검색 후 선택된 청크만 프롬프트에. 정확 식별자와 모호한 질문이 섞이면 하이브리드 검색.",
+    "clueWords": [
+      "thousands of changing documents",
+      "without overloading the prompt",
+      "vague questions",
+      "exact IDs / error codes",
+      "up to date"
+    ],
+    "answerShape": "청킹·인덱스·(하이브리드) 검색·선택된 청크만 전달.",
+    "distractorShape": "시스템 프롬프트에 전부 넣기, 파인튜닝으로 외우기, 임베딩만 또는 키워드만.",
+    "memorize": "많고 바뀌면 RAG, ID 섞이면 하이브리드, 프롬프트엔 선택된 청크만."
+  },
+  {
+    "id": "tool-input-schema",
+    "name": "툴 입력 스키마 설계",
+    "domain": "툴·에이전트 루프",
+    "official": "D2",
+    "formula": "필드마다 설명 + 대표 예시 + 허용 값(enum) + 숫자 타입·범위. 자연어 필드(query)만 자유롭게.",
+    "clueWords": [
+      "invented values like \"latest\"",
+      "cannot validate",
+      "ambiguous or invalid input",
+      "shared tool across agents",
+      "enum / range"
+    ],
+    "answerShape": "설명·예시·enum·범위를 필드별로 주되 자연어 필드는 유연하게 두는 보기.",
+    "distractorShape": "너무 약함(이름만, 모델 추론에 맡김), 너무 강함(모든 문자열에 정규식), 아예 없음(자유 객체).",
+    "memorize": "지어낸 값은 스키마 탓. 설명·예시·enum·범위, 자연어만 자유."
+  },
+  {
+    "id": "forced-structured-output",
+    "name": "구조화 출력 강제",
+    "domain": "툴·에이전트 루프",
+    "official": "D4",
+    "formula": "JSON Schema 를 가진 툴을 정의하고 required·nullable·enum 을 스키마로 표현, 매번 나와야 하면 tool_choice 로 그 툴을 강제.",
+    "clueWords": [
+      "must always include",
+      "recorded as null",
+      "approved enum values",
+      "after every case",
+      "prompt-only JSON drifts (extra keys, prose)"
+    ],
+    "answerShape": "스키마 툴 + required·nullable·enum + tool_choice 강제.",
+    "distractorShape": "비구조화 저장 후 검색, 다운스트림 파서로 동의어 매핑, 시스템 지시문만 강화.",
+    "memorize": "프롬프트 JSON 이 흔들리면 스키마 툴, 매번이면 tool_choice."
+  },
+  {
+    "id": "pattern-definition",
+    "name": "패턴 이름 맞히기(정의 매칭)",
+    "domain": "신뢰성",
+    "official": "D5",
+    "formula": "지문이 묘사한 동작을 그대로 서술한 보기를 고른다. retry with error feedback = 원래 요청 + 실패 출력 + 구체적 에러 + \"지어내지 말 것\" 을 런타임에 돌려줌.",
+    "clueWords": [
+      "what pattern is being used",
+      "validation error sent back",
+      "corrected decision at runtime",
+      "without inventing missing facts"
+    ],
+    "answerShape": "용어 + 지문 행동과 정확히 일치하는 설명.",
+    "distractorShape": "그럴듯한 용어(pruning, fine-tuning, caching, compaction)에 지문과 안 맞는 설명.",
+    "memorize": "용어의 정의 한 줄을 지문 행동과 대조. 설명이 지문과 어긋나면 오답."
+  },
+  {
+    "id": "architecture-constraint",
+    "name": "아키텍처 제약 찾기",
+    "domain": "신뢰성",
+    "official": "D1",
+    "formula": "기능의 장점(비용·규모) 미끼를 걷어 내고 그 기능이 못 하는 것을 본다. 배치 항목 = 툴 루프 없는 일회성 요청, 툴 왕복이 필요하면 실시간 에이전트 루프.",
+    "clueWords": [
+      "reduce costs",
+      "nightly / 60,000",
+      "one batch item per case",
+      "fetch ... look up ... then ...",
+      "which constraint"
+    ],
+    "answerShape": "작업을 둘로 나눔. 독립 작업은 배치, 다단계 툴 루프는 실시간.",
+    "distractorShape": "기능 특성 오해(JSON 불가, 응답 시간용), 제안 설계를 그대로 승인.",
+    "memorize": "배치는 비용·처리량, 툴 루프 없음. 루프가 필요하면 실시간."
+  },
+  {
+    "id": "prompt-fix-judgment",
+    "name": "프롬프트 변경 선택(판단 기준)",
+    "domain": "프롬프트·평가",
+    "official": "D4",
+    "formula": "스키마는 통과하는데 값이 틀리면 판단 문제. 포함·제외 규칙 + 대조 few-shot(맞는 것·비슷한 틀린 것) + 목표 형식 그대로.",
+    "clueWords": [
+      "passes schema validation",
+      "frequently extracts ... as",
+      "improve precision",
+      "false positives",
+      "reliable for downstream"
+    ],
+    "answerShape": "명시적 기준 + 대조 예시 + 출력 형식 유지.",
+    "distractorShape": "스키마 조이기, 자기 추론을 가드레일로, 주관적 형용사(중요한·관련 있는).",
+    "memorize": "모양 문제는 스키마, 뜻 문제는 규칙 + 대조 예시."
+  }
+]

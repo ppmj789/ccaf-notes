@@ -1,80 +1,81 @@
 {
- "id": "q-024-1",
- "kind": "question",
- "order": 24.1,
- "section": "Reliable Prompts & Structured Output",
- "lecture": "24",
- "title_en": "Tool input schema for a shared find_sources tool",
- "title": "공용 find_sources 툴의 입력 스키마 설계",
- "domain": "툴·에이전트 루프",
- "question_en": "In your multi-agent research system, the coordinator exposes a ==shared find_sources tool== to the web-search and document-analysis subagents. Early test runs produce tool calls like ==source_type: \"latest\"== and ==max_results: \"a lot\"==, which your ==backend cannot validate==. Which input schema design is the best practice for ==reducing ambiguous or invalid tool use==?",
- "question_ko": "멀티에이전트 리서치 시스템에서 코디네이터가 웹검색·문서분석 서브에이전트에게 공용 `find_sources` 툴을 열어 준다. 초기 테스트에서 ==`source_type: \"latest\"`, `max_results: \"a lot\"`== 같은 툴 호출이 나와서 ==백엔드가 검증할 수 없다==. 애매하거나 무효한 툴 사용을 줄이는 가장 좋은 입력 스키마 설계는?",
- "options": [
-  {
-   "key": "A",
-   "en": "Expose ==only required parameter names== such as query, type, period, and count, ==relying on the subagents to infer== the expected meanings, accepted values, and numeric limits from the tool name and surrounding prompt.",
-   "ko": "query, type, period, count 같은 필수 파라미터 이름만 노출하고, 뜻·허용 값·숫자 범위는 서브에이전트가 툴 이름과 주변 프롬프트에서 추론하게 한다."
-  },
-  {
-   "key": "B",
-   "en": "Define fields such as query, source_type, date_range, and max_results with ==descriptions of their intent, representative examples, and practical constraints== such as allowed source types and a ==1-50 result limit==, while ==leaving the query text flexible==.",
-   "ko": "query, source_type, date_range, max_results 같은 필드를 정의하고 각각에 의도 설명, 대표 예시, 허용 source type 목록과 1~50 결과 제한 같은 실용적 제약을 붙이되, query 텍스트는 유연하게 둔다."
-  },
-  {
-   "key": "C",
-   "en": "Require every string field to match ==strict regular expressions==, such as a fixed Boolean-query grammar for query and a narrow YYYY-MM-DD/YYYY-MM-DD pattern for all dates, ==rejecting calls== that do not exactly match those formats.",
-   "ko": "모든 문자열 필드에 엄격한 정규식을 강제한다. query 는 고정 Boolean 질의 문법, 날짜는 YYYY-MM-DD/YYYY-MM-DD 패턴으로 하고, 정확히 맞지 않는 호출은 거부한다."
-  },
-  {
-   "key": "D",
-   "en": "Use a single optional inputs object with ==free-form keys== for query text, filters, dates, source preferences, and limits, allowing each subagent to provide ==whatever structure seems useful== for that research task.",
-   "ko": "query 텍스트, 필터, 날짜, 소스 선호, 제한을 자유 형식 키로 담는 optional inputs 객체 하나를 쓰고, 각 서브에이전트가 그 작업에 유용해 보이는 구조를 알아서 제공하게 한다."
-  }
- ],
- "answer": "B",
- "explanation": "지문의 증상 두 개가 곧 힌트다.\n\n| 증상 | 원인 | 정답의 처방 |\n|---|---|---|\n| `source_type: \"latest\"` | 허용 값을 몰라 그럴듯한 단어를 지어냄 | ==allowed source types== (enum) |\n| `max_results: \"a lot\"` | 타입과 범위를 모름 | ==1-50 result limit== (integer + 범위) |\n| 둘 다 | 파라미터 뜻을 추측 | ==descriptions + representative examples== |\n\n- 24강의 \"reason 은 enum, 아무 라벨이나 못 쓰게\" 와 같은 원리를 툴 입력에 적용한 것이다. 23강의 \"스키마는 계약서\" 도 그대로.\n- 그러면서 **query 는 자유 텍스트**로 둔다. 리서치 질문은 주제·표현·분야마다 달라서 형식을 조이면 정상 요청까지 막힌다. 정답의 ==leaving the query text flexible== 이 이 균형이다.\n- 원칙: ==엄격할 곳은 엄격하게(enum·범위·타입), 유연해야 할 곳은 유연하게(자연어 query)==.\n\n| 보기 | 제약 수준 | 결과 |\n|---|---|---|\n| A | 너무 약함 (이름만) | 추측 계속, 지금 문제 그대로 |\n| B | 적절 | 모호함 감소, 정상 요청 통과 |\n| C | 너무 강함 (전부 정규식) | 정상 리서치 질문까지 거부 |\n| D | 없음 (자유 객체) | 검증 불가, 더 악화 |",
- "traps": [
-  {
-   "key": "A",
-   "why": "지금 실패한 이유가 바로 \"추론에 맡겨서\" 다. type 이 뭔지, count 가 숫자인지 모델이 짐작하니 latest, a lot 이 나왔다. 문제를 그대로 두는 보기이고 이름(type, period)은 더 모호해졌다."
-  },
-  {
-   "key": "C",
-   "why": "반대쪽 극단, 과잉 제약. 리서치 질문은 자연어라 Boolean 문법을 강제하면 정상 요청이 대량 거부된다. \"모든 문자열 필드\" 에 정규식은 유연성을 죽인다."
-  },
-  {
-   "key": "D",
-   "why": "구조가 아예 없으니 에이전트마다 다른 키를 쓰고 백엔드는 아무것도 검증할 수 없다. 지문의 \"backend cannot validate\" 를 더 악화시킨다."
-  }
- ],
- "keyPoints": [
-  "Tool input schema = per-field description + representative examples + allowed values (enum) + numeric type and range. // 필드마다 설명·예시·enum·범위.",
-  "Keep natural-language fields such as query flexible; over-constraining rejects legitimate calls. // 자연어 필드는 자유롭게, 과잉 제약은 오답.",
-  "Invented values like \"latest\" or \"a lot\" mean the schema never told the model what is allowed: fix the schema, not the agent. // 지어낸 값은 스키마가 허용 범위를 안 알려 준 탓."
- ],
- "createdAt": "2026-09-09T08:00:00Z",
- "pattern": {
-  "type": "툴 입력 스키마 설계",
-  "asks": "서브에이전트가 지어낸 값을 못 넣게 하려면 스키마를 어떻게 쓸지.",
-  "clues": [
-   {
-    "text": "\"latest\"",
-    "means": "허용 값을 안 알려 줌 → enum 목록"
-   },
-   {
-    "text": "\"a lot\"",
-    "means": "타입·범위를 안 알려 줌 → integer + 1~50"
-   },
-   {
-    "text": "cannot validate",
-    "means": "스키마가 검증 기준을 줘야 함"
-   },
-   {
-    "text": "ambiguous or invalid",
-    "means": "모호함은 설명·예시로, 무효는 제약으로"
-   }
+  "id": "q-024-1",
+  "kind": "question",
+  "order": 24.1,
+  "section": "Reliable Prompts & Structured Output",
+  "lecture": "24",
+  "title_en": "Tool input schema for a shared find_sources tool",
+  "title": "공용 find_sources 툴의 입력 스키마 설계",
+  "domain": "툴·에이전트 루프",
+  "question_en": "In your multi-agent research system, the coordinator exposes a ==shared find_sources tool== to the web-search and document-analysis subagents. Early test runs produce tool calls like ==source_type: \"latest\"== and ==max_results: \"a lot\"==, which your ==backend cannot validate==. Which input schema design is the best practice for ==reducing ambiguous or invalid tool use==?",
+  "question_ko": "멀티에이전트 리서치 시스템에서 코디네이터가 웹검색·문서분석 서브에이전트에게 공용 `find_sources` 툴을 열어 준다. 초기 테스트에서 ==`source_type: \"latest\"`, `max_results: \"a lot\"`== 같은 툴 호출이 나와서 ==백엔드가 검증할 수 없다==. 애매하거나 무효한 툴 사용을 줄이는 가장 좋은 입력 스키마 설계는?",
+  "options": [
+    {
+      "key": "A",
+      "en": "Expose ==only required parameter names== such as query, type, period, and count, ==relying on the subagents to infer== the expected meanings, accepted values, and numeric limits from the tool name and surrounding prompt.",
+      "ko": "query, type, period, count 같은 필수 파라미터 이름만 노출하고, 뜻·허용 값·숫자 범위는 서브에이전트가 툴 이름과 주변 프롬프트에서 추론하게 한다."
+    },
+    {
+      "key": "B",
+      "en": "Define fields such as query, source_type, date_range, and max_results with ==descriptions of their intent, representative examples, and practical constraints== such as allowed source types and a ==1-50 result limit==, while ==leaving the query text flexible==.",
+      "ko": "query, source_type, date_range, max_results 같은 필드를 정의하고 각각에 의도 설명, 대표 예시, 허용 source type 목록과 1~50 결과 제한 같은 실용적 제약을 붙이되, query 텍스트는 유연하게 둔다."
+    },
+    {
+      "key": "C",
+      "en": "Require every string field to match ==strict regular expressions==, such as a fixed Boolean-query grammar for query and a narrow YYYY-MM-DD/YYYY-MM-DD pattern for all dates, ==rejecting calls== that do not exactly match those formats.",
+      "ko": "모든 문자열 필드에 엄격한 정규식을 강제한다. query 는 고정 Boolean 질의 문법, 날짜는 YYYY-MM-DD/YYYY-MM-DD 패턴으로 하고, 정확히 맞지 않는 호출은 거부한다."
+    },
+    {
+      "key": "D",
+      "en": "Use a single optional inputs object with ==free-form keys== for query text, filters, dates, source preferences, and limits, allowing each subagent to provide ==whatever structure seems useful== for that research task.",
+      "ko": "query 텍스트, 필터, 날짜, 소스 선호, 제한을 자유 형식 키로 담는 optional inputs 객체 하나를 쓰고, 각 서브에이전트가 그 작업에 유용해 보이는 구조를 알아서 제공하게 한다."
+    }
   ],
-  "answerShape": "필드마다 설명 + 예시 + enum + 범위, 자연어 query 만 자유.",
-  "distractorShape": "너무 약함(이름만), 너무 강함(전부 정규식), 아예 없음(자유 객체)."
- }
+  "answer": "B",
+  "explanation": "지문의 증상 두 개가 곧 힌트다.\n\n| 증상 | 원인 | 정답의 처방 |\n|---|---|---|\n| `source_type: \"latest\"` | 허용 값을 몰라 그럴듯한 단어를 지어냄 | ==allowed source types== (enum) |\n| `max_results: \"a lot\"` | 타입과 범위를 모름 | ==1-50 result limit== (integer + 범위) |\n| 둘 다 | 파라미터 뜻을 추측 | ==descriptions + representative examples== |\n\n- 24강의 \"reason 은 enum, 아무 라벨이나 못 쓰게\" 와 같은 원리를 툴 입력에 적용한 것이다. 23강의 \"스키마는 계약서\" 도 그대로.\n- 그러면서 **query 는 자유 텍스트**로 둔다. 리서치 질문은 주제·표현·분야마다 달라서 형식을 조이면 정상 요청까지 막힌다. 정답의 ==leaving the query text flexible== 이 이 균형이다.\n- 원칙: ==엄격할 곳은 엄격하게(enum·범위·타입), 유연해야 할 곳은 유연하게(자연어 query)==.\n\n| 보기 | 제약 수준 | 결과 |\n|---|---|---|\n| A | 너무 약함 (이름만) | 추측 계속, 지금 문제 그대로 |\n| B | 적절 | 모호함 감소, 정상 요청 통과 |\n| C | 너무 강함 (전부 정규식) | 정상 리서치 질문까지 거부 |\n| D | 없음 (자유 객체) | 검증 불가, 더 악화 |",
+  "traps": [
+    {
+      "key": "A",
+      "why": "지금 실패한 이유가 바로 \"추론에 맡겨서\" 다. type 이 뭔지, count 가 숫자인지 모델이 짐작하니 latest, a lot 이 나왔다. 문제를 그대로 두는 보기이고 이름(type, period)은 더 모호해졌다."
+    },
+    {
+      "key": "C",
+      "why": "반대쪽 극단, 과잉 제약. 리서치 질문은 자연어라 Boolean 문법을 강제하면 정상 요청이 대량 거부된다. \"모든 문자열 필드\" 에 정규식은 유연성을 죽인다."
+    },
+    {
+      "key": "D",
+      "why": "구조가 아예 없으니 에이전트마다 다른 키를 쓰고 백엔드는 아무것도 검증할 수 없다. 지문의 \"backend cannot validate\" 를 더 악화시킨다."
+    }
+  ],
+  "keyPoints": [
+    "Tool input schema = per-field description + representative examples + allowed values (enum) + numeric type and range. // 필드마다 설명·예시·enum·범위.",
+    "Keep natural-language fields such as query flexible; over-constraining rejects legitimate calls. // 자연어 필드는 자유롭게, 과잉 제약은 오답.",
+    "Invented values like \"latest\" or \"a lot\" mean the schema never told the model what is allowed: fix the schema, not the agent. // 지어낸 값은 스키마가 허용 범위를 안 알려 준 탓."
+  ],
+  "createdAt": "2026-09-09T08:00:00Z",
+  "pattern": {
+    "type": "툴 입력 스키마 설계",
+    "asks": "서브에이전트가 지어낸 값을 못 넣게 하려면 스키마를 어떻게 쓸지.",
+    "clues": [
+      {
+        "text": "\"latest\"",
+        "means": "허용 값을 안 알려 줌 → enum 목록"
+      },
+      {
+        "text": "\"a lot\"",
+        "means": "타입·범위를 안 알려 줌 → integer + 1~50"
+      },
+      {
+        "text": "cannot validate",
+        "means": "스키마가 검증 기준을 줘야 함"
+      },
+      {
+        "text": "ambiguous or invalid",
+        "means": "모호함은 설명·예시로, 무효는 제약으로"
+      }
+    ],
+    "answerShape": "필드마다 설명 + 예시 + enum + 범위, 자연어 query 만 자유.",
+    "distractorShape": "너무 약함(이름만), 너무 강함(전부 정규식), 아예 없음(자유 객체)."
+  },
+  "patternId": "tool-input-schema"
 }

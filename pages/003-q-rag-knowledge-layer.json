@@ -1,81 +1,82 @@
 {
- "id": "q-003",
- "kind": "question",
- "order": 3,
- "title": "수천 개 정책 문서의 지식 접근 계층",
- "domain": "지식·RAG",
- "question_en": "You are designing the knowledge access layer for the customer support resolution agent. The company has ==thousands of changing== refund rules, billing procedures, product notices, and troubleshooting articles, and customers often ask ==vague questions== such as \"Can I still get credited for this?\" while also providing ==exact order IDs or error codes==. What is the best approach for helping Claude answer accurately ==without overloading the prompt==?",
- "question_ko": "고객지원 에이전트의 **지식 접근 계층**을 설계 중이다. 회사에는 ==수천 개의 계속 바뀌는== 환불 규정·청구 절차·제품 공지·문제해결 문서가 있다. 고객은 \"이거 아직 크레딧 받을 수 있나요?\" 같은 ==모호한 질문==을 하면서 동시에 ==정확한 주문 ID나 에러 코드==를 준다. 프롬프트를 과부하시키지 않고 정확히 답하게 하는 가장 좋은 접근은?",
- "options": [
-  {
-   "key": "A",
-   "en": "Build a ==RAG pipeline that chunks== policies and support articles, stores them in searchable indexes, uses ==hybrid retrieval== for both exact identifiers and meaning-based policy questions, and ==sends the selected chunks== with the customer's request to Claude.",
-   "ko": "정책·지원 문서를 청크로 나눠 검색 가능한 인덱스에 저장하고, 정확한 식별자와 의미 기반 정책 질문 모두를 위한 하이브리드 검색을 쓰고, 선택된 청크만 고객 요청과 함께 Claude 에 보내는 RAG 파이프라인을 만든다."
-  },
-  {
-   "key": "B",
-   "en": "==Paste all policy documents into the system prompt== so Claude always has full context.",
-   "ko": "Claude 가 항상 전체 맥락을 갖도록 모든 정책 문서를 시스템 프롬프트에 넣는다."
-  },
-  {
-   "key": "C",
-   "en": "==Fine-tune the model== on the policy documents so it memorizes the rules.",
-   "ko": "규정을 외우도록 정책 문서로 모델을 파인튜닝한다."
-  },
-  {
-   "key": "D",
-   "en": "Use ==embedding search only==, since semantic similarity handles all customer questions.",
-   "ko": "의미 유사도가 모든 고객 질문을 처리하므로 임베딩 검색만 쓴다."
-  }
- ],
- "answer": "A",
- "explanation": "**RAG (Retrieval-Augmented Generation)** 는 답을 만들기 전에 관련 문서를 먼저 검색해서 프롬프트에 붙여 주는 방식이다. 모델이 외운 지식이 아니라 방금 찾아온 문서를 근거로 답한다.\n\n지문의 단서와 정답을 짝지으면:\n- 수천 개 문서, 계속 바뀜 → 프롬프트에 다 못 넣음 → ==인덱스에 넣고 필요한 것만 검색==\n- 프롬프트 과부하 없이 → ==선택된 청크만== 보냄\n- 모호한 질문 → ==의미 기반(임베딩) 검색==\n- 정확한 주문 ID·에러 코드 → ==키워드(정확 문자열) 검색==\n- 둘 다 동시에 온다 → 그래서 ==하이브리드==\n\n용어: **청킹** 은 긴 문서를 문단 정도로 자르는 것, **인덱스** 는 청크를 빨리 찾게 정리한 저장소, **하이브리드 검색** 은 키워드 검색과 의미 검색을 합친 것.",
- "traps": [
-  {
-   "key": "B",
-   "why": "과부하, 비용 폭발, 문서가 바뀔 때마다 프롬프트 수정. 지문이 명시적으로 금지한 방향."
-  },
-  {
-   "key": "C",
-   "why": "규정이 바뀌면 다시 학습해야 하고, 주문 ID 같은 건 외워도 소용없다. 지식 갱신 문제엔 파인튜닝이 아니라 검색."
-  },
-  {
-   "key": "D",
-   "why": "임베딩만으로는 \"ORD-48213\" 같은 정확 문자열 매칭에 약하다. 식별자가 섞이면 하이브리드."
-  }
- ],
- "keyPoints": [
-  "문서가 많고 자주 바뀌면 RAG. 프롬프트에 다 넣기·파인튜닝은 오답.",
-  "정확 식별자 + 모호한 질문이 섞이면 하이브리드 검색 (키워드 + 임베딩).",
-  "선택된 청크만 보내는 것이 \"프롬프트 과부하 없이\" 의 답."
- ],
- "createdAt": "2026-09-09T00:00:00Z",
- "title_en": "Knowledge access layer for thousands of policies",
- "section": "Unsorted",
- "lecture": "",
- "summary": "",
- "pattern": {
-  "type": "지식 접근 계층(RAG) 설계",
-  "asks": "많고 자주 바뀌는 문서를 프롬프트 과부하 없이 어떻게 쓰게 할지.",
-  "clues": [
-   {
-    "text": "thousands of changing",
-    "means": "프롬프트에 다 못 넣고 파인튜닝도 안 됨 → 검색"
-   },
-   {
-    "text": "vague questions",
-    "means": "의미 기반 검색(임베딩)"
-   },
-   {
-    "text": "exact order IDs or error codes",
-    "means": "키워드 정확 매칭 → 둘 다면 하이브리드"
-   },
-   {
-    "text": "without overloading the prompt",
-    "means": "선택된 청크만 전송"
-   }
+  "id": "q-003",
+  "kind": "question",
+  "order": 3,
+  "title": "수천 개 정책 문서의 지식 접근 계층",
+  "domain": "지식·RAG",
+  "question_en": "You are designing the knowledge access layer for the customer support resolution agent. The company has ==thousands of changing== refund rules, billing procedures, product notices, and troubleshooting articles, and customers often ask ==vague questions== such as \"Can I still get credited for this?\" while also providing ==exact order IDs or error codes==. What is the best approach for helping Claude answer accurately ==without overloading the prompt==?",
+  "question_ko": "고객지원 에이전트의 **지식 접근 계층**을 설계 중이다. 회사에는 ==수천 개의 계속 바뀌는== 환불 규정·청구 절차·제품 공지·문제해결 문서가 있다. 고객은 \"이거 아직 크레딧 받을 수 있나요?\" 같은 ==모호한 질문==을 하면서 동시에 ==정확한 주문 ID나 에러 코드==를 준다. 프롬프트를 과부하시키지 않고 정확히 답하게 하는 가장 좋은 접근은?",
+  "options": [
+    {
+      "key": "A",
+      "en": "Build a ==RAG pipeline that chunks== policies and support articles, stores them in searchable indexes, uses ==hybrid retrieval== for both exact identifiers and meaning-based policy questions, and ==sends the selected chunks== with the customer's request to Claude.",
+      "ko": "정책·지원 문서를 청크로 나눠 검색 가능한 인덱스에 저장하고, 정확한 식별자와 의미 기반 정책 질문 모두를 위한 하이브리드 검색을 쓰고, 선택된 청크만 고객 요청과 함께 Claude 에 보내는 RAG 파이프라인을 만든다."
+    },
+    {
+      "key": "B",
+      "en": "==Paste all policy documents into the system prompt== so Claude always has full context.",
+      "ko": "Claude 가 항상 전체 맥락을 갖도록 모든 정책 문서를 시스템 프롬프트에 넣는다."
+    },
+    {
+      "key": "C",
+      "en": "==Fine-tune the model== on the policy documents so it memorizes the rules.",
+      "ko": "규정을 외우도록 정책 문서로 모델을 파인튜닝한다."
+    },
+    {
+      "key": "D",
+      "en": "Use ==embedding search only==, since semantic similarity handles all customer questions.",
+      "ko": "의미 유사도가 모든 고객 질문을 처리하므로 임베딩 검색만 쓴다."
+    }
   ],
-  "answerShape": "청킹 + 인덱스 + 하이브리드 검색 + 선택 청크만 전송.",
-  "distractorShape": "전부 프롬프트에, 파인튜닝, 임베딩만."
- }
+  "answer": "A",
+  "explanation": "**RAG (Retrieval-Augmented Generation)** 는 답을 만들기 전에 관련 문서를 먼저 검색해서 프롬프트에 붙여 주는 방식이다. 모델이 외운 지식이 아니라 방금 찾아온 문서를 근거로 답한다.\n\n지문의 단서와 정답을 짝지으면:\n- 수천 개 문서, 계속 바뀜 → 프롬프트에 다 못 넣음 → ==인덱스에 넣고 필요한 것만 검색==\n- 프롬프트 과부하 없이 → ==선택된 청크만== 보냄\n- 모호한 질문 → ==의미 기반(임베딩) 검색==\n- 정확한 주문 ID·에러 코드 → ==키워드(정확 문자열) 검색==\n- 둘 다 동시에 온다 → 그래서 ==하이브리드==\n\n용어: **청킹** 은 긴 문서를 문단 정도로 자르는 것, **인덱스** 는 청크를 빨리 찾게 정리한 저장소, **하이브리드 검색** 은 키워드 검색과 의미 검색을 합친 것.",
+  "traps": [
+    {
+      "key": "B",
+      "why": "과부하, 비용 폭발, 문서가 바뀔 때마다 프롬프트 수정. 지문이 명시적으로 금지한 방향."
+    },
+    {
+      "key": "C",
+      "why": "규정이 바뀌면 다시 학습해야 하고, 주문 ID 같은 건 외워도 소용없다. 지식 갱신 문제엔 파인튜닝이 아니라 검색."
+    },
+    {
+      "key": "D",
+      "why": "임베딩만으로는 \"ORD-48213\" 같은 정확 문자열 매칭에 약하다. 식별자가 섞이면 하이브리드."
+    }
+  ],
+  "keyPoints": [
+    "문서가 많고 자주 바뀌면 RAG. 프롬프트에 다 넣기·파인튜닝은 오답.",
+    "정확 식별자 + 모호한 질문이 섞이면 하이브리드 검색 (키워드 + 임베딩).",
+    "선택된 청크만 보내는 것이 \"프롬프트 과부하 없이\" 의 답."
+  ],
+  "createdAt": "2026-09-09T00:00:00Z",
+  "title_en": "Knowledge access layer for thousands of policies",
+  "section": "Unsorted",
+  "lecture": "",
+  "summary": "",
+  "pattern": {
+    "type": "지식 접근 계층(RAG) 설계",
+    "asks": "많고 자주 바뀌는 문서를 프롬프트 과부하 없이 어떻게 쓰게 할지.",
+    "clues": [
+      {
+        "text": "thousands of changing",
+        "means": "프롬프트에 다 못 넣고 파인튜닝도 안 됨 → 검색"
+      },
+      {
+        "text": "vague questions",
+        "means": "의미 기반 검색(임베딩)"
+      },
+      {
+        "text": "exact order IDs or error codes",
+        "means": "키워드 정확 매칭 → 둘 다면 하이브리드"
+      },
+      {
+        "text": "without overloading the prompt",
+        "means": "선택된 청크만 전송"
+      }
+    ],
+    "answerShape": "청킹 + 인덱스 + 하이브리드 검색 + 선택 청크만 전송.",
+    "distractorShape": "전부 프롬프트에, 파인튜닝, 임베딩만."
+  },
+  "patternId": "rag-layer"
 }

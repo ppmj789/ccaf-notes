@@ -1,0 +1,60 @@
+{
+  "name": "Claude Certified Architect - Foundations",
+  "items": 60,
+  "minutes": 120,
+  "passing": 720,
+  "scaleMin": 100,
+  "scaleMax": 1000,
+  "safeTarget": 800,
+  "note": "60문항·120분·합격 720/1000(스케일 점수). 시나리오 4개(은행 6개 중), 오답 감점 없음. 모의고사에서 800 이상이면 안전권.",
+  "sources": [
+    "https://claudecertificationguide.com/blog/claude-certified-architect-foundations-exam-guide",
+    "https://claudepractice.com/exam"
+  ],
+  "domains": [
+    {
+      "id": "D1",
+      "name": "Agentic Architecture & Orchestration",
+      "ko": "에이전트 아키텍처·오케스트레이션",
+      "weight": 27,
+      "topics": "agentic loops, orchestration patterns, subagents, guardrails, HITL checkpoints, Agent SDK, computer use"
+    },
+    {
+      "id": "D2",
+      "name": "Tool Design & MCP Integration",
+      "ko": "툴 설계·MCP 연동",
+      "weight": 18,
+      "topics": "tool definitions, input schemas, tool routing, MCP servers and clients, tool chaining"
+    },
+    {
+      "id": "D3",
+      "name": "Claude Code Configuration & Workflows",
+      "ko": "Claude Code 설정·워크플로우",
+      "weight": 20,
+      "topics": "CLAUDE.md, settings hierarchy, slash commands, hooks, permissions, plan mode, IDE, CI/CD"
+    },
+    {
+      "id": "D4",
+      "name": "Prompt Engineering & Structured Output",
+      "ko": "프롬프트 엔지니어링·구조화 출력",
+      "weight": 20,
+      "topics": "system prompts, few-shot, chain-of-thought, extended thinking, JSON schema, output validation"
+    },
+    {
+      "id": "D5",
+      "name": "Context Management & Reliability",
+      "ko": "컨텍스트 관리·신뢰성",
+      "weight": 15,
+      "topics": "context window, RAG, caching, token optimization, long conversations, error handling"
+    }
+  ],
+  "domainMap": {
+    "모델 선택": "D1",
+    "멀티에이전트": "D1",
+    "툴·에이전트 루프": "D2",
+    "Claude Code": "D3",
+    "프롬프트·평가": "D4",
+    "지식·RAG": "D5",
+    "신뢰성": "D5"
+  }
+}

@@ -1,81 +1,82 @@
 {
- "id": "q-027-1",
- "kind": "question",
- "order": 27.1,
- "section": "Reliable Prompts & Structured Output",
- "lecture": "27",
- "title_en": "Refund exceeds amount paid: which pattern?",
- "title": "결제액을 넘는 환불 — 어떤 패턴인가",
- "domain": "신뢰성",
- "question_en": "A customer support resolution agent proposes this structured action ==after calling get_customer and lookup_order==: {\"desired_action\":\"process_refund\",\"refund_amount\":149.00,\"confidence\":0.86}. Before allowing process_refund, your application ==checks policy rules== and finds that the customer ==only paid $99.00== for the order. The application sends the agent a follow-up message containing the ==original customer request, the failed action, and the validation error==: \"refund_amount exceeds amount_paid; revise the action ==without inventing missing facts==.\" ==What pattern== is being used?",
- "question_ko": "고객지원 에이전트가 `get_customer` 와 `lookup_order` 를 부른 뒤 이런 구조화 액션을 제안한다. `{\"desired_action\":\"process_refund\",\"refund_amount\":149.00,\"confidence\":0.86}`. `process_refund` 를 허용하기 전에 애플리케이션이 ==정책 규칙을 확인==했더니 고객이 실제로 낸 돈은 ==99.00== 이다. 애플리케이션은 ==원래 고객 요청, 실패한 액션, 검증 에러==(\"refund_amount 가 amount_paid 를 초과함. ==없는 사실을 지어내지 말고== 액션을 수정하라\")를 담은 후속 메시지를 에이전트에게 보낸다. 어떤 패턴인가?",
- "options": [
-  {
-   "key": "A",
-   "en": "Session pruning, because the application ==removes older support messages== before asking the agent to produce a corrected decision.",
-   "ko": "Session pruning. 애플리케이션이 수정된 결정을 요청하기 전에 오래된 지원 메시지를 제거하므로."
-  },
-  {
-   "key": "B",
-   "en": "Model fine-tuning, because the application ==updates the model weights== after each invalid refund decision is detected.",
-   "ko": "Model fine-tuning. 무효한 환불 결정이 감지될 때마다 애플리케이션이 모델 가중치를 갱신하므로."
-  },
-  {
-   "key": "C",
-   "en": "Tool result caching, because the application ==stores previous lookup_order results and reuses them== when the agent retries.",
-   "ko": "Tool result caching. 애플리케이션이 이전 lookup_order 결과를 저장해 두고 에이전트가 재시도할 때 재사용하므로."
-  },
-  {
-   "key": "D",
-   "en": "Retry with error feedback, because the application ==returns the specific validation failure== to the agent and asks for a ==corrected decision at runtime==.",
-   "ko": "Retry with error feedback. 애플리케이션이 구체적인 검증 실패를 에이전트에게 돌려주고 런타임에 수정된 결정을 요청하므로."
-  }
- ],
- "answer": "D",
- "explanation": "27강이 정의한 ==좋은 retry== 의 재료가 지문에 그대로 다 들어 있다.\n\n| 27강의 좋은 retry | 지문 |\n|---|---|\n| the original customer message | \"the original customer request\" |\n| the failed extraction | \"the failed action\" |\n| the validation error | \"refund_amount exceeds amount_paid\" |\n| do not invent missing information | \"without inventing missing facts\" |\n\n- 이 에러는 ==고칠 수 있는== 종류다. lookup_order 결과에 실제 결제액 99.00 이 있으니 에이전트가 그 사실로 금액을 고칠 수 있다. \"원문에 답이 있는데 모델이 잘못 놓은 경우 → retry\". 결제액 자체를 모르는 상황이었다면 retry 가 아니라 null 과 사람 검토.\n- 검증의 종류도 보자. 149.00 은 숫자이고 필드도 다 있으니 ==schema 검증은 통과==한다. \"결제액보다 큰 환불\" 은 정책 규칙, 즉 ==semantic / business rule 검증==에서 걸렸다. 모델이 낸 숫자를 결정론적 코드가 외부 사실(DB 의 amount_paid)과 대조한 것. \"Claude extracts, your application validates\".",
- "traps": [
-  {
-   "key": "A",
-   "why": "Session pruning 은 컨텍스트가 길어질 때 오래된 메시지를 잘라내는 컨텍스트 관리 기법. 지문은 메시지를 지우는 게 아니라 추가하고 있다. 방향이 반대."
-  },
-  {
-   "key": "B",
-   "why": "Fine-tuning 은 가중치를 바꾸는 오프라인 학습. 지문은 런타임에 같은 모델에게 후속 메시지를 보내는 것이고, 무효 환불마다 재학습하는 시스템은 없다. 학습과 런타임 피드백을 섞은 함정."
-  },
-  {
-   "key": "C",
-   "why": "Tool result caching 은 이전 lookup_order 결과를 저장해 재사용하는 성능 최적화. 지문에 캐시나 재사용 이야기가 없다. lookup_order 라는 단어로 끌어당기는 미끼."
-  }
- ],
- "keyPoints": [
-  "Original request + failed output + specific validation error + \"do not invent\" sent back at runtime = retry with error feedback. // 네 재료가 있으면 retry with error feedback.",
-  "Retry is right here because the correct amount exists in the tool results; if the fact were missing, the answer would be null plus human review. // 고칠 수 있으니 retry, 없으면 null.",
-  "Schema passed (149.00 is a valid number); the policy check is semantic or business-rule validation done by deterministic code. // 스키마 통과, 정책 검증은 코드가.",
-  "Pruning removes context, fine-tuning changes weights, caching stores tool results: none of them send an error back to the agent. // 세 오답의 정의."
- ],
- "createdAt": "2026-09-09T08:40:00Z",
- "pattern": {
-  "type": "패턴 이름 맞히기(정의 매칭)",
-  "asks": "지문이 묘사하는 동작이 어떤 패턴의 정의와 일치하는지.",
-  "clues": [
-   {
-    "text": "original request + failed action + validation error",
-    "means": "좋은 retry 의 세 재료"
-   },
-   {
-    "text": "without inventing missing facts",
-    "means": "retry 지시문의 정석 문구"
-   },
-   {
-    "text": "checks policy rules ... $99.00",
-    "means": "스키마는 통과, 비즈니스 규칙(semantic) 검증에서 걸림"
-   },
-   {
-    "text": "after calling ... lookup_order",
-    "means": "고칠 정보가 이미 있음 → retry 가 맞는 경우"
-   }
+  "id": "q-027-1",
+  "kind": "question",
+  "order": 27.1,
+  "section": "Reliable Prompts & Structured Output",
+  "lecture": "27",
+  "title_en": "Refund exceeds amount paid: which pattern?",
+  "title": "결제액을 넘는 환불 — 어떤 패턴인가",
+  "domain": "신뢰성",
+  "question_en": "A customer support resolution agent proposes this structured action ==after calling get_customer and lookup_order==: {\"desired_action\":\"process_refund\",\"refund_amount\":149.00,\"confidence\":0.86}. Before allowing process_refund, your application ==checks policy rules== and finds that the customer ==only paid $99.00== for the order. The application sends the agent a follow-up message containing the ==original customer request, the failed action, and the validation error==: \"refund_amount exceeds amount_paid; revise the action ==without inventing missing facts==.\" ==What pattern== is being used?",
+  "question_ko": "고객지원 에이전트가 `get_customer` 와 `lookup_order` 를 부른 뒤 이런 구조화 액션을 제안한다. `{\"desired_action\":\"process_refund\",\"refund_amount\":149.00,\"confidence\":0.86}`. `process_refund` 를 허용하기 전에 애플리케이션이 ==정책 규칙을 확인==했더니 고객이 실제로 낸 돈은 ==99.00== 이다. 애플리케이션은 ==원래 고객 요청, 실패한 액션, 검증 에러==(\"refund_amount 가 amount_paid 를 초과함. ==없는 사실을 지어내지 말고== 액션을 수정하라\")를 담은 후속 메시지를 에이전트에게 보낸다. 어떤 패턴인가?",
+  "options": [
+    {
+      "key": "A",
+      "en": "Session pruning, because the application ==removes older support messages== before asking the agent to produce a corrected decision.",
+      "ko": "Session pruning. 애플리케이션이 수정된 결정을 요청하기 전에 오래된 지원 메시지를 제거하므로."
+    },
+    {
+      "key": "B",
+      "en": "Model fine-tuning, because the application ==updates the model weights== after each invalid refund decision is detected.",
+      "ko": "Model fine-tuning. 무효한 환불 결정이 감지될 때마다 애플리케이션이 모델 가중치를 갱신하므로."
+    },
+    {
+      "key": "C",
+      "en": "Tool result caching, because the application ==stores previous lookup_order results and reuses them== when the agent retries.",
+      "ko": "Tool result caching. 애플리케이션이 이전 lookup_order 결과를 저장해 두고 에이전트가 재시도할 때 재사용하므로."
+    },
+    {
+      "key": "D",
+      "en": "Retry with error feedback, because the application ==returns the specific validation failure== to the agent and asks for a ==corrected decision at runtime==.",
+      "ko": "Retry with error feedback. 애플리케이션이 구체적인 검증 실패를 에이전트에게 돌려주고 런타임에 수정된 결정을 요청하므로."
+    }
   ],
-  "answerShape": "지문의 행동을 그대로 서술한 보기. 구체적 에러를 돌려주고 런타임에 수정 요청.",
-  "distractorShape": "그럴듯한 용어(pruning, fine-tuning, caching)에 지문과 안 맞는 설명을 붙임."
- }
+  "answer": "D",
+  "explanation": "27강이 정의한 ==좋은 retry== 의 재료가 지문에 그대로 다 들어 있다.\n\n| 27강의 좋은 retry | 지문 |\n|---|---|\n| the original customer message | \"the original customer request\" |\n| the failed extraction | \"the failed action\" |\n| the validation error | \"refund_amount exceeds amount_paid\" |\n| do not invent missing information | \"without inventing missing facts\" |\n\n- 이 에러는 ==고칠 수 있는== 종류다. lookup_order 결과에 실제 결제액 99.00 이 있으니 에이전트가 그 사실로 금액을 고칠 수 있다. \"원문에 답이 있는데 모델이 잘못 놓은 경우 → retry\". 결제액 자체를 모르는 상황이었다면 retry 가 아니라 null 과 사람 검토.\n- 검증의 종류도 보자. 149.00 은 숫자이고 필드도 다 있으니 ==schema 검증은 통과==한다. \"결제액보다 큰 환불\" 은 정책 규칙, 즉 ==semantic / business rule 검증==에서 걸렸다. 모델이 낸 숫자를 결정론적 코드가 외부 사실(DB 의 amount_paid)과 대조한 것. \"Claude extracts, your application validates\".",
+  "traps": [
+    {
+      "key": "A",
+      "why": "Session pruning 은 컨텍스트가 길어질 때 오래된 메시지를 잘라내는 컨텍스트 관리 기법. 지문은 메시지를 지우는 게 아니라 추가하고 있다. 방향이 반대."
+    },
+    {
+      "key": "B",
+      "why": "Fine-tuning 은 가중치를 바꾸는 오프라인 학습. 지문은 런타임에 같은 모델에게 후속 메시지를 보내는 것이고, 무효 환불마다 재학습하는 시스템은 없다. 학습과 런타임 피드백을 섞은 함정."
+    },
+    {
+      "key": "C",
+      "why": "Tool result caching 은 이전 lookup_order 결과를 저장해 재사용하는 성능 최적화. 지문에 캐시나 재사용 이야기가 없다. lookup_order 라는 단어로 끌어당기는 미끼."
+    }
+  ],
+  "keyPoints": [
+    "Original request + failed output + specific validation error + \"do not invent\" sent back at runtime = retry with error feedback. // 네 재료가 있으면 retry with error feedback.",
+    "Retry is right here because the correct amount exists in the tool results; if the fact were missing, the answer would be null plus human review. // 고칠 수 있으니 retry, 없으면 null.",
+    "Schema passed (149.00 is a valid number); the policy check is semantic or business-rule validation done by deterministic code. // 스키마 통과, 정책 검증은 코드가.",
+    "Pruning removes context, fine-tuning changes weights, caching stores tool results: none of them send an error back to the agent. // 세 오답의 정의."
+  ],
+  "createdAt": "2026-09-09T08:40:00Z",
+  "pattern": {
+    "type": "패턴 이름 맞히기(정의 매칭)",
+    "asks": "지문이 묘사하는 동작이 어떤 패턴의 정의와 일치하는지.",
+    "clues": [
+      {
+        "text": "original request + failed action + validation error",
+        "means": "좋은 retry 의 세 재료"
+      },
+      {
+        "text": "without inventing missing facts",
+        "means": "retry 지시문의 정석 문구"
+      },
+      {
+        "text": "checks policy rules ... $99.00",
+        "means": "스키마는 통과, 비즈니스 규칙(semantic) 검증에서 걸림"
+      },
+      {
+        "text": "after calling ... lookup_order",
+        "means": "고칠 정보가 이미 있음 → retry 가 맞는 경우"
+      }
+    ],
+    "answerShape": "지문의 행동을 그대로 서술한 보기. 구체적 에러를 돌려주고 런타임에 수정 요청.",
+    "distractorShape": "그럴듯한 용어(pruning, fine-tuning, caching)에 지문과 안 맞는 설명을 붙임."
+  },
+  "patternId": "pattern-definition"
 }
