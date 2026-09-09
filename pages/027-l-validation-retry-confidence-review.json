@@ -1,0 +1,554 @@
+{
+ "id": "l-027",
+ "kind": "lesson",
+ "order": 27,
+ "section": "Reliable Prompts & Structured Output",
+ "lecture": "27",
+ "title_en": "Validation, Retry Loops, Confidence, and Human Review",
+ "title": "검증, 재시도 루프, confidence, 사람 검토",
+ "domain": "신뢰성",
+ "summary": "A valid structure is not a correct answer, so the application validates the shape and the meaning after Claude returns, retries only fixable mistakes with specific feedback, returns null for missing data, and routes low-confidence or conflicting cases to human review. // 유효한 구조가 정답은 아니므로 애플리케이션이 모양과 의미를 검증하고, 고칠 수 있는 실수만 구체적 피드백과 함께 retry 하며, 없는 정보는 null 로 두고, confidence 가 낮거나 모순된 케이스는 사람 검토로 보낸다.",
+ "paragraphs": [
+  {
+   "en": "In the previous lesson, we used tool use and JSON schema to make Claude return structured data.",
+   "ko": "지난 강의에서는 툴 사용과 JSON schema 로 Claude 가 구조화된 데이터를 돌려주게 했습니다."
+  },
+  {
+   "en": "That solves one big problem. The output is much easier for our application to parse.",
+   "ko": "그걸로 큰 문제 하나가 풀립니다. 애플리케이션이 출력을 훨씬 쉽게 파싱할 수 있죠."
+  },
+  {
+   "en": "But structured output does not automatically mean correct output.",
+   "ko": "하지만 구조화된 출력이 곧 정확한 출력은 아닙니다."
+  },
+  {
+   "en": "Claude may return a valid structure, but still extract the wrong value,",
+   "ko": "Claude 는 유효한 구조를 돌려주면서도 잘못된 값을 뽑거나,"
+  },
+  {
+   "en": "choose the wrong enum, miss a contradiction, or infer information that was not actually present.",
+   "ko": "잘못된 enum 을 고르거나, 모순을 놓치거나, 실제로 없던 정보를 추론해 낼 수 있습니다."
+  },
+  {
+   "en": "This is why production systems need validation after the model returns output.",
+   "ko": "그래서 프로덕션 시스템에는 모델이 출력을 돌려준 뒤의 validation 이 필요합니다."
+  },
+  {
+   "en": "There are two important types of validation. The first is schema validation.",
+   "ko": "중요한 validation 은 두 종류입니다. 첫째는 schema validation 입니다."
+  },
+  {
+   "en": "Schema validation checks the shape of the output. Are all required fields present?",
+   "ko": "schema validation 은 출력의 모양을 검사합니다. required 필드가 다 있는가?"
+  },
+  {
+   "en": "Are the field types correct? Are enum values valid?",
+   "ko": "필드 타입이 맞는가? enum 값이 유효한가?"
+  },
+  {
+   "en": "For example, if desired action must be refund, replacement, store credit, or unclear,",
+   "ko": "예를 들어 desired_action 이 refund, replacement, store credit, unclear 중 하나여야 하는데"
+  },
+  {
+   "en": "and Claude returns exchange, schema validation should catch that.",
+   "ko": "Claude 가 exchange 를 돌려주면 schema validation 이 잡아내야 합니다."
+  },
+  {
+   "en": "The second type is semantic validation.",
+   "ko": "둘째는 semantic validation 입니다."
+  },
+  {
+   "en": "Semantic validation checks whether the extracted values make sense.",
+   "ko": "semantic validation 은 뽑아낸 값이 말이 되는지 검사합니다."
+  },
+  {
+   "en": "For example, the structure may be valid, but the customer message says",
+   "ko": "예를 들어 구조는 유효한데, 고객 메시지는"
+  },
+  {
+   "en": "I want a replacement while Claude extracted desired action as refund.",
+   "ko": "\"교환해 주세요\" 라고 했는데 Claude 는 desired_action 을 refund 로 뽑았을 수 있습니다."
+  },
+  {
+   "en": "That is not a JSON problem. That is a meaning problem.",
+   "ko": "그건 JSON 문제가 아니라 의미의 문제입니다."
+  },
+  {
+   "en": "In ShopAssist, Claude might extract a return request with fields like",
+   "ko": "ShopAssist 에서 Claude 는 이런 필드로 반품 요청을 뽑아낼 수 있습니다."
+  },
+  {
+   "en": "order ID, item, reason, desired action, evidence provided, urgency, missing information,",
+   "ko": "order_id, item, reason, desired_action, evidence_provided, urgency, missing_information,"
+  },
+  {
+   "en": "confidence, conflict detected, human review required.",
+   "ko": "confidence, conflict_detected, human_review_required."
+  },
+  {
+   "en": "After extraction, our backend should validate the result.",
+   "ko": "추출이 끝나면 백엔드가 결과를 검증해야 합니다."
+  },
+  {
+   "en": "If the problem is structural and fixable, we can retry.",
+   "ko": "문제가 구조적이고 고칠 수 있는 것이면 retry 할 수 있습니다."
+  },
+  {
+   "en": "But the retry should include specific feedback.",
+   "ko": "하지만 retry 에는 구체적인 피드백이 들어가야 합니다."
+  },
+  {
+   "en": "A weak retry says try again. A better retry includes",
+   "ko": "약한 retry 는 \"다시 해 봐\" 라고만 합니다. 더 좋은 retry 는"
+  },
+  {
+   "en": "the original customer message, the failed extraction, the validation error,",
+   "ko": "원래 고객 메시지, 실패한 추출 결과, validation 에러,"
+  },
+  {
+   "en": "and a clear instruction not to invent missing information.",
+   "ko": "그리고 없는 정보를 지어내지 말라는 분명한 지시를 포함합니다."
+  },
+  {
+   "en": "For example, the field desired action must be one of refund, replacement,",
+   "ko": "예를 들어, \"desired_action 필드는 refund, replacement,"
+  },
+  {
+   "en": "store credit, or unclear. You returned exchange, which is not allowed.",
+   "ko": "store credit, unclear 중 하나여야 한다. 너는 허용되지 않는 exchange 를 돌려줬다."
+  },
+  {
+   "en": "Re-extract the return request from the original message.",
+   "ko": "원래 메시지에서 반품 요청을 다시 추출하라."
+  },
+  {
+   "en": "Use unclear if the desired action is ambiguous. Do not invent missing information.",
+   "ko": "desired_action 이 애매하면 unclear 를 써라. 없는 정보를 지어내지 마라.\""
+  },
+  {
+   "en": "This kind of retry works well when the source contains the right information,",
+   "ko": "이런 retry 는 원문에 올바른 정보가 들어 있는데"
+  },
+  {
+   "en": "but Claude placed it incorrectly or used the wrong format.",
+   "ko": "Claude 가 엉뚱한 자리에 넣었거나 잘못된 형식을 썼을 때 잘 통합니다."
+  },
+  {
+   "en": "Retries help with wrong enum values, missing required fields, wrong field placement,",
+   "ko": "retry 는 잘못된 enum 값, 빠진 required 필드, 잘못된 필드 배치,"
+  },
+  {
+   "en": "and structural mismatches.",
+   "ko": "그리고 구조 불일치에 도움이 됩니다."
+  },
+  {
+   "en": "But retries do not help when the information is absent from the source.",
+   "ko": "하지만 정보가 원문에 아예 없을 때는 retry 가 도움이 되지 않습니다."
+  },
+  {
+   "en": "If the customer never gave an order ID, the correct behavior is not to retry until Claude guesses one.",
+   "ko": "고객이 order ID 를 준 적이 없다면, Claude 가 하나 찍어낼 때까지 retry 하는 것은 올바른 동작이 아닙니다."
+  },
+  {
+   "en": "The correct behavior is to return null for order ID and add order ID to missing information.",
+   "ko": "올바른 동작은 order_id 에 null 을 돌려주고 missing_information 에 order ID 를 추가하는 것입니다."
+  },
+  {
+   "en": "This distinction is very important.",
+   "ko": "이 구분이 아주 중요합니다."
+  },
+  {
+   "en": "Retry when the model made a fixable extraction mistake.",
+   "ko": "모델이 고칠 수 있는 추출 실수를 했을 때는 retry."
+  },
+  {
+   "en": "Do not retry when the source does not contain the answer.",
+   "ko": "원문에 답이 없을 때는 retry 하지 않습니다."
+  },
+  {
+   "en": "Now, let's talk about contradictions.",
+   "ko": "이제 모순에 대해 이야기해 봅시다."
+  },
+  {
+   "en": "Sometimes a customer message contains conflicting information.",
+   "ko": "고객 메시지에 서로 충돌하는 정보가 들어 있을 때가 있습니다."
+  },
+  {
+   "en": "For example, I want a refund, but if possible, just send me another one.",
+   "ko": "예를 들어 \"환불해 주세요, 근데 가능하면 그냥 하나 더 보내 주세요.\""
+  },
+  {
+   "en": "This mentions both refund and replacement.",
+   "ko": "refund 와 replacement 를 둘 다 말하고 있습니다."
+  },
+  {
+   "en": "Instead of forcing one answer, ShopAssist should return something like",
+   "ko": "하나로 억지로 정하는 대신 ShopAssist 는 이런 식으로 돌려줘야 합니다."
+  },
+  {
+   "en": "desired action unclear, conflict detected, true, conflict reason.",
+   "ko": "desired_action: unclear, conflict_detected: true, conflict_reason:"
+  },
+  {
+   "en": "The customer mentions both refund and replacement.",
+   "ko": "\"고객이 refund 와 replacement 를 둘 다 언급함.\""
+  },
+  {
+   "en": "This is safer than pretending the request is clear.",
+   "ko": "요청이 분명한 척하는 것보다 이게 더 안전합니다."
+  },
+  {
+   "en": "A similar pattern is useful for numeric extraction.",
+   "ko": "비슷한 패턴이 숫자 추출에도 유용합니다."
+  },
+  {
+   "en": "For example, when extracting totals from a receipt,",
+   "ko": "예를 들어 영수증에서 합계를 뽑을 때"
+  },
+  {
+   "en": "we can separate stated total from calculated total.",
+   "ko": "stated_total 과 calculated_total 을 분리할 수 있습니다."
+  },
+  {
+   "en": "Stated total is what the document says.",
+   "ko": "stated_total 은 문서에 적힌 값입니다."
+  },
+  {
+   "en": "Calculated total is what our code calculates from the line items.",
+   "ko": "calculated_total 은 우리 코드가 품목들로 계산한 값입니다."
+  },
+  {
+   "en": "If they do not match, we can set conflict detected to true and route the case for review.",
+   "ko": "둘이 다르면 conflict_detected 를 true 로 놓고 검토로 보낼 수 있습니다."
+  },
+  {
+   "en": "This pattern is useful because the model extracts information,",
+   "ko": "이 패턴이 유용한 이유는 모델은 정보를 뽑고,"
+  },
+  {
+   "en": "but deterministic code verifies it.",
+   "ko": "결정론적 코드가 그것을 검증하기 때문입니다."
+  },
+  {
+   "en": "Another useful field is detected pattern.",
+   "ko": "또 하나 유용한 필드는 detected_pattern 입니다."
+  },
+  {
+   "en": "For example, detected pattern, damaged item.",
+   "ko": "예를 들어 detected_pattern: damaged item."
+  },
+  {
+   "en": "Pattern evidence.",
+   "ko": "pattern_evidence:"
+  },
+  {
+   "en": "The customer says the left side does not work.",
+   "ko": "\"고객이 왼쪽이 작동하지 않는다고 말함.\""
+  },
+  {
+   "en": "This helps us analyze false positives.",
+   "ko": "이는 false positive 를 분석하는 데 도움이 됩니다."
+  },
+  {
+   "en": "If ShopAssist keeps classifying normal returns as damaged items,",
+   "ko": "ShopAssist 가 일반 반품을 자꾸 damaged item 으로 분류한다면"
+  },
+  {
+   "en": "detected pattern can help us understand which words or phrases cause the mistake.",
+   "ko": "detected_pattern 으로 어떤 단어나 구절이 실수를 일으키는지 파악할 수 있습니다."
+  },
+  {
+   "en": "Now, let's add confidence.",
+   "ko": "이제 confidence 를 추가해 봅시다."
+  },
+  {
+   "en": "Confidence should usually be field level, not just one global score.",
+   "ko": "confidence 는 보통 전체 점수 하나가 아니라 필드 단위여야 합니다."
+  },
+  {
+   "en": "For example, order ID confidence high.",
+   "ko": "예를 들어 order_id confidence: high."
+  },
+  {
+   "en": "Item confidence high.",
+   "ko": "item confidence: high."
+  },
+  {
+   "en": "Reason confidence medium.",
+   "ko": "reason confidence: medium."
+  },
+  {
+   "en": "Desired action confidence low.",
+   "ko": "desired_action confidence: low."
+  },
+  {
+   "en": "This is useful because some fields may be clear while others are uncertain.",
+   "ko": "어떤 필드는 분명하고 다른 필드는 불확실할 수 있어서 유용합니다."
+  },
+  {
+   "en": "The order ID may be obvious, but the desired action may be ambiguous.",
+   "ko": "order ID 는 명백한데 desired_action 은 애매할 수 있죠."
+  },
+  {
+   "en": "However, confidence is only useful if we test it.",
+   "ko": "하지만 confidence 는 검증해야만 쓸모가 있습니다."
+  },
+  {
+   "en": "A model can be confidently wrong.",
+   "ko": "모델은 자신 있게 틀릴 수 있습니다."
+  },
+  {
+   "en": "So in production, confidence should be calibrated with labeled validation sets.",
+   "ko": "그래서 프로덕션에서는 라벨이 붙은 validation set 으로 confidence 를 보정(calibrate)해야 합니다."
+  },
+  {
+   "en": "That means we collect examples where we already know the correct extraction,",
+   "ko": "즉 정답 추출을 이미 아는 예시들을 모으고,"
+  },
+  {
+   "en": "run our system, and measure how often high confidence fields are actually correct.",
+   "ko": "시스템을 돌려서 high confidence 필드가 실제로 얼마나 자주 맞는지 측정합니다."
+  },
+  {
+   "en": "We should also measure accuracy by document type and by field.",
+   "ko": "정확도는 문서 유형별, 필드별로도 측정해야 합니다."
+  },
+  {
+   "en": "For example, ShopAssist may perform well on plain customer messages,",
+   "ko": "예를 들어 ShopAssist 는 일반 고객 메시지에는 잘 하지만"
+  },
+  {
+   "en": "but worse on receipts or screenshots.",
+   "ko": "영수증이나 스크린샷에는 못할 수 있습니다."
+  },
+  {
+   "en": "It may extract order IDs accurately, but struggle with return reasons.",
+   "ko": "order ID 는 정확히 뽑지만 반품 사유는 어려워할 수 있습니다."
+  },
+  {
+   "en": "A single accuracy number is not enough.",
+   "ko": "정확도 숫자 하나로는 부족합니다."
+  },
+  {
+   "en": "We need to know where the system is reliable and where it needs review.",
+   "ko": "시스템이 어디서 믿을 만하고 어디서 검토가 필요한지 알아야 합니다."
+  },
+  {
+   "en": "This brings us to human review routing.",
+   "ko": "여기서 human review routing 으로 이어집니다."
+  },
+  {
+   "en": "Not every case should go to a human.",
+   "ko": "모든 케이스를 사람에게 보낼 필요는 없습니다."
+  },
+  {
+   "en": "The goal is to automate clear cases and escalate risky cases.",
+   "ko": "목표는 분명한 케이스는 자동화하고 위험한 케이스는 에스컬레이션하는 것입니다."
+  },
+  {
+   "en": "In ShopAssist, we might route to human review when confidence is low.",
+   "ko": "ShopAssist 에서는 confidence 가 낮을 때 human review 로 보낼 수 있습니다."
+  },
+  {
+   "en": "Conflict detected is true.",
+   "ko": "conflict_detected 가 true 일 때."
+  },
+  {
+   "en": "Required information is missing.",
+   "ko": "필수 정보가 빠졌을 때."
+  },
+  {
+   "en": "The customer asks for a policy exception.",
+   "ko": "고객이 정책 예외를 요구할 때."
+  },
+  {
+   "en": "The refund amount is high or the extracted request contradicts business rules.",
+   "ko": "환불 금액이 크거나, 추출된 요청이 비즈니스 규칙과 어긋날 때."
+  },
+  {
+   "en": "We should also sample some high confidence outputs.",
+   "ko": "high confidence 출력도 일부 샘플링해야 합니다."
+  },
+  {
+   "en": "This is called stratified sampling.",
+   "ko": "이것을 stratified sampling(층화 샘플링)이라고 합니다."
+  },
+  {
+   "en": "It means we review examples from high, medium, and low confidence groups. Why?",
+   "ko": "high, medium, low confidence 그룹에서 각각 예시를 뽑아 검토한다는 뜻입니다. 왜일까요?"
+  },
+  {
+   "en": "Because high confidence does not guarantee correctness.",
+   "ko": "high confidence 가 정확함을 보장하지 않기 때문입니다."
+  },
+  {
+   "en": "Sampling across confidence levels helps catch hidden systematic errors.",
+   "ko": "confidence 수준 전체에 걸쳐 샘플링하면 숨은 체계적 오류를 잡을 수 있습니다."
+  },
+  {
+   "en": "Now let's look at a simple validation function.",
+   "ko": "이제 간단한 validation 함수를 봅시다."
+  },
+  {
+   "en": "This function checks the extraction after Claude returns it.",
+   "ko": "이 함수는 Claude 가 돌려준 추출 결과를 검사합니다."
+  },
+  {
+   "en": "First, it checks whether desired action is one of the allowed values.",
+   "ko": "먼저 desired_action 이 허용된 값 중 하나인지 확인합니다."
+  },
+  {
+   "en": "If not, it adds a validation error.",
+   "ko": "아니면 validation 에러를 추가합니다."
+  },
+  {
+   "en": "That kind of error can usually be fixed with a retry.",
+   "ko": "그런 에러는 보통 retry 로 고칠 수 있습니다."
+  },
+  {
+   "en": "Next, if order ID is missing, we add it to missing information.",
+   "ko": "다음으로 order ID 가 없으면 missing_information 에 추가합니다."
+  },
+  {
+   "en": "We do not ask Claude to invent it.",
+   "ko": "Claude 에게 지어내라고 하지 않습니다."
+  },
+  {
+   "en": "Then, if a conflict is detected, we require human review.",
+   "ko": "그다음 conflict 가 감지되면 human review 를 요구합니다."
+  },
+  {
+   "en": "And if the desired action has low confidence, we also require human review.",
+   "ko": "그리고 desired_action 의 confidence 가 낮아도 human review 를 요구합니다."
+  },
+  {
+   "en": "In a real application, this validation layer can include schema libraries,",
+   "ko": "실제 애플리케이션에서 이 validation 계층에는 schema 라이브러리,"
+  },
+  {
+   "en": "business rules, database checks, policy checks, and review queues.",
+   "ko": "비즈니스 규칙, 데이터베이스 확인, 정책 확인, 검토 큐가 들어갈 수 있습니다."
+  },
+  {
+   "en": "But the architecture stays the same.",
+   "ko": "하지만 아키텍처는 같습니다."
+  },
+  {
+   "en": "Claude extracts.",
+   "ko": "Claude 가 추출합니다."
+  },
+  {
+   "en": "Your application validates.",
+   "ko": "여러분의 애플리케이션이 검증합니다."
+  },
+  {
+   "en": "Retry only when the problem is fixable.",
+   "ko": "고칠 수 있는 문제일 때만 retry 합니다."
+  },
+  {
+   "en": "Return null when information is missing.",
+   "ko": "정보가 없으면 null 을 돌려줍니다."
+  },
+  {
+   "en": "Use confidence and conflict fields to decide when human review is needed. Lesson summary.",
+   "ko": "confidence 와 conflict 필드로 human review 가 언제 필요한지 정합니다. 강의 요약."
+  },
+  {
+   "en": "In this lesson, we looked at how to make structured extraction",
+   "ko": "이번 강의에서는 모델이 출력을 돌려준 뒤에"
+  },
+  {
+   "en": "more reliable after the model returns output.",
+   "ko": "구조화 추출을 더 신뢰할 수 있게 만드는 방법을 봤습니다."
+  },
+  {
+   "en": "Schema validation checks whether the output has the right structure.",
+   "ko": "schema validation 은 출력이 올바른 구조인지 검사합니다."
+  },
+  {
+   "en": "Semantic validation checks whether the extracted values make sense.",
+   "ko": "semantic validation 은 뽑아낸 값이 말이 되는지 검사합니다."
+  },
+  {
+   "en": "Retry loops are useful for fixable issues like wrong enum values,",
+   "ko": "retry 루프는 잘못된 enum 값,"
+  },
+  {
+   "en": "missing fields, or wrong field placement.",
+   "ko": "빠진 필드, 잘못된 필드 배치 같은 고칠 수 있는 문제에 유용합니다."
+  },
+  {
+   "en": "A good retry includes the original message, the failed extraction,",
+   "ko": "좋은 retry 는 원래 메시지, 실패한 추출 결과,"
+  },
+  {
+   "en": "and the specific validation error.",
+   "ko": "그리고 구체적인 validation 에러를 포함합니다."
+  },
+  {
+   "en": "But retries should not be used to force missing information.",
+   "ko": "하지만 retry 로 없는 정보를 억지로 만들어 내면 안 됩니다."
+  },
+  {
+   "en": "If the source does not contain the answer,",
+   "ko": "원문에 답이 없으면"
+  },
+  {
+   "en": "the system should return null, mark the field as missing,",
+   "ko": "시스템은 null 을 돌려주고, 필드를 missing 으로 표시하고,"
+  },
+  {
+   "en": "ask for clarification, or route to human review.",
+   "ko": "확인을 요청하거나, human review 로 보내야 합니다."
+  },
+  {
+   "en": "We also covered conflict detected fields, calculated total versus stated total,",
+   "ko": "conflict_detected 필드, calculated_total 대 stated_total,"
+  },
+  {
+   "en": "detected pattern fields, field level confidence,",
+   "ko": "detected_pattern 필드, 필드 단위 confidence,"
+  },
+  {
+   "en": "confidence calibration, stratified sampling, and human review routing.",
+   "ko": "confidence 보정, stratified sampling, human review routing 도 다뤘습니다."
+  },
+  {
+   "en": "For ShopAssist, this means we can extract return requests, validate them,",
+   "ko": "ShopAssist 에서는 반품 요청을 추출하고, 검증하고,"
+  },
+  {
+   "en": "retry when appropriate, and escalate low confidence",
+   "ko": "적절할 때 retry 하고, confidence 가 낮거나"
+  },
+  {
+   "en": "or contradictory cases instead of blindly automating them.",
+   "ko": "모순된 케이스는 무작정 자동화하는 대신 에스컬레이션한다는 뜻입니다."
+  }
+ ],
+ "body": "### Structured is not the same as correct\n- Tool use and a JSON schema make the output ==easy to parse==, but a valid structure can still hold the wrong value, the wrong enum, a missed contradiction, or invented information. // 구조가 유효해도 값·enum·모순·지어낸 정보는 틀릴 수 있다.\n- So production systems need ==validation after the model returns==. // 모델이 답한 뒤에 검증 계층이 필요하다.\n\n### Two kinds of validation\n- **Schema validation** checks the ==shape==: required fields present, correct types, enum values allowed. `exchange` where only refund / replacement / store credit / unclear is allowed gets caught here. // 모양 검사. 허용되지 않는 enum 값을 잡는다.\n- **Semantic validation** checks whether the values ==make sense==: the customer wrote \"I want a replacement\" but `desired_action` says refund. // 의미 검사. JSON 문제가 아니라 뜻의 문제.\n- ShopAssist fields: order_id, item, reason, desired_action, evidence_provided, urgency, missing_information, confidence, conflict_detected, human_review_required. // ShopAssist 반품 요청의 필드 목록.\n\n### Retry only what is fixable\n- A weak retry says \"try again\". A good retry sends the ==original message + the failed extraction + the validation error== and says __do not invent missing information__. // 원문·실패 결과·에러를 함께 보내고 지어내지 말라고 말한다.\n- Retries fix wrong enum values, missing required fields, wrong field placement, structural mismatches. // retry 가 고치는 것.\n- Retries do not help when the source ==does not contain the answer==. No order ID in the message means `order_id: null` and add it to `missing_information`, not retry until Claude guesses. // 원문에 없는 정보는 retry 로 만들지 않는다.\n- ((Retry when the mistake is fixable. Do not retry when the source has no answer.)) // 이 구분이 핵심.\n\n### Contradictions and numeric checks\n- \"I want a refund, but if possible just send me another one\" mentions two actions. Return `desired_action: unclear`, `conflict_detected: true`, and a `conflict_reason` instead of forcing one answer. // 억지로 하나를 고르지 말고 모순을 표시한다.\n- Receipts: keep `stated_total` (what the document says) separate from `calculated_total` (what your code sums). If they differ, flag a conflict and route for review. // 문서 값과 계산 값을 분리하고 다르면 검토로.\n- The pattern: ==the model extracts, deterministic code verifies==. // 모델은 추출, 코드는 검증.\n- `detected_pattern` + `pattern_evidence` (for example damaged item, \"the left side does not work\") help analyze false positives later. // 오탐 분석용 필드.\n\n### Confidence must be field level and calibrated\n- Confidence per field, not one global score: order_id high, item high, reason medium, desired_action low. // 필드마다 따로.\n- A model can be ==confidently wrong==, so calibrate confidence with __labeled validation sets__: run known-answer examples and measure how often \"high\" is actually right. // 정답을 아는 세트로 confidence 를 검증한다.\n- Measure accuracy ==by document type and by field==. Plain messages vs receipts or screenshots; order IDs vs return reasons. One number is not enough. // 문서 유형별·필드별 정확도.\n\n### Human review routing\n- Automate clear cases, escalate risky ones. Route to a human when: confidence is low, conflict_detected is true, required information is missing, the customer asks for a policy exception, the refund amount is high, or the request contradicts business rules. // 사람에게 보내는 조건 여섯 가지.\n- Also review a sample of high-confidence outputs: ==stratified sampling== across high / medium / low, because high confidence does not guarantee correctness and hidden systematic errors hide there. // 높은 confidence 도 표본 검토.\n\n### The validation function and the architecture\n- Check desired_action is an allowed value, else add a validation error (retry-able). Missing order_id goes to missing_information, never invented. Conflict detected or low-confidence desired_action sets human_review_required. // 간단한 검증 함수의 네 단계.\n- Real systems add schema libraries, business rules, database checks, policy checks, review queues, but the architecture stays: ==Claude extracts, your application validates==, retry only when fixable, null when missing, confidence and conflict fields decide human review. // 아키텍처 한 줄 요약.",
+ "keyPoints": [
+  "Schema validation checks shape (required, types, enum); semantic validation checks meaning (values match the message). // 모양 검사와 의미 검사는 다르다.",
+  "Retry only fixable mistakes, and send the original message, the failed extraction, and the exact validation error. // retry 는 고칠 수 있는 실수에만, 피드백은 구체적으로.",
+  "Missing in the source means null plus missing_information, never a retry until the model guesses. // 원문에 없으면 null. 지어내게 하지 않는다.",
+  "Conflicting requests get desired_action unclear + conflict_detected true; stated_total vs calculated_total lets deterministic code verify the model. // 모순은 표시, 숫자는 코드가 검증.",
+  "Confidence is per field and must be calibrated on labeled sets; stratified sampling reviews high, medium, and low confidence outputs. // confidence 는 필드별·보정 필수, 층화 샘플링."
+ ],
+ "examTrends": {
+  "how": "Scenario questions: an extraction pipeline returns valid JSON but wrong values, or a required field is missing from the customer message, or the customer asks for two things at once. The correct answer separates schema from semantic validation, retries with specific feedback only for fixable errors, returns null for absent data, and escalates by confidence and conflict flags. // 유효한 JSON 인데 값이 틀렸거나, 원문에 정보가 없거나, 고객이 두 가지를 동시에 요구하는 시나리오. 정답은 schema 검증과 semantic 검증을 나누고, 고칠 수 있는 에러만 구체적 피드백으로 retry, 없는 정보는 null, confidence 와 conflict 플래그로 에스컬레이션한다.",
+  "answerLooks": [
+   "Validate after the model returns: schema (shape) and semantic (meaning) checks in the application layer. // 모델이 답한 뒤 애플리케이션에서 schema·semantic 검증.",
+   "Retry with the original message, the failed output, and the specific validation error; instruct not to invent. // 원문 + 실패 결과 + 에러 문구를 담은 retry.",
+   "Return null and list the field in missing_information; route to human review when confidence is low or conflict_detected is true. // null + missing_information, 낮은 confidence 나 conflict 는 사람 검토.",
+   "Field-level confidence calibrated on labeled validation sets, measured by document type and field, with stratified sampling. // 필드별 confidence 보정, 유형별·필드별 측정, 층화 샘플링."
+  ],
+  "traps": [
+   "\"The schema guarantees the values are correct, so no further validation is needed\" ignores semantic errors. // 스키마가 의미까지 보장한다는 보기는 오답.",
+   "\"Retry until Claude produces an order ID\" forces the model to invent data the source never had. // 없는 정보를 retry 로 짜내는 보기는 오답.",
+   "\"Retry with the same prompt\" or \"just say try again\" gives no feedback, so the same mistake repeats. // 피드백 없는 단순 재시도는 오답.",
+   "\"Trust high-confidence outputs and only review low ones\" or \"one global confidence score\" skips calibration and stratified sampling. // 높은 confidence 는 무조건 믿거나 점수 하나만 쓰는 보기는 오답."
+  ],
+  "memorize": "Claude extracts, the app validates: retry if fixable, null if missing, human review if low confidence or conflict. // 추출은 Claude, 검증은 앱. 고칠 수 있으면 retry, 없으면 null, 불확실·모순이면 사람."
+ },
+ "createdAt": "2026-09-09T06:00:00Z"
+}
