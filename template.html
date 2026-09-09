@@ -25,6 +25,10 @@
     --ring: #B9B6AC;
     --ring-hole: #D5D2C8;
     --note: #FFF4B8;
+    --pen: #D6483A;
+    --pen-blue: #3B6BB3;
+    --card: #FFFDF7;
+    --card-rule: #C9D8EA;
     --shadow: 0 18px 40px rgba(38, 50, 74, 0.14), 0 2px 6px rgba(38, 50, 74, 0.08);
     --focus: #3D6DB5;
   }
@@ -50,6 +54,10 @@
       --ring: #5A5F70;
       --ring-hole: #14171F;
       --note: #4A4322;
+      --pen: #F0866F;
+      --pen-blue: #8FB4F0;
+      --card: #2B3042;
+      --card-rule: #3F4A62;
       --shadow: 0 18px 40px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
       --focus: #8FB4F0;
     }
@@ -75,6 +83,10 @@
     --ring: #5A5F70;
     --ring-hole: #14171F;
     --note: #4A4322;
+    --pen: #F0866F;
+    --pen-blue: #8FB4F0;
+    --card: #2B3042;
+    --card-rule: #3F4A62;
     --shadow: 0 18px 40px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
     --focus: #8FB4F0;
   }
@@ -96,7 +108,54 @@
   :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
   code, .mono { font-family: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace; font-size: 0.9em; }
   code { background: var(--paper-deep); padding: 0 5px; border-radius: 4px; }
-  mark { background: var(--hl); color: var(--hl-ink); padding: 0 3px; border-radius: 2px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+  mark, .hlsweep {
+    color: var(--hl-ink);
+    background: linear-gradient(104deg, transparent 0.8%, var(--hl) 2.6%, color-mix(in srgb, var(--hl) 72%, transparent) 6%, color-mix(in srgb, var(--hl) 92%, transparent) 92%, transparent 96.5%);
+    padding: 0.08em 0.38em; margin: 0 -0.12em;
+    border-radius: 0.9em 0.25em 0.8em 0.3em;
+    box-decoration-break: clone; -webkit-box-decoration-break: clone;
+  }
+  /* ---------- hand marks: pen underline, circle, star, scribble ---------- */
+  u.pen { text-decoration: underline wavy var(--pen); text-decoration-thickness: 1.4px; text-underline-offset: 3px; }
+  .circ {
+    display: inline-block; padding: 0 0.4em; margin: 0 0.05em; line-height: 1.25;
+    border: 2px solid var(--pen);
+    border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+    transform: rotate(-1.2deg);
+  }
+  .star { width: 18px; height: 18px; color: var(--pen); vertical-align: -3px; }
+  :root { --scribble: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 10' preserveAspectRatio='none'%3E%3Cpath d='M3 6 C 40 2.5, 70 8.5, 110 5 S 170 3.5, 197 7' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E"); }
+  .scrib { position: relative; display: inline-block; }
+  .scrib::after {
+    content: ""; display: block; height: 8px; margin: -4px -6px 0 -3px;
+    background: var(--pen);
+    -webkit-mask: var(--scribble) no-repeat center / 100% 100%; mask: var(--scribble) no-repeat center / 100% 100%;
+    opacity: 0.85;
+  }
+  .scrib.blue::after { background: var(--pen-blue); }
+  .doodle {
+    font-family: "Gaegu", sans-serif; font-weight: 700; font-size: 17px; color: var(--pen);
+    display: inline-block; transform: rotate(-5deg); white-space: nowrap; line-height: 1.2;
+  }
+  .jump {
+    font-family: "Gaegu", sans-serif; font-size: 17px; font-weight: 700; color: var(--pen);
+    background: color-mix(in srgb, var(--hl) 55%, var(--paper));
+    border: 1.6px dashed var(--pen);
+    border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+    padding: 1px 13px; line-height: 1.5; white-space: nowrap;
+    transform: rotate(-3deg); transition: transform 120ms;
+  }
+  .jump:hover { transform: rotate(-3deg) scale(1.06); }
+  .jump.small { font-size: 15px; background: none; transform: rotate(2deg); padding: 0 10px; }
+  .jump.small:hover { transform: rotate(2deg) scale(1.06); }
+  .titlerow { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin: 0 0 18px; }
+  .titlerow h1.title { margin: 0; }
+  .titlerow + .subtitle { margin-top: -10px; }
+  .prose strong { box-shadow: inset 0 -0.5em 0 color-mix(in srgb, var(--sky) 50%, transparent); padding: 0 1px; }
+  .prose h3.scrib { margin: 22px 0 8px; }
+  .prose h3.scrib::after { margin-top: -5px; }
+  h2.sec .rule { flex: 1; height: 1px; background: var(--line); }
+  h2.sec.withbtn::after { display: none; }
   .hand { font-family: "Gaegu", "Gowun Dodum", sans-serif; }
   .serif { font-family: "Gowun Batang", "Gowun Dodum", serif; }
 
@@ -277,15 +336,13 @@
     margin: -12px 0 18px;
   }
   .summary {
-    background: color-mix(in srgb, var(--sky) 22%, var(--paper));
-    border-left: 3px solid var(--sky);
-    padding: 8px 14px;
-    border-radius: 0 10px 10px 0;
-    margin: 0 0 14px;
+    margin: 0 0 20px;
     max-width: 62ch;
-    font-size: 15px;
+    font-size: 16px;
+    line-height: 1.75;
   }
-  .summary .lbl { font-family: "Gaegu", sans-serif; font-size: 17px; color: var(--ink-soft); margin-right: 6px; }
+  .summary .lbl { font-family: "Gaegu", sans-serif; font-size: 19px; font-weight: 700; color: var(--pen); margin-right: 8px; }
+  .summary .sub { margin-top: 5px; padding-left: 4px; }
 
   /* ---------- options ---------- */
   .options { display: grid; gap: 10px; margin: 8px 0 4px; }
@@ -348,16 +405,29 @@
   .traps li { margin-bottom: 6px; }
   .traps b { font-family: "Gaegu", sans-serif; font-size: 18px; font-weight: 700; margin-right: 4px; }
   .keypoints {
-    background: var(--note);
-    border-radius: 4px 14px 4px 14px;
-    padding: 14px 18px;
-    margin: 12px 0 4px;
-    transform: rotate(0.4deg);
-    box-shadow: 2px 3px 8px rgba(0,0,0,0.08);
+    position: relative;
+    background: var(--card);
+    background-image: repeating-linear-gradient(to bottom, transparent 0 27px, var(--card-rule) 27px 28px);
+    background-origin: content-box;
+    border-radius: 4px;
+    padding: 46px 22px 16px 52px;
+    margin: 26px 0 10px;
+    transform: rotate(-0.6deg);
+    box-shadow: 2px 4px 12px rgba(0,0,0,0.10);
     max-width: 62ch;
+    font-family: "Gaegu", "Gowun Dodum", sans-serif;
   }
-  .keypoints .lbl { font-family: "Gaegu", sans-serif; font-size: 19px; font-weight: 700; margin-bottom: 4px; }
-  .keypoints ul { margin: 0; padding-left: 18px; }
+  .keypoints::before { content: ""; position: absolute; left: 0; right: 0; top: 40px; border-top: 2px solid color-mix(in srgb, var(--pen) 60%, transparent); }
+  .keypoints::after { content: ""; position: absolute; left: 42px; top: 0; bottom: 0; border-left: 1.5px solid color-mix(in srgb, var(--pen) 35%, transparent); }
+  .keypoints .lbl { position: absolute; top: 8px; left: 52px; font-size: 21px; font-weight: 700; color: var(--pen); }
+  .keypoints .stars { position: absolute; top: 9px; right: 18px; display: flex; gap: 2px; }
+  .keypoints .stars .star:nth-child(1) { transform: rotate(-12deg); } .keypoints .stars .star:nth-child(2) { transform: rotate(6deg) translateY(-2px); } .keypoints .stars .star:nth-child(3) { transform: rotate(-4deg); }
+  .keypoints ul { margin: 0; padding: 0; list-style: none; position: relative; z-index: 1; }
+  .keypoints li { position: relative; margin: 0; font-size: 19px; line-height: 28px; }
+  .keypoints li .star { position: absolute; left: -32px; top: 5px; }
+  .keypoints li:nth-child(even) .star { transform: rotate(14deg); }
+  .keypoints li .sub { font-family: inherit; font-size: 16px; line-height: 28px; margin: 0; }
+  .keypoints .washi { top: -12px; left: 38%; width: 96px; height: 20px; transform: rotate(-2deg); }
 
   /* ---------- my note ---------- */
   .mynote {
@@ -538,7 +608,28 @@
   .postit p { margin: 0 0 6px; }
   .postit ul { margin: 0; padding-left: 18px; }
   .postit li { margin: 0 0 4px; }
-  .postit .memo { margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(0,0,0,0.2); font-family: "Gaegu", sans-serif; font-size: 18px; }
+  .postit .lbl { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .postit .lbl .doodle { font-size: 16px; transform: rotate(-4deg) translateY(-2px); }
+  .postit ul.ticks, .postit ul.crosses { list-style: none; padding-left: 24px; }
+  .postit ul.ticks li, .postit ul.crosses li { position: relative; }
+  .postit ul.ticks li::before, .postit ul.crosses li::before {
+    position: absolute; left: -24px; top: -2px;
+    font-family: "Gaegu", sans-serif; font-size: 21px; font-weight: 700; line-height: 1.3;
+  }
+  .postit ul.ticks li::before { content: "✓"; color: var(--correct); transform: rotate(-8deg); }
+  .postit ul.crosses li::before { content: "✗"; color: var(--pen); transform: rotate(6deg); }
+  .postit .memo {
+    position: relative; margin: 18px 4px 6px; padding: 8px 14px 6px;
+    font-family: "Gaegu", sans-serif; font-size: 18px; font-weight: 700;
+    border: 2px solid var(--pen);
+    border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+    transform: rotate(0.8deg);
+  }
+  .postit .memo .doodle { position: absolute; top: -16px; left: 12px; font-size: 16px; background: none; transform: rotate(-6deg); }
+  .postit .memo .sub { font-weight: 400; }
+  .core { margin-top: 30px; scroll-margin-top: 20px; }
+  .core > h2.sec { margin-top: 0; }
+  .core > h2.sec .doodle { margin-left: 6px; }
   .part { min-height: 520px; display: grid; align-content: center; justify-items: center; text-align: center; gap: 10px; }
   .part .kicker { font-family: "Gaegu", sans-serif; font-size: 20px; letter-spacing: 0.2em; color: var(--ink-soft); }
   .part h1 { font-family: "Gowun Batang", serif; font-size: clamp(34px, 6vw, 52px); font-weight: 700; margin: 0; }
@@ -549,6 +640,7 @@
   details[open].notes summary::before { content: "▾"; }
 </style>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="hstar" viewBox="0 0 24 24"><path d="M12 3.2 C12.9 6.3 13.6 8.2 14.6 9.4 C16.8 9.6 18.7 9.6 21 9.9 C19.2 11.4 17.6 12.6 16.2 14.3 C16.8 16.4 17.4 18.4 18 20.8 C15.9 19.7 14 18.5 12.1 17.5 C10 18.7 8.1 19.9 6.1 20.9 C6.7 18.6 7.2 16.6 7.8 14.4 C6.2 12.9 4.6 11.5 3 10 C5.3 9.7 7.3 9.5 9.5 9.3 C10.4 7.3 11.2 5.4 12 3.2 Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></symbol></svg>
 <div class="desk">
   <div class="topbar">
     <span class="brand">미지의 CCAF 노트</span>
@@ -627,14 +719,21 @@
 
   // ---------- markup ----------
   function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  // ==형광펜==  **굵게**  __빨간 펜 밑줄__  ((펜 동그라미))  `코드`
   function inline(s) {
-    return esc(s).replace(/==(.+?)==/g, '<mark>$1</mark>').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/`([^`]+)`/g, '<code>$1</code>');
+    const codes = [];
+    const t = esc(s).replace(/`([^`]+)`/g, (_, c) => { codes.push(c); return '\u0000' + (codes.length - 1) + '\u0000'; })
+      .replace(/==(.+?)==/g, '<mark>$1</mark>').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/__(.+?)__/g, '<u class="pen">$1</u>').replace(/\(\((.+?)\)\)/g, '<span class="circ">$1</span>');
+    return t.replace(/\u0000(\d+)\u0000/g, (_, i) => '<code>' + codes[i] + '</code>');
   }
-  function bi(s) {
+  function bi(s, enCls) {
     const i = String(s ?? '').indexOf(' // ');
-    if (i < 0) return inline(s);
-    return inline(s.slice(0, i)) + '<span class="sub">' + inline(s.slice(i + 4)) + '</span>';
+    const wrap = t => enCls ? '<span class="' + enCls + '">' + t + '</span>' : t;
+    if (i < 0) return wrap(inline(s));
+    return wrap(inline(s.slice(0, i))) + '<span class="sub">' + inline(s.slice(i + 4)) + '</span>';
   }
+  const STAR = '<svg class="star" aria-hidden="true"><use href="#hstar"/></svg>';
   function md(text) {
     const lines = String(text ?? '').split('\n');
     let html = '', list = null, table = null;
@@ -653,7 +752,7 @@
       if (/^\s*- /.test(l)) { if (table) flush(); (list ||= []).push(l.replace(/^\s*- /, '')); continue; }
       if (/^\s*\|/.test(l)) { if (list) flush(); (table ||= []).push(l); continue; }
       flush();
-      if (/^### /.test(l)) html += '<h3>' + bi(l.slice(4)) + '</h3>';
+      if (/^### /.test(l)) html += '<h3 class="scrib blue">' + bi(l.slice(4)) + '</h3>';
       else if (l.trim()) html += '<p>' + bi(l) + '</p>';
     }
     flush();
@@ -741,9 +840,10 @@
     pageEl.querySelectorAll('[data-nav]').forEach(b => b.addEventListener('click', () => go(state.idx + (b.dataset.nav === 'next' ? 1 : -1))));
     pageEl.querySelectorAll('[data-jump-id]').forEach(b => b.addEventListener('click', () => go(pageIndex(b.dataset.jumpId))));
   }
-  function titleBlock(p) {
+  function titleBlock(p, extra) {
     const en = p.title_en || p.title, ko = p.title_en ? p.title : '';
-    return `<h1 class="title">${esc(en)}</h1>${ko ? `<div class="subtitle">${esc(ko)}</div>` : ''}`;
+    const h1 = `<h1 class="title">${esc(en)}</h1>`;
+    return (extra ? `<div class="titlerow">${h1}${extra}</div>` : h1) + (ko ? `<div class="subtitle">${esc(ko)}</div>` : '');
   }
   function eyebrow(p, lead) {
     const bits = [`<span>${lead}</span>`];
@@ -751,14 +851,18 @@
     if (p._lec) bits.push(`<span class="chip">Lecture ${esc(p._lec.no)} · ${esc(p._lec.title)}</span>`);
     return `<div class="eyebrow">${bits.join('')}</div>`;
   }
-  function kp(p) { return p.keyPoints?.length ? `<div class="keypoints"><div class="lbl">Exam points</div><ul>${p.keyPoints.map(k => '<li>' + bi(k) + '</li>').join('')}</ul></div>` : ''; }
+  function kp(p) {
+    if (!p.keyPoints?.length) return '';
+    return `<div class="keypoints"><div class="washi purple"></div><div class="lbl">Exam points</div><div class="stars">${STAR}${STAR}${STAR}</div>
+      <ul>${p.keyPoints.map(k => '<li>' + STAR + bi(k) + '</li>').join('')}</ul></div>`;
+  }
   function trends(p) {
     const t = p.examTrends; if (!t) return '';
-    return `<div class="postit"><div class="lbl">시험 경향</div>
+    return `<div class="postit"><div class="lbl">시험 경향 <span class="doodle">이렇게 나온다!</span></div>
       ${t.how ? `<h4>How it is asked</h4><p>${bi(t.how)}</p>` : ''}
-      ${t.answerLooks?.length ? `<h4>What the right answer looks like</h4><ul>${t.answerLooks.map(x => '<li>' + bi(x) + '</li>').join('')}</ul>` : ''}
-      ${t.traps?.length ? `<h4>Trap patterns</h4><ul>${t.traps.map(x => '<li>' + bi(x) + '</li>').join('')}</ul>` : ''}
-      ${t.memorize ? `<div class="memo">${bi(t.memorize)}</div>` : ''}</div>`;
+      ${t.answerLooks?.length ? `<h4>What the right answer looks like</h4><ul class="ticks">${t.answerLooks.map(x => '<li>' + bi(x) + '</li>').join('')}</ul>` : ''}
+      ${t.traps?.length ? `<h4>Trap patterns</h4><ul class="crosses">${t.traps.map(x => '<li>' + bi(x) + '</li>').join('')}</ul>` : ''}
+      ${t.memorize ? `<div class="memo"><span class="doodle">외우기!</span>${bi(t.memorize)}</div>` : ''}</div>`;
   }
   function noteBlock(pr) {
     return `<div class="mynote">
@@ -840,19 +944,29 @@
   function renderLesson(p, pages) {
     const pr = state.progress[p.id] || {};
     if (!pr.studiedAt) saveProgress(p.id, { opened: true });
+    const hasCore = !!(p.body || p.keyPoints?.length || p.examTrends);
+    const hasScript = (p.paragraphs || []).length > 0;
     pageEl.innerHTML = `<div class="washi purple"></div>
       ${eyebrow(p, '인강')}
-      ${titleBlock(p)}
-      ${p.summary ? `<div class="summary"><span class="lbl">Summary</span>${bi(p.summary)}</div>` : ''}
-      ${(p.paragraphs || []).length
-        ? `<div class="prose">${p.paragraphs.map(x => `<p class="para"><span class="en">${esc(x.en)}</span>${x.ko ? `<span class="sub">${esc(x.ko)}</span>` : ''}</p>`).join('')}</div>`
+      ${titleBlock(p, hasCore && hasScript ? '<button class="jump" data-scroll="core" title="대본을 건너뛰고 정리·시험 포인트로">요약 보기 ↓</button>' : '')}
+      ${p.summary ? `<div class="summary"><span class="lbl">Summary</span>${bi(p.summary, 'hlsweep')}</div>` : ''}
+      ${hasScript
+        ? `<div class="prose">${p.paragraphs.map(x => `<p class="para"><span class="en">${inline(x.en)}</span>${x.ko ? `<span class="sub">${inline(x.ko)}</span>` : ''}</p>`).join('')}</div>`
         : ''}
-      ${p.body ? `<details class="notes" ${(p.paragraphs || []).length ? '' : 'open'}><summary>정리 노트</summary><div class="prose">${md(p.body)}</div></details>` : ''}
-      ${kp(p)}
-      ${trends(p)}
-      ${noteBlock(pr)}
+      ${hasCore ? `<section class="core" id="core">
+        <h2 class="sec withbtn"><span class="scrib">핵심 정리</span><span class="doodle">여기부터 시험 ★</span><i class="rule"></i>${hasScript ? '<button class="jump small" data-scroll="top">대본으로 ↑</button>' : ''}</h2>
+        ${p.body ? `<details class="notes" ${hasScript ? '' : 'open'}><summary>정리 노트</summary><div class="prose">${md(p.body)}</div></details>` : ''}
+        ${kp(p)}
+        ${trends(p)}
+      </section>` : ''}
       ${pager(pages)}`;
-    wireNote(p); wire();
+    wire();
+    pageEl.querySelectorAll('[data-scroll]').forEach(b => b.addEventListener('click', () => {
+      if (b.dataset.scroll === 'top') { pageEl.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+      const core = pageEl.querySelector('#core'); if (!core) return;
+      const d = core.querySelector('details.notes'); if (d) d.open = true;
+      core.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }));
   }
 
   // ---------- question (문제) ----------
