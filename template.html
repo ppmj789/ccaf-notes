@@ -121,10 +121,10 @@
     box-decoration-break: clone; -webkit-box-decoration-break: clone;
   }
   /* 형광펜 띠 제목: 글자 아래쪽에 두꺼운 색 띠 */
-  .bar { display: inline; padding: 0 6px; background: linear-gradient(transparent 52%, var(--teal) 52%); box-decoration-break: clone; -webkit-box-decoration-break: clone; }
-  .bar.orange { background: linear-gradient(transparent 52%, var(--orange) 52%); }
-  .bar.yellow { background: linear-gradient(transparent 52%, var(--hl) 52%); }
-  .bar.pink { background: linear-gradient(transparent 52%, color-mix(in srgb, var(--pink) 70%, var(--paper)) 52%); }
+  .hlbar { display: inline; padding: 0 6px; background: linear-gradient(transparent 52%, var(--teal) 52%); box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+  .hlbar.orange { background: linear-gradient(transparent 52%, var(--orange) 52%); }
+  .hlbar.yellow { background: linear-gradient(transparent 52%, var(--hl) 52%); }
+  .hlbar.pink { background: linear-gradient(transparent 52%, color-mix(in srgb, var(--pink) 70%, var(--paper)) 52%); }
   /* ---------- hand marks: pen underline, circle, star, scribble ---------- */
   u.pen { text-decoration: underline; text-decoration-color: var(--pen); text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
   .circ { display: inline; padding: 0 0.35em; border: 1.5px solid var(--pen); border-radius: 4px; color: var(--pen); }
@@ -163,7 +163,11 @@
     color: var(--ink-soft);
     font-size: 14px;
   }
-  .topbar .brand { font-family: "Gowun Dodum", sans-serif; font-size: 22px; color: var(--ink); font-weight: 700; }
+  .topbar .brand { font-family: "Gowun Dodum", sans-serif; font-size: 22px; color: var(--ink); font-weight: 700; border: none; background: none; padding: 0; }
+  .topbar .brand:hover { text-decoration: underline; }
+  .pager .mid { display: flex; align-items: center; gap: 12px; }
+  .pager .home { border: 1.5px solid var(--line); border-radius: 999px; padding: 0 12px; font-size: 14px; }
+  .pager .home:hover { background: var(--paper-deep); }
   .topbar .status { font-size: 13px; display: flex; gap: 10px; align-items: center; }
   .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--ink-faint); }
   .dot.on { background: var(--correct); }
@@ -299,7 +303,7 @@
     gap: 10px;
   }
   h2.sec::after { content: ""; flex: 1; height: 1px; background: var(--line); }
-  .prose { max-width: 62ch; }
+  .prose { max-width: none; }
   .prose p { margin: 0 0 10px; }
   .prose ul { margin: 0 0 10px; padding-left: 20px; }
   .prose li { margin: 0 0 4px; }
@@ -325,7 +329,6 @@
   }
   .summary {
     margin: 0 0 20px;
-    max-width: 62ch;
     font-size: 16px;
     line-height: 1.75;
   }
@@ -383,7 +386,7 @@
   .traps li { margin-bottom: 6px; }
   .traps b { font-family: "Gowun Dodum", sans-serif; font-size: 18px; font-weight: 700; margin-right: 4px; }
 
-  .keypoints { max-width: 62ch; margin: 22px 0 6px; }
+  .keypoints { margin: 22px 0 6px; }
   .keypoints .lbl { display: block; margin: 0 0 10px; font-size: 17px; font-weight: 700; }
   .keypoints .lbl span { display: inline; padding: 0 6px; background: linear-gradient(transparent 52%, var(--teal) 52%); }
   .keypoints ul { margin: 0; padding: 0 0 0 26px; list-style: none; }
@@ -564,7 +567,7 @@
   .lnk:hover { background: var(--paper-deep); }
   .toc.inlect { margin: 0 0 6px 54px; }
 
-  .para { max-width: 66ch; margin: 0 0 12px; padding-left: 10px; border-left: 2px solid transparent; }
+  .para { margin: 0 0 12px; padding-left: 10px; border-left: 2px solid transparent; }
   .para:hover { border-left-color: var(--sky); }
   .para .en { display: block; font-size: 17px; line-height: 1.5; }
   .para .sub { font-size: 14px; margin-top: 2px; line-height: 1.5; }
@@ -579,7 +582,7 @@
   /* ---------- question: sentence numbers + analysis ---------- */
   .qtext .sent { display: inline; }
   .sn { font-style: normal; font-weight: 700; color: var(--pen-blue); font-size: 14px; margin-right: 3px; vertical-align: 1px; }
-  details.analysis { max-width: 62ch; margin: 6px 0 14px; padding: 10px 16px 12px; border: 1px solid var(--line); border-radius: 8px; background: color-mix(in srgb, var(--paper-deep) 60%, var(--paper)); }
+  details.analysis { margin: 6px 0 14px; padding: 10px 16px 12px; border: 1px solid var(--line); border-radius: 8px; background: color-mix(in srgb, var(--paper-deep) 60%, var(--paper)); }
   details.analysis summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 10px; font-family: "Gowun Dodum", sans-serif; font-size: 16px; font-weight: 700; color: var(--ink); }
   details.analysis summary::before { content: "▸"; font-size: 13px; }
   details[open].analysis summary::before { content: "▾"; }
@@ -593,7 +596,7 @@
   .analysis ul.clues .means::before { content: "→ "; }
   .analysis .shapes { display: grid; gap: 4px; font-size: 14.5px; border-top: 1px dashed var(--line); padding-top: 8px; }
   .analysis .shapes .ok b { color: var(--correct); } .analysis .shapes .no b { color: var(--wrong); }
-  details.script { max-width: 66ch; margin: 0 0 6px; }
+  details.script { margin: 0 0 6px; }
   details.script > summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 8px; font-family: "Gowun Dodum", sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 8px; }
   details.script > summary::before { content: "▸"; font-size: 13px; color: var(--ink-soft); }
   details[open].script > summary::before { content: "▾"; }
@@ -603,7 +606,7 @@
   .core > h2.sec { margin-top: 0; }
   h2.sec { font-size: 17px; }
   h2.sec .scrib { background: linear-gradient(transparent 52%, var(--hl) 52%); }
-  .postit { max-width: 62ch; margin: 26px 0 6px; }
+  .postit { margin: 26px 0 6px; }
   .postit .lbl { display: block; margin: 0 0 8px; font-size: 17px; font-weight: 700; }
   .postit .lbl span.t { display: inline; padding: 0 6px; background: linear-gradient(transparent 52%, var(--orange) 52%); }
   .postit h4 { font-size: 15px; margin: 12px 0 4px; color: var(--pen-blue); font-weight: 700; }
@@ -622,7 +625,7 @@
   .part .kicker { font-family: "Gowun Dodum", sans-serif; font-size: 20px; letter-spacing: 0.2em; color: var(--ink-soft); }
   .part h1 { font-family: "Gowun Batang", serif; font-size: clamp(34px, 6vw, 52px); font-weight: 700; margin: 0; }
   .part p { color: var(--ink-soft); max-width: 46ch; margin: 0; }
-  details.notes { max-width: 66ch; margin: 18px 0 0; border-top: 1px dashed var(--line); padding-top: 8px; }
+  details.notes { margin: 18px 0 0; border-top: 1px dashed var(--line); padding-top: 8px; }
   details.notes summary { cursor: pointer; font-family: "Gowun Dodum", sans-serif; font-size: 16px; font-weight: 700; list-style: none; display: flex; align-items: center; gap: 8px; }
   details.notes summary::before { content: "▸"; font-size: 14px; color: var(--ink-soft); }
   details[open].notes summary::before { content: "▾"; }
@@ -631,7 +634,7 @@
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="hstar" viewBox="0 0 24 24"><path d="M12 3.2 C12.9 6.3 13.6 8.2 14.6 9.4 C16.8 9.6 18.7 9.6 21 9.9 C19.2 11.4 17.6 12.6 16.2 14.3 C16.8 16.4 17.4 18.4 18 20.8 C15.9 19.7 14 18.5 12.1 17.5 C10 18.7 8.1 19.9 6.1 20.9 C6.7 18.6 7.2 16.6 7.8 14.4 C6.2 12.9 4.6 11.5 3 10 C5.3 9.7 7.3 9.5 9.5 9.3 C10.4 7.3 11.2 5.4 12 3.2 Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></symbol></svg>
 <div class="desk">
   <div class="topbar">
-    <span class="brand">미지의 CCAF 노트</span>
+    <button class="brand" id="homebtn" title="표지로">미지의 CCAF 노트</button>
     <span class="status"><span class="dot" id="dbdot"></span><span id="dbmsg">저장 준비 중</span><button class="lnk" id="authbtn" hidden>로그인</button></span>
   </div>
   <dialog id="authdlg">
@@ -891,12 +894,12 @@
     const i = state.idx, total = pages.length;
     return `<div class="pager">
       <button data-nav="prev" ${i <= 0 ? 'disabled' : ''}>← 앞 장</button>
-      <span class="pnum">${i + 1} / ${total}</span>
+      <span class="mid"><button class="home" data-nav="home">홈</button><span class="pnum">${i + 1} / ${total}</span></span>
       <button data-nav="next" ${i >= total - 1 ? 'disabled' : ''}>다음 장 →</button>
     </div>`;
   }
   function wire() {
-    pageEl.querySelectorAll('[data-nav]').forEach(b => b.addEventListener('click', () => go(state.idx + (b.dataset.nav === 'next' ? 1 : -1))));
+    pageEl.querySelectorAll('[data-nav]').forEach(b => b.addEventListener('click', () => go(b.dataset.nav === 'home' ? 0 : state.idx + (b.dataset.nav === 'next' ? 1 : -1))));
     pageEl.querySelectorAll('[data-jump-id]').forEach(b => b.addEventListener('click', () => go(pageIndex(b.dataset.jumpId))));
   }
   function titleBlock(p, extra) {
@@ -1049,9 +1052,9 @@
         : `<span class="stamp no">다시</span><span class="why">고른 답 ${esc(pr.chosen)}, 정답은 ${esc(p.answer)}</span>`) : '<span class="why hand" style="font-size:18px">보기를 고르면 풀이가 펼쳐져요</span>'}
         ${answered ? '<button class="btn ghost" data-retry style="margin-left:auto">다시 풀기</button>' : ''}</div>
       <div class="reveal ${answered ? 'open' : ''}">
-        <h2 class="sec"><span class="bar orange">Why this answer</span></h2>
+        <h2 class="sec"><span class="hlbar orange">Why this answer</span></h2>
         <div class="prose">${md(p.explanation)}</div>
-        ${p.traps?.length ? `<h2 class="sec"><span class="bar pink">Traps</span></h2><ul class="traps prose">${p.traps.map(t => `<li><b>${esc(t.key)}</b> ${bi(t.why)}</li>`).join('')}</ul>` : ''}
+        ${p.traps?.length ? `<h2 class="sec"><span class="hlbar pink">Traps</span></h2><ul class="traps prose">${p.traps.map(t => `<li><b>${esc(t.key)}</b> ${bi(t.why)}</li>`).join('')}</ul>` : ''}
         ${kp(p)}
         ${noteBlock(pr)}
       </div>
@@ -1062,6 +1065,7 @@
   }
 
   // ---------- global ----------
+  $('#homebtn').addEventListener('click', () => go(0));
   document.addEventListener('keydown', e => {
     if (e.target.matches('input, textarea, select')) return;
     if (e.key === 'ArrowRight') go(state.idx + 1);
