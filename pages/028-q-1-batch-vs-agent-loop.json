@@ -7,27 +7,27 @@
  "title_en": "Batch API for 60,000 cases that need tool loops?",
  "title": "툴 루프가 필요한 6만 건에 Batch API?",
  "domain": "신뢰성",
- "question_en": "A support team wants to reduce costs by using the Anthropic Batch API for a nightly backlog of 60,000 ambiguous cases. Their proposed bulk_resolve_cases job would submit one batch item per case and expect Claude to fetch the customer profile, look up orders, decide whether to refund, possibly call process_refund, and then escalate unresolved cases. Which constraint should most strongly shape the architecture?",
+ "question_en": "A support team wants to ==reduce costs== by using the Anthropic ==Batch API== for a ==nightly backlog of 60,000== ambiguous cases. Their proposed bulk_resolve_cases job would submit ==one batch item per case== and expect Claude to ==fetch the customer profile, look up orders, decide whether to refund, possibly call process_refund, and then escalate== unresolved cases. ==Which constraint== should most strongly shape the architecture?",
  "question_ko": "지원팀이 ==비용을 줄이려고== 야간 백로그 ==6만 건==의 애매한 케이스에 Batch API 를 쓰려 한다. 제안된 `bulk_resolve_cases` 작업은 케이스당 배치 항목 하나를 제출하고, Claude 가 ==고객 프로필을 가져오고, 주문을 조회하고, 환불 여부를 결정하고, 필요하면 `process_refund` 를 부르고, 미해결 건은 에스컬레이션==하기를 기대한다. 아키텍처를 가장 강하게 좌우해야 할 제약은?",
  "options": [
   {
    "key": "A",
-   "en": "Use the Batch API for deferred, independent work such as categorizing or summarizing closed tickets, and run any refund-resolution flow that needs repeated MCP tool calls through an external real-time agent loop.",
+   "en": "Use the Batch API for ==deferred, independent work== such as categorizing or summarizing closed tickets, and run any refund-resolution flow that needs ==repeated MCP tool calls through an external real-time agent loop==.",
    "ko": "Batch API 는 닫힌 티켓 분류·요약처럼 미뤄도 되는 독립 작업에 쓰고, MCP 툴을 반복 호출해야 하는 환불 해결 흐름은 외부의 실시간 에이전트 루프로 돌린다."
   },
   {
    "key": "B",
-   "en": "Avoid the Batch API for the ticket audit because support records are stored as JSON objects, and batch requests are only suitable for unstructured plain-text prompts.",
+   "en": "Avoid the Batch API for the ticket audit because support records are stored as JSON objects, and batch requests are ==only suitable for unstructured plain-text prompts==.",
    "ko": "지원 레코드가 JSON 객체로 저장되어 있고 배치 요청은 비구조화 평문 프롬프트에만 적합하므로 티켓 감사에 Batch API 를 피한다."
   },
   {
    "key": "C",
-   "en": "Move both live chats and overnight ticket audits to the Batch API because batching is primarily intended to improve response time compared with synchronous calls.",
+   "en": "Move both live chats and overnight ticket audits to the Batch API because batching is primarily intended to ==improve response time== compared with synchronous calls.",
    "ko": "배치는 동기 호출보다 응답 시간을 줄이려는 것이므로 실시간 채팅과 야간 티켓 감사를 둘 다 Batch API 로 옮긴다."
   },
   {
    "key": "D",
-   "en": "Submit one batch item per unresolved case and let that item run the same get_customer, lookup_order, process_refund, and escalate_to_human loop that the live agent runs.",
+   "en": "Submit one batch item per unresolved case and ==let that item run the same get_customer, lookup_order, process_refund, and escalate_to_human loop== that the live agent runs.",
    "ko": "미해결 케이스당 배치 항목 하나를 제출하고, 그 항목이 라이브 에이전트와 같은 get_customer, lookup_order, process_refund, escalate_to_human 루프를 돌리게 한다."
   }
  ],
@@ -53,5 +53,29 @@
   "Batch is for cost and throughput, not response time: up to 24 hours, no latency SLA, never for live chat. // 배치는 비용·처리량용, 응답 시간용이 아니다.",
   "\"Reduce costs\" plus \"60,000 cases\" is bait; read what the job actually does before choosing batch. // 비용 미끼에 넘어가지 말고 작업 내용을 보라."
  ],
- "createdAt": "2026-09-09T09:00:00Z"
+ "createdAt": "2026-09-09T09:00:00Z",
+ "pattern": {
+  "type": "아키텍처 제약 찾기",
+  "asks": "배치의 장점이 아니라 배치가 못 하는 것이 무엇인지.",
+  "clues": [
+   {
+    "text": "reduce costs / 60,000 / nightly",
+    "means": "배치가 맞아 보이게 하는 미끼"
+   },
+   {
+    "text": "fetch ... look up ... process_refund ... escalate",
+    "means": "툴 왕복 여러 번 = 에이전트 루프"
+   },
+   {
+    "text": "one batch item per case",
+    "means": "항목 하나 = 일회성 요청, 루프 불가"
+   },
+   {
+    "text": "Which constraint",
+    "means": "한계를 묻는 질문"
+   }
+  ],
+  "answerShape": "작업을 둘로 나눔. 독립 작업은 배치, 툴 루프는 실시간 에이전트 루프.",
+  "distractorShape": "배치 특성 오해(JSON 불가, 응답 시간용), 제안 설계 그대로 승인."
+ }
 }

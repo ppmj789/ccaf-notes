@@ -1,57 +1,81 @@
 {
-  "id": "q-002",
-  "kind": "question",
-  "order": 2,
-  "title": "프롬프트 초안 비교 평가 워크플로우",
-  "domain": "프롬프트·평가",
-  "question_en": "Your customer support resolution agent is being tuned to decide when to resolve returns, billing disputes, account issues, or escalate to a human. The team has three competing prompt drafts and wants to know which changes actually improve first-contact resolution without increasing bad resolutions. What is the best evaluation workflow to use?",
-  "question_ko": "고객지원 에이전트가 반품·청구 분쟁·계정 문제를 직접 해결할지, 사람에게 에스컬레이션할지 결정하도록 튜닝 중이다. 프롬프트 초안이 세 개 있고, 어떤 변경이 ==잘못된 해결(bad resolution)을 늘리지 않으면서== 최초 접촉 해결률을 실제로 올리는지 알고 싶다. 가장 좋은 평가 워크플로우는?",
-  "options": [
-    {
-      "key": "A",
-      "en": "Create a fixed eval set of realistic support conversations with expected outcomes, run each prompt version against all cases, compare outputs to expectations, and use failures to revise the prompt before rerunning the same set.",
-      "ko": "현실적인 고객지원 대화와 기대 결과로 고정 평가 세트를 만들고, 각 프롬프트 버전을 모든 사례에 돌리고, 출력을 기대 결과와 비교하고, 실패를 바탕으로 프롬프트를 고친 뒤 같은 세트로 다시 돌린다."
-    },
-    {
-      "key": "B",
-      "en": "Try each prompt on a few example tickets by hand and pick the one whose answers feel best.",
-      "ko": "각 프롬프트를 티켓 몇 개에 손으로 돌려 보고 답이 가장 좋아 보이는 것을 고른다."
-    },
-    {
-      "key": "C",
-      "en": "Deploy all three prompts to production and watch customer complaints to decide.",
-      "ko": "세 프롬프트를 프로덕션에 배포하고 고객 불만을 관찰해 결정한다."
-    },
-    {
-      "key": "D",
-      "en": "Compare the prompts on two ideal example answers and choose the closest match.",
-      "ko": "이상적인 예시 답변 두 개를 놓고 프롬프트를 비교해 가장 가까운 것을 고른다."
-    }
+ "id": "q-002",
+ "kind": "question",
+ "order": 2,
+ "title": "프롬프트 초안 비교 평가 워크플로우",
+ "domain": "프롬프트·평가",
+ "question_en": "Your customer support resolution agent is being tuned to decide when to resolve returns, billing disputes, account issues, or escalate to a human. The team has ==three competing prompt drafts== and wants to know ==which changes actually improve== first-contact resolution ==without increasing bad resolutions==. What is the ==best evaluation workflow== to use?",
+ "question_ko": "고객지원 에이전트가 반품·청구 분쟁·계정 문제를 직접 해결할지, 사람에게 에스컬레이션할지 결정하도록 튜닝 중이다. 프롬프트 초안이 세 개 있고, 어떤 변경이 ==잘못된 해결(bad resolution)을 늘리지 않으면서== 최초 접촉 해결률을 실제로 올리는지 알고 싶다. 가장 좋은 평가 워크플로우는?",
+ "options": [
+  {
+   "key": "A",
+   "en": "Create a ==fixed eval set of realistic support conversations with expected outcomes==, ==run each prompt version against all cases==, compare outputs to expectations, and use failures to revise the prompt before ==rerunning the same set==.",
+   "ko": "현실적인 고객지원 대화와 기대 결과로 고정 평가 세트를 만들고, 각 프롬프트 버전을 모든 사례에 돌리고, 출력을 기대 결과와 비교하고, 실패를 바탕으로 프롬프트를 고친 뒤 같은 세트로 다시 돌린다."
+  },
+  {
+   "key": "B",
+   "en": "Try each prompt on ==a few example tickets by hand== and pick the one whose answers ==feel best==.",
+   "ko": "각 프롬프트를 티켓 몇 개에 손으로 돌려 보고 답이 가장 좋아 보이는 것을 고른다."
+  },
+  {
+   "key": "C",
+   "en": "==Deploy all three prompts to production== and watch customer complaints to decide.",
+   "ko": "세 프롬프트를 프로덕션에 배포하고 고객 불만을 관찰해 결정한다."
+  },
+  {
+   "key": "D",
+   "en": "Compare the prompts on ==two ideal example answers== and choose the closest match.",
+   "ko": "이상적인 예시 답변 두 개를 놓고 프롬프트를 비교해 가장 가까운 것을 고른다."
+  }
+ ],
+ "answer": "A",
+ "explanation": "`realistic` 은 \"이상적인\" 이 아니라 ==현실적인, 실제와 비슷한== 이다. 지저분한 반품 문의, 억울해하는 청구 분쟁 같은 실제 케이스를 모아 놓고 시험을 봐야 한다.\n\n정답에 들어 있는 다섯 요소가 세트다.\n- **fixed (고정 세트)**: 세 초안이 같은 시험지를 봐야 공정하다.\n- **realistic (현실적 사례)**: 깨끗한 예시만 넣으면 실전에서 터진다.\n- **expected outcomes (기대 결과 라벨)**: \"이 건은 환불\", \"이 건은 에스컬레이션\" 이 있어야 ==잘못된 해결을 셀 수 있다==.\n- **all cases (전수 실행)**: 두어 개만 보면 운인지 실력인지 모른다.\n- **rerun the same set (같은 세트 재실행)**: 고친 게 진짜 나아졌는지, 다른 케이스를 망가뜨리진 않았는지 보는 ==회귀 테스트==.\n\n| 요소 | 빠지면 |\n|---|---|\n| 고정 세트 | 공정 비교 불가 |\n| 현실적 사례 | 실전 케이스 누락 |\n| 기대 결과 | bad resolution 못 셈 |\n| 전수 실행 | 표본 부족 |\n| 같은 세트 재실행 | 회귀 못 잡음 |",
+ "traps": [
+  {
+   "key": "B",
+   "why": "재현 불가, 편향. \"느낌으로\" 는 시험에서 항상 오답 신호."
+  },
+  {
+   "key": "C",
+   "why": "잘못된 환불이 실제 고객에게 나간다. 평가는 배포 전에."
+  },
+  {
+   "key": "D",
+   "why": "표본이 둘뿐이고 어려운 케이스가 빠진다. realistic 을 ideal 로 잘못 읽으면 고르는 함정."
+  }
+ ],
+ "keyPoints": [
+  "고정 세트 + 정답 라벨 + 전수 실행 + 실패 분석 + 같은 세트 재실행. 다섯 개가 다 있는 보기가 정답.",
+  "같은 세트 재실행 = 회귀 테스트. 한쪽 고치면 다른 쪽이 깨질 수 있다.",
+  "\"느낌으로\", \"프로덕션에서 바로\", \"몇 개만\" 이 들어가면 오답."
+ ],
+ "createdAt": "2026-09-09T00:00:00Z",
+ "title_en": "Evaluating three prompt drafts",
+ "section": "Unsorted",
+ "lecture": "",
+ "summary": "",
+ "pattern": {
+  "type": "평가 워크플로우 선택",
+  "asks": "프롬프트 변경이 실제로 나아졌는지 어떻게 측정할지.",
+  "clues": [
+   {
+    "text": "which changes actually improve",
+    "means": "측정 가능해야 함 = 고정 세트 + 기대 결과"
+   },
+   {
+    "text": "without increasing bad resolutions",
+    "means": "정답 라벨로 오답 수를 세고, 같은 세트 재실행(회귀)"
+   },
+   {
+    "text": "three competing drafts",
+    "means": "같은 시험지로 공정 비교"
+   },
+   {
+    "text": "realistic",
+    "means": "이상적(ideal) 아님, 실제와 비슷한 지저분한 사례"
+   }
   ],
-  "answer": "A",
-  "explanation": "`realistic` 은 \"이상적인\" 이 아니라 ==현실적인, 실제와 비슷한== 이다. 지저분한 반품 문의, 억울해하는 청구 분쟁 같은 실제 케이스를 모아 놓고 시험을 봐야 한다.\n\n정답에 들어 있는 다섯 요소가 세트다.\n- **fixed (고정 세트)**: 세 초안이 같은 시험지를 봐야 공정하다.\n- **realistic (현실적 사례)**: 깨끗한 예시만 넣으면 실전에서 터진다.\n- **expected outcomes (기대 결과 라벨)**: \"이 건은 환불\", \"이 건은 에스컬레이션\" 이 있어야 ==잘못된 해결을 셀 수 있다==.\n- **all cases (전수 실행)**: 두어 개만 보면 운인지 실력인지 모른다.\n- **rerun the same set (같은 세트 재실행)**: 고친 게 진짜 나아졌는지, 다른 케이스를 망가뜨리진 않았는지 보는 ==회귀 테스트==.\n\n| 요소 | 빠지면 |\n|---|---|\n| 고정 세트 | 공정 비교 불가 |\n| 현실적 사례 | 실전 케이스 누락 |\n| 기대 결과 | bad resolution 못 셈 |\n| 전수 실행 | 표본 부족 |\n| 같은 세트 재실행 | 회귀 못 잡음 |",
-  "traps": [
-    {
-      "key": "B",
-      "why": "재현 불가, 편향. \"느낌으로\" 는 시험에서 항상 오답 신호."
-    },
-    {
-      "key": "C",
-      "why": "잘못된 환불이 실제 고객에게 나간다. 평가는 배포 전에."
-    },
-    {
-      "key": "D",
-      "why": "표본이 둘뿐이고 어려운 케이스가 빠진다. realistic 을 ideal 로 잘못 읽으면 고르는 함정."
-    }
-  ],
-  "keyPoints": [
-    "고정 세트 + 정답 라벨 + 전수 실행 + 실패 분석 + 같은 세트 재실행. 다섯 개가 다 있는 보기가 정답.",
-    "같은 세트 재실행 = 회귀 테스트. 한쪽 고치면 다른 쪽이 깨질 수 있다.",
-    "\"느낌으로\", \"프로덕션에서 바로\", \"몇 개만\" 이 들어가면 오답."
-  ],
-  "createdAt": "2026-09-09T00:00:00Z",
-  "title_en": "Evaluating three prompt drafts",
-  "section": "Unsorted",
-  "lecture": "",
-  "summary": ""
+  "answerShape": "고정 세트 + 현실적 사례 + 기대 결과 + 전수 실행 + 실패 분석 + 재실행. 다섯 요소가 다 있는 보기.",
+  "distractorShape": "느낌으로, 손으로 몇 개만, 프로덕션에서 바로, 이상적 예시 두 개."
+ }
 }

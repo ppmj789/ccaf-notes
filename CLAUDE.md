@@ -52,7 +52,9 @@ Udemy 강의 대본과 기출 문제를 "한 장씩 넘기는 다이어리" 웹�
 입력: 영어 문제, 보기, 정답 (+ 소속 강의). 먼저 채팅으로 문제·정답을 한국어로 해석하고 왜 정답인지, 오답 보기가 왜 틀렸는지 설명한다. 그다음:
 
 - `pages/NNN-q-<slug>.json`: `id` `q-NNN-k`, `kind` `question`, `order` = 강의번호 + 0.1k (예 24.1), `section`, `lecture`, `title_en`, `title`, `domain`,
-  `question_en`, `question_ko`, `options[{key, en, ko}]`, `answer`, `explanation`(한국어 위주, 지문 단서 ↔ 정답 문구 짝짓기, `==형광펜==`, 표 가능), `traps[{key, why}]`, `keyPoints[]`, `createdAt`.
+  `question_en`, `question_ko`, `options[{key, en, ko}]`, `answer`, `explanation`(한국어 위주, 지문 단서 ↔ 정답 문구 짝짓기, `==형광펜==`, 표 가능), `traps[{key, why}]`, `keyPoints[]`, `pattern`, `createdAt`.
+  - **지문·보기 형광펜**: `question_en` 과 각 `options[].en` 의 키워드를 `==…==` 로 감싼다(지문 4~8곳, 보기마다 1~3곳). 페이지가 영어 지문을 문장 단위로 잘라 ①②③ 번호를 붙이므로 형광펜은 한 문장 안에서만 닫는다.
+  - **`pattern`** (지문 분석, 접힘 칸): `type`(문제 유형 한 구절), `asks`(실제로 묻는 것 한 줄), `clues[{text, means}]`(지문 키워드 → 그것이 뜻하는 바, 3~5개, means 는 빨간 펜 주석처럼 짧게), `answerShape`(정답 보기의 구조), `distractorShape`(오답 보기의 구조). 모두 한국어.
 - 소속 강의를 모르면 `section: "Unsorted"`, `lecture: ""` 로 두고 사용자에게 묻는다.
 
 ## 빌드 · 검증 · 발행 · 커밋 (매번)
@@ -69,4 +71,4 @@ node -e "const fs=require('fs');const s=fs.readFileSync('dist/index.html','utf8'
 
 ## 디자인 변경 시
 
-`template.html` 만 고친다. 인강 장 구성: 제목 옆 `요약 보기 ↓` 태그 버튼 → Summary(영어 문장에 형광펜) → 대본 한 줄씩 → `핵심 정리` 섹션(`대본으로 ↑` 버튼, 정리 노트 접힘, 인덱스카드 모양 Exam points 에 빨간 별표, 분홍 포스트잇 시험 경향에 ✓/✗ 와 `외우기!` 펜 동그라미). 인강 장에는 메모 textarea 가 없다(사용자가 뺌, 문제 장에만 있음). 종이·잉크·형광펜 팔레트, Gowun Dodum/Gowun Batang/Gaegu/IBM Plex Mono 글꼴, 왼쪽 링 제본, 오른쪽 인덱스 탭(표지·차례·인강·문제)이 정체성이다. 탭 이름은 하는 일이 드러나게. 진행 상태 표시(진도)·자신감 도장·페이지 내 AI 기능은 사용자가 뺀 것이니 다시 넣지 않는다.
+`template.html` 만 고친다. 인강 장 구성: 제목 옆 `요약 보기 ↓` 태그 버튼 → Summary(영어 문장에 형광펜) → 대본(접기·펴기, 마지막 상태를 localStorage 에 기억) 한 줄씩 → `핵심 정리` 섹션(`대본으로 ↑` 버튼, 정리 노트 접힘, 인덱스카드 모양 Exam points 에 빨간 별표, 분홍 포스트잇 시험 경향에 ✓/✗ 와 `외우기!` 펜 동그라미). 인강 장에는 메모 textarea 가 없다(사용자가 뺌, 문제 장에만 있음). 종이·잉크·형광펜 팔레트, Gowun Dodum/Gowun Batang/Gaegu/IBM Plex Mono 글꼴, 왼쪽 링 제본, 오른쪽 인덱스 탭(표지·차례·인강·문제)이 정체성이다. 탭 이름은 하는 일이 드러나게. 진행 상태 표시(진도)·자신감 도장·페이지 내 AI 기능은 사용자가 뺀 것이니 다시 넣지 않는다.

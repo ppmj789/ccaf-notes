@@ -635,6 +635,29 @@
   }
   .postit .memo .doodle { position: absolute; top: -16px; left: 12px; font-size: 16px; background: none; transform: rotate(-6deg); }
   .postit .memo .sub { font-weight: 400; }
+  /* ---------- question: sentence numbers + analysis ---------- */
+  .qtext .sent { display: inline; }
+  .sn { font-style: normal; font-family: "Gaegu", sans-serif; font-weight: 700; color: var(--pen); font-size: 15px; margin-right: 3px; vertical-align: 2px; }
+  details.analysis { max-width: 62ch; margin: 6px 0 14px; padding: 10px 16px 12px; border: 1.5px dashed color-mix(in srgb, var(--pen) 55%, transparent); border-radius: 12px; background: color-mix(in srgb, var(--hl) 12%, var(--paper)); }
+  details.analysis summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 10px; font-family: "Gaegu", sans-serif; font-size: 20px; font-weight: 700; color: var(--pen); }
+  details.analysis summary::before { content: "▸"; font-size: 13px; }
+  details[open].analysis summary::before { content: "▾"; }
+  details.analysis summary .chip { font-family: "Gowun Dodum", sans-serif; color: var(--ink); font-weight: 400; }
+  .analysis .asks { margin: 8px 0 6px; font-size: 15px; }
+  .analysis .asks b, .analysis .shapes b { font-family: "Gaegu", sans-serif; font-size: 17px; color: var(--ink-soft); margin-right: 6px; font-weight: 700; }
+  .analysis ul.clues { list-style: none; padding: 0; margin: 4px 0 8px; display: grid; gap: 6px; }
+  .analysis ul.clues li { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 4px 12px; align-items: baseline; font-size: 15px; }
+  .analysis ul.clues .kw { font-family: "Gowun Dodum", sans-serif; }
+  .analysis ul.clues .means { font-family: "Gaegu", sans-serif; font-size: 17px; color: var(--pen); line-height: 1.35; }
+  .analysis ul.clues .means::before { content: "→ "; }
+  .analysis .shapes { display: grid; gap: 4px; font-size: 14.5px; border-top: 1px dashed var(--line); padding-top: 8px; }
+  .analysis .shapes .ok b { color: var(--correct); } .analysis .shapes .no b { color: var(--wrong); }
+  details.script { max-width: 66ch; margin: 0 0 6px; }
+  details.script > summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 8px; font-family: "Gaegu", sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+  details.script > summary::before { content: "▸"; font-size: 13px; color: var(--ink-soft); }
+  details[open].script > summary::before { content: "▾"; }
+  details.script > summary .cnt { font-family: "Gowun Dodum", sans-serif; font-size: 13px; color: var(--ink-faint); font-weight: 400; }
+  @media (max-width: 720px) { .analysis ul.clues li { grid-template-columns: 1fr; } }
   .core { margin-top: 30px; scroll-margin-top: 20px; }
   .core > h2.sec { margin-top: 0; }
   .core > h2.sec .doodle { margin-left: 6px; }
@@ -754,6 +777,23 @@
     return wrap(inline(s.slice(0, i))) + '<span class="sub">' + inline(s.slice(i + 4)) + '</span>';
   }
   const STAR = '<svg class="star" aria-hidden="true"><use href="#hstar"/></svg>';
+  const CIRCLED = '①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳';
+  // 영어 지문을 문장 단위로 잘라 ①②③ 번호를 붙인다. 마크업(==, **, `)은 문장 안에서만 쓴다.
+  function sentences(text) {
+    const parts = String(text ?? '').split(/(?<=[.?!])\s+(?=["'A-Z{(])/).filter(Boolean);
+    if (parts.length < 2) return inline(text);
+    return parts.map((t, i) => `<span class="sent"><i class="sn">${CIRCLED[i] || (i + 1)}</i>${inline(t)}</span>`).join(' ');
+  }
+  function analysis(p) {
+    const a = p.pattern; if (!a) return '';
+    return `<details class="analysis"><summary>지문 분석${a.type ? `<span class="chip">${esc(a.type)}</span>` : ''}</summary>
+      ${a.asks ? `<p class="asks"><b>묻는 것</b>${inline(a.asks)}</p>` : ''}
+      ${a.clues?.length ? `<ul class="clues">${a.clues.map(c => `<li><span class="kw"><mark>${esc(c.text)}</mark></span><span class="means">${inline(c.means)}</span></li>`).join('')}</ul>` : ''}
+      ${(a.answerShape || a.distractorShape) ? `<div class="shapes">${a.answerShape ? `<div class="ok"><b>정답 모양</b>${inline(a.answerShape)}</div>` : ''}${a.distractorShape ? `<div class="no"><b>오답 모양</b>${inline(a.distractorShape)}</div>` : ''}</div>` : ''}
+    </details>`;
+  }
+  const SCRIPT_KEY = 'ccaf-script-open';
+  const scriptOpen = () => { try { return localStorage.getItem(SCRIPT_KEY) !== '0'; } catch { return true; } };
   function md(text) {
     const lines = String(text ?? '').split('\n');
     let html = '', list = null, table = null;
@@ -1013,7 +1053,8 @@
       ${titleBlock(p, hasCore && hasScript ? '<button class="jump" data-scroll="core" title="대본을 건너뛰고 정리·시험 포인트로">요약 보기 ↓</button>' : '')}
       ${p.summary ? `<div class="summary"><span class="lbl">Summary</span>${bi(p.summary, 'hlsweep')}</div>` : ''}
       ${hasScript
-        ? `<div class="prose">${p.paragraphs.map(x => `<p class="para"><span class="en">${inline(x.en)}</span>${x.ko ? `<span class="sub">${inline(x.ko)}</span>` : ''}</p>`).join('')}</div>`
+        ? `<details class="script" ${scriptOpen() ? 'open' : ''}><summary>대본 <span class="cnt">${p.paragraphs.length}줄 · 접었다 펼 수 있어요</span></summary>
+           <div class="prose">${p.paragraphs.map(x => `<p class="para"><span class="en">${inline(x.en)}</span>${x.ko ? `<span class="sub">${inline(x.ko)}</span>` : ''}</p>`).join('')}</div></details>`
         : ''}
       ${hasCore ? `<section class="core" id="core">
         <h2 class="sec withbtn"><span class="scrib">핵심 정리</span><span class="doodle">여기부터 시험 ★</span><i class="rule"></i>${hasScript ? '<button class="jump small" data-scroll="top">대본으로 ↑</button>' : ''}</h2>
@@ -1023,6 +1064,7 @@
       </section>` : ''}
       ${pager(pages)}`;
     wire();
+    const sc = pageEl.querySelector('details.script'); if (sc) sc.addEventListener('toggle', () => { try { localStorage.setItem(SCRIPT_KEY, sc.open ? '1' : '0'); } catch {} });
     pageEl.querySelectorAll('[data-scroll]').forEach(b => b.addEventListener('click', () => {
       if (b.dataset.scroll === 'top') { pageEl.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
       const core = pageEl.querySelector('#core'); if (!core) return;
@@ -1037,12 +1079,13 @@
     pageEl.innerHTML = `<div class="washi green"></div>
       ${eyebrow(p, `문제 ${p._qi} / ${p._qn}`)}
       ${titleBlock(p)}
-      <div class="prose"><p>${p.question_en ? esc(p.question_en) : inline(p.question_ko)}${p.question_en && p.question_ko ? `<span class="sub">${inline(p.question_ko)}</span>` : ''}</p></div>
+      <div class="prose qtext"><p>${p.question_en ? sentences(p.question_en) : inline(p.question_ko)}${p.question_en && p.question_ko ? `<span class="sub">${inline(p.question_ko)}</span>` : ''}</p></div>
+      ${analysis(p)}
       <div class="options">${(p.options || []).map(o => {
         let cls = 'opt';
         if (answered) { if (o.key === p.answer) cls += ' right'; else if (o.key === pr.chosen) cls += ' wrongpick'; }
         return `<button class="${cls}" data-opt="${esc(o.key)}" ${answered ? 'disabled' : ''}><span class="key">${esc(o.key)}</span>
-          <span class="txt"><span class="en">${o.en ? esc(o.en) : inline(o.ko)}</span>${o.en && o.ko ? `<span class="sub">${inline(o.ko)}</span>` : ''}</span></button>`;
+          <span class="txt"><span class="en">${o.en ? inline(o.en) : inline(o.ko)}</span>${o.en && o.ko ? `<span class="sub">${inline(o.ko)}</span>` : ''}</span></button>`;
       }).join('')}</div>
       <div class="verdict">${answered ? (pr.correct
         ? `<span class="stamp ok">정답!</span><span class="why">고른 답: ${esc(pr.chosen)}</span>`

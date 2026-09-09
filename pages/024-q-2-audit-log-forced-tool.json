@@ -7,27 +7,27 @@
  "title_en": "Schema-conformant audit logs with a forced tool",
  "title": "강제 툴로 스키마에 맞는 감사 로그 만들기",
  "domain": "툴·에이전트 루프",
- "question_en": "A customer support resolution agent must create a database-ready audit record after every handled case. The record must always include customer_id, order_id, issue_category, resolution_action, and escalation_reason; some IDs may be absent and should be recorded as null, while issue_category and resolution_action must use approved enum values. During testing, prompt-only JSON logs sometimes contain extra keys, alternate field names, or prose around the JSON. What is the best approach to make the logging output consistently schema-conformant?",
+ "question_en": "A customer support resolution agent must create a ==database-ready audit record== ==after every handled case==. The record ==must always include== customer_id, order_id, issue_category, resolution_action, and escalation_reason; some IDs may be absent and should be ==recorded as null==, while issue_category and resolution_action must use ==approved enum values==. During testing, ==prompt-only JSON logs== sometimes contain ==extra keys, alternate field names, or prose around the JSON==. What is the best approach to make the logging output ==consistently schema-conformant==?",
  "question_ko": "고객지원 해결 에이전트가 케이스를 처리할 때마다 ==DB 에 바로 넣을 수 있는 감사 레코드==를 만들어야 한다. 레코드에는 `customer_id`, `order_id`, `issue_category`, `resolution_action`, `escalation_reason` 이 ==항상== 있어야 하고, 일부 ID 는 없을 수 있으니 ==null== 로 기록해야 하며, `issue_category` 와 `resolution_action` 은 ==승인된 enum 값==만 써야 한다. 테스트에서 ==프롬프트만으로 만든 JSON 로그==에 여분 키, 다른 필드 이름, JSON 주변 산문이 섞여 나온다. 로깅 출력을 일관되게 스키마에 맞추는 가장 좋은 방법은?",
  "options": [
   {
    "key": "A",
-   "en": "Store the agent's final answer as an unstructured transcript field and use keyword search later to identify refunds, escalations, missing order IDs, and billing disputes.",
+   "en": "Store the agent's final answer as an ==unstructured transcript field== and use ==keyword search== later to identify refunds, escalations, missing order IDs, and billing disputes.",
    "ko": "에이전트의 최종 답변을 비구조화 transcript 필드로 저장하고, 나중에 키워드 검색으로 환불·에스컬레이션·주문 ID 누락·청구 분쟁을 찾는다."
   },
   {
    "key": "B",
-   "en": "Let the agent describe the outcome in its normal response, then run a downstream parser that maps synonyms like refundType, caseResult, and nextStep into the reporting database.",
+   "en": "Let the agent describe the outcome in its normal response, then run a ==downstream parser that maps synonyms== like refundType, caseResult, and nextStep into the reporting database.",
    "ko": "에이전트가 평소 응답으로 결과를 서술하게 두고, refundType, caseResult, nextStep 같은 동의어를 리포팅 DB 로 매핑하는 다운스트림 파서를 돌린다."
   },
   {
    "key": "C",
-   "en": "Define a write_resolution_log tool with a JSON Schema for the required, nullable, and enum fields, then use tool_choice to require that tool call for each completed support interaction.",
+   "en": "Define a ==write_resolution_log tool with a JSON Schema== for the ==required, nullable, and enum fields==, then use ==tool_choice to require that tool call== for each completed support interaction.",
    "ko": "required·nullable·enum 필드를 가진 JSON Schema 로 `write_resolution_log` 툴을 정의하고, 완료된 상호작용마다 `tool_choice` 로 그 툴 호출을 강제한다."
   },
   {
    "key": "D",
-   "en": "Add a system instruction that says the agent must return exactly one JSON object with the approved field names and no extra commentary whenever a case is resolved.",
+   "en": "Add a ==system instruction== that says the agent must return exactly one JSON object with the approved field names and no extra commentary whenever a case is resolved.",
    "ko": "케이스가 해결될 때마다 승인된 필드 이름으로 JSON 객체 하나만, 추가 주석 없이 돌려주라는 시스템 지시를 추가한다."
   }
  ],
@@ -53,5 +53,33 @@
   "Output that must happen every time gets tool_choice forcing that specific tool. // 매번 나와야 하면 tool_choice 강제.",
   "Post-hoc parsers and unstructured transcripts move the problem downstream instead of fixing it at generation time. // 뒤에서 파싱·비구조화 저장은 오답."
  ],
- "createdAt": "2026-09-09T08:20:00Z"
+ "createdAt": "2026-09-09T08:20:00Z",
+ "pattern": {
+  "type": "구조화 출력 강제",
+  "asks": "로그가 매번 스키마대로 나오게 하는 방법.",
+  "clues": [
+   {
+    "text": "must always include",
+    "means": "required"
+   },
+   {
+    "text": "recorded as null",
+    "means": "nullable"
+   },
+   {
+    "text": "approved enum values",
+    "means": "enum"
+   },
+   {
+    "text": "after every handled case",
+    "means": "매번 → tool_choice 로 툴 강제"
+   },
+   {
+    "text": "prompt-only JSON ... extra keys, prose",
+    "means": "프롬프트 접근이 이미 실패 → 지시 강화는 오답"
+   }
+  ],
+  "answerShape": "JSON Schema 툴 + required·nullable·enum + tool_choice 강제.",
+  "distractorShape": "비구조화 저장, 뒤에서 파싱, 시스템 지시문만 추가."
+ }
 }
