@@ -201,7 +201,7 @@
 
   /* ---------- desk + book ---------- */
   .desk {
-    max-width: 900px;
+    max-width: 960px;
     margin: 0 auto;
     padding: 28px 16px 60px;
   }
@@ -229,7 +229,6 @@
     display: grid;
     grid-template-columns: 44px 1fr;
     min-height: 620px;
-    aspect-ratio: 210 / 297;
   }
   .binding {
     position: relative;
@@ -262,39 +261,8 @@
       var(--paper);
     border-radius: 0 14px 14px 0;
     box-shadow: var(--shadow);
-    padding: 44px 48px 48px 48px;
+    padding: 44px 56px 48px 40px;
     overflow: hidden;
-  }
-  /* ---------- 스프링 노트: 가운데 세로선, 왼쪽 영어 · 오른쪽 한국어 ---------- */
-  .cols { position: relative; }
-  .cols::before { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1.5px solid color-mix(in srgb, var(--pen) 38%, transparent); pointer-events: none; }
-  .row2 {
-    --g: 32px; --l: 0px; --r: 0px;
-    display: grid;
-    grid-template-columns: calc(50% + (var(--r) - var(--l)) / 2 - var(--g) / 2) minmax(0, 1fr);
-    column-gap: var(--g);
-    align-items: start;
-  }
-  .row2 > .sub { margin-top: 2px; }
-  .row2 > .en { display: block; min-width: 0; }
-  .cols .para { --l: 10px; }
-  .cols .prose ul { list-style: none; }
-  .cols .prose ul:not(.ticks):not(.crosses):not(.traps) > li { position: relative; --l: 20px; }
-  .cols .prose ul:not(.ticks):not(.crosses):not(.traps) > li::before { content: "•"; position: absolute; left: -14px; top: 0; color: var(--ink-soft); }
-  .cols .keypoints li { --l: 26px; }
-  .cols .postit ul { list-style: none; }
-  .cols .postit ul:not(.ticks):not(.crosses) > li { position: relative; --l: 18px; }
-  .cols .postit ul:not(.ticks):not(.crosses) > li::before { content: "•"; position: absolute; left: -14px; top: 0; color: var(--ink-soft); }
-  .cols .postit ul.ticks > li, .cols .postit ul.crosses > li { --l: 22px; }
-  .cols .postit .memo { --l: 12px; --r: 12px; }
-  .cols .opt .txt { --l: 59.5px; --r: 15.5px; }
-  .cols .opt { background: var(--paper); }
-  .cols .tablewrap, .cols details.analysis, .cols .verdict, .cols .pager { position: relative; background: var(--paper); }
-  .cols .prose table { width: 100%; }
-  @media (max-width: 720px) {
-    .row2 { display: block; }
-    .cols::before { display: none; }
-    .book { aspect-ratio: auto; }
   }
   .page.flip { animation: flip 260ms ease-out; }
   @keyframes flip {
@@ -721,8 +689,8 @@
     <button class="brand" id="homebtn" title="표지로">미지의 CCAF 노트</button>
     <span class="status">
       <select id="palette" title="테마" aria-label="테마">
-        <option value="paper">종이</option>
         <option value="white">화이트 노트</option>
+        <option value="paper">종이</option>
         <option value="mint">민트</option>
         <option value="midnight">미드나잇</option>
       </select>
@@ -762,7 +730,7 @@
   const LS_KEY = 'ccaf-notes-progress';
   const PALETTE_KEY = 'ccaf-palette';
   (() => {
-    let pal = 'paper'; try { pal = localStorage.getItem(PALETTE_KEY) || pal; } catch {}
+    let pal = 'white'; try { pal = localStorage.getItem(PALETTE_KEY) || pal; } catch {}
     document.documentElement.dataset.palette = pal;
     const sel = document.getElementById('palette'); sel.value = pal;
     sel.addEventListener('change', () => { document.documentElement.dataset.palette = sel.value; try { localStorage.setItem(PALETTE_KEY, sel.value); } catch {} });
@@ -849,24 +817,6 @@
       ${a.clues?.length ? `<ul class="clues">${a.clues.map(c => `<li><span class="kw"><mark>${esc(c.text)}</mark></span><span class="means">${inline(c.means)}</span></li>`).join('')}</ul>` : ''}
       ${(a.answerShape || a.distractorShape) ? `<div class="shapes">${a.answerShape ? `<div class="ok"><b>정답 모양</b>${inline(a.answerShape)}</div>` : ''}${a.distractorShape ? `<div class="no"><b>오답 모양</b>${inline(a.distractorShape)}</div>` : ''}</div>` : ''}
     </details>`;
-  }
-  // 영어 | 한국어 두 칸 정렬: .sub(한국어)를 직접 자식으로 가진 요소에 row2 를 붙인다.
-  function twoCols() {
-    const root = pageEl.querySelector('.cols'); if (!root) return;
-    root.querySelectorAll('.para, .summary, .qtext p, .opt .txt, .postit .memo, p, li, h3, h4').forEach(el => {
-      if (el.classList.contains('row2')) return;
-      const sub = [...el.children].find(c => c.classList.contains('sub'));
-      const forced = el.matches('.para, .summary, .qtext p, .opt .txt, .postit .memo');
-      if (!sub && !forced) return;
-      el.classList.add('row2');
-      // 영어 쪽(= .sub 앞의 모든 조각)을 span.en 하나로 감싸 왼쪽 한 칸에 넣는다.
-      const already = el.firstChild && el.firstChild.nodeType === 1 && el.firstChild.classList.contains('en') && (el.firstChild.nextSibling === sub || (!sub && !el.firstChild.nextSibling));
-      if (!already) {
-        const en = document.createElement('span'); en.className = 'en';
-        while (el.firstChild && el.firstChild !== sub) en.appendChild(el.firstChild);
-        el.insertBefore(en, sub || null);
-      }
-    });
   }
   const SCRIPT_KEY = 'ccaf-script-open';
   const scriptOpen = () => { try { return localStorage.getItem(SCRIPT_KEY) !== '0'; } catch { return true; } };
@@ -1127,7 +1077,6 @@
     pageEl.innerHTML = `<div class="washi purple"></div>
       ${eyebrow(p, '인강')}
       ${titleBlock(p, hasCore && hasScript ? '<button class="jump" data-scroll="core" title="대본을 건너뛰고 정리·시험 포인트로">요약 보기 ↓</button>' : '')}
-      <div class="cols">
       ${p.summary ? `<div class="summary"><span class="lbl">Summary</span>${bi(p.summary)}</div>` : ''}
       ${hasScript
         ? `<details class="script" ${scriptOpen() ? 'open' : ''}><summary>대본 <span class="cnt">${p.paragraphs.length}줄 · 접었다 펼 수 있어요</span></summary>
@@ -1139,9 +1088,8 @@
         ${kp(p)}
         ${trends(p)}
       </section>` : ''}
-      </div>
       ${pager(pages)}`;
-    wire(); twoCols();
+    wire();
     const sc = pageEl.querySelector('details.script'); if (sc) sc.addEventListener('toggle', () => { try { localStorage.setItem(SCRIPT_KEY, sc.open ? '1' : '0'); } catch {} });
     pageEl.querySelectorAll('[data-scroll]').forEach(b => b.addEventListener('click', () => {
       if (b.dataset.scroll === 'top') { pageEl.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
@@ -1157,7 +1105,6 @@
     pageEl.innerHTML = `<div class="washi green"></div>
       ${eyebrow(p, `문제 ${p._qi} / ${p._qn}`)}
       ${titleBlock(p)}
-      <div class="cols">
       <div class="prose qtext"><p>${p.question_en ? sentences(p.question_en) : inline(p.question_ko)}${p.question_en && p.question_ko ? `<span class="sub">${inline(p.question_ko)}</span>` : ''}</p></div>
       ${analysis(p)}
       <div class="options">${(p.options || []).map(o => {
@@ -1177,9 +1124,7 @@
         ${kp(p)}
         ${noteBlock(pr)}
       </div>
-      </div>
       ${pager(pages)}`;
-    twoCols();
     pageEl.querySelectorAll('[data-opt]').forEach(b => b.addEventListener('click', () => { const chosen = b.dataset.opt; saveProgress(p.id, { chosen, correct: chosen === p.answer }); render(); }));
     const retry = pageEl.querySelector('[data-retry]'); if (retry) retry.addEventListener('click', () => { saveProgress(p.id, { chosen: null, correct: null }); render(); });
     wireNote(p); wire();
