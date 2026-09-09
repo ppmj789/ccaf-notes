@@ -514,12 +514,30 @@
   .para .sub { font-size: 14.5px; }
   .toolrow { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 6px 0 14px; }
   .working { font-family: "Gaegu", sans-serif; font-size: 17px; color: var(--ink-soft); }
+
+  .crumb { font-family: "Gaegu", sans-serif; font-size: 18px; color: var(--ink-soft); margin-bottom: 2px; }
+  .crumb button { border: none; background: none; padding: 0; font: inherit; color: var(--ink-soft); text-decoration: underline; }
+  .statusline { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 0 0 12px; font-size: 14px; color: var(--ink-soft); }
+  .pill { display: inline-block; padding: 0 10px; border-radius: 999px; font-family: "Gaegu", sans-serif; font-size: 16px; font-weight: 700; line-height: 1.6; }
+  .pill.run { background: color-mix(in srgb, var(--hl) 60%, var(--paper)); color: var(--hl-ink); }
+  .pill.done { background: color-mix(in srgb, var(--sage) 45%, var(--paper)); color: var(--correct); }
+  .pill.none { background: var(--paper-deep); color: var(--ink-faint); }
+  .pill.fail { background: color-mix(in srgb, var(--coral) 30%, var(--paper)); color: var(--wrong); }
+  .progress { height: 8px; background: var(--paper-deep); border-radius: 999px; overflow: hidden; max-width: 420px; flex: 1; min-width: 120px; }
+  .progress i { display: block; height: 100%; background: var(--sky); transition: width 300ms; }
+  .lecture-list li { grid-template-columns: 1fr auto; }
+  .lecture-list .title { font-family: "Gowun Batang", serif; font-weight: 700; font-size: 17px; }
+  .newbtn { margin: 0 0 12px; }
+  .topbar .task { font-family: "Gaegu", sans-serif; font-size: 16px; color: var(--ink); background: color-mix(in srgb, var(--hl) 60%, var(--paper)); padding: 0 10px; border-radius: 999px; display: none; }
+  .topbar .task.on { display: inline-block; }
+  .para { margin: 0 0 18px; }
+  .para .sub { margin-top: 4px; }
 </style>
 
 <div class="desk">
   <div class="topbar">
     <span class="brand">미지의 CCAF 노트</span>
-    <span class="status"><span class="dot" id="dbdot"></span><span id="dbmsg">저장 준비 중</span></span>
+    <span class="status"><span class="task" id="taskmsg"></span><span class="dot" id="dbdot"></span><span id="dbmsg">저장 준비 중</span></span>
   </div>
 
   <div class="book">
@@ -895,38 +913,106 @@
 
   // ---------- lectures ----------
   const fixTranscript = t => t.replace(/\bClod\b/g, 'Claude').replace(/\bclod\b/g, 'Claude').replace(/\r/g, '');
+  // Udemy transcripts arrive one caption cue per line; merge cues into readable paragraphs (~450 chars),
+  // breaking preferably at sentence ends.
   function splitParagraphs(t) {
-    const raw = t.split(/\n\s*\n/).map(s => s.replace(/\s*\n\s*/g, ' ').trim()).filter(Boolean);
-    const out = [];
-    for (const block of raw) {
-      if (block.length <= 700) { out.push(block); continue; }
-      const sents = block.match(/[^.!?]+[.!?]+["')\]]*\s*|[^.!?]+$/g) || [block];
-      let cur = '';
-      for (const s of sents) { if ((cur + s).length > 500 && cur) { out.push(cur.trim()); cur = ''; } cur += s; }
-      if (cur.trim()) out.push(cur.trim());
+    const cues = t.split(/\n+/).map(x => x.trim()).filter(Boolean);
+    const out = []; let cur = '';
+    for (const c of cues) {
+      const next = cur ? cur + ' ' + c : c;
+      if (cur && next.length > 450 && /[.!?]["')\]]*$/.test(cur)) { out.push(cur); cur = c; }
+      else if (next.length > 700) { out.push(cur || c); cur = cur ? c : ''; }
+      else cur = next;
     }
+    if (cur) out.push(cur);
     return out;
   }
-  function renderLectures() {
-    const list = state.lectures.slice().sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
+  const tasks = {};   // lectureId -> {done, total, error}
+  function taskBadge() {
+    const running = Object.entries(tasks).filter(([, t]) => !t.error && t.done < t.total);
+    const el = $('#taskmsg');
+    if (!running.length) { el.classList.remove('on'); el.textContent = ''; return; }
+    const [id, t] = running[0];
+    const l = state.lectures.find(x => x.id === id);
+    el.textContent = `번역 중 ${t.done}/${t.total} · ${l ? l.title : ''}`;
+    el.classList.add('on');
+  }
+  function lectureStatus(l) {
+    const t = tasks[l.id];
+    if (t && t.error) return ['fail', '번역 실패 · 다시 시도'];
+    if (t && t.done < t.total) return ['run', `번역 중 ${t.done}/${t.total}`];
+    const n = (l.paragraphs || []).length, k = (l.paragraphs_ko || []).filter(Boolean).length;
+    if (n && k === n) return ['done', l.summary ? '한국어 완료' : '한국어 완료 · 요약 없음'];
+    if (k) return ['run', `한국어 ${k}/${n}`];
+    return ['none', '영어만'];
+  }
+
+  async function translateLecture(id) {
+    const l = state.lectures.find(x => x.id === id);
+    if (!l || !state.sample) return;
+    const paras = l.paragraphs || [];
+    const ko = (l.paragraphs_ko || []).slice(0, paras.length); while (ko.length < paras.length) ko.push('');
+    const total = paras.length + 1;  // +1 for summary
+    tasks[id] = { done: ko.filter(Boolean).length, total, error: null };
+    taskBadge(); if (state.view === 'lecture' && state.lectureId === id) renderLecture();
+    const BATCH = 6;
+    try {
+      for (let s = 0; s < paras.length; s += BATCH) {
+        if (paras.slice(s, s + BATCH).every((_, i) => ko[s + i])) continue;
+        const chunk = paras.slice(s, s + BATCH);
+        const r = await state.sample.json(
+`너는 Claude Certified Architect - Foundations 강의를 듣는 한국인 학습자를 돕는 번역가다. 아래 영어 강의 문단들을 자연스러운 한국어로 번역하라. 기술 용어·API 이름·식별자(tool_use, tool_choice, enum, JSON 등)는 영어 그대로 두고, 필요하면 괄호로 짧게 풀어 준다. 문단 수와 순서를 정확히 유지하라. 반드시 JSON 배열 하나만 답하라: ["문단1 번역", "문단2 번역", ...]
+
+${chunk.map((p, i) => `[${i + 1}]\n${p}`).join('\n\n')}`, { modelTier: 'quick' });
+        if (!Array.isArray(r) || r.length !== chunk.length) throw { code: 'invalid_json', message: '문단 수가 맞지 않아요' };
+        r.forEach((t, i) => { ko[s + i] = String(t); });
+        const cur = state.lectures.find(x => x.id === id); if (!cur) return;
+        Object.assign(cur, { paragraphs_ko: ko.slice() });
+        await saveLecture({ ...cur });
+        tasks[id].done = ko.filter(Boolean).length; taskBadge();
+        if (state.view === 'lecture' && state.lectureId === id) renderLectureBodyOnly(cur);
+        else if (state.view === 'lectures') renderLectures();
+      }
+      if (!l.summary) {
+        const sum = await state.sample(
+`아래 강의 대본을 두 문장으로 요약하라. 첫 줄은 영어 요약, 그다음 " // " 를 붙이고 한국어 요약. 형식 예: "Tool use with a JSON schema gives schema-compliant output. // 툴 사용과 JSON 스키마로 스키마를 따르는 출력을 얻는다." 다른 말은 쓰지 마라.
+
+${paras.join('\n\n').slice(0, 30000)}`, { modelTier: 'quick' });
+        const cur = state.lectures.find(x => x.id === id); if (!cur) return;
+        Object.assign(cur, { summary: sum.text.trim().replace(/\n+/g, ' ') });
+        await saveLecture({ ...cur });
+      }
+      tasks[id].done = total; taskBadge();
+    } catch (e) {
+      tasks[id].error = e?.code === 'not_granted' ? '이 화면에서는 Claude 를 쓸 수 없어요.' : e?.code === 'rate_limited' ? '잠시 후 다시 눌러 주세요.' : e?.code === 'invalid_json' ? '번역 결과를 읽지 못했어요. 다시 시도해 주세요.' : (e?.message || e?.code || '실패');
+      taskBadge();
+    }
+    if (state.view === 'lecture' && state.lectureId === id) renderLecture();
+    else if (state.view === 'lectures') renderLectures();
+  }
+
+  function renderLectures(openForm) {
+    const list = state.lectures.slice().sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+    const showForm = openForm || !list.length;
     pageEl.innerHTML = `<div class="washi purple"></div><div class="eyebrow">Lectures</div><h1 class="title">인강 듣기</h1>
-      <div class="subtitle">영어 대본을 붙여 넣고 한국어 번역과 요약을 만들어 저장하는 곳</div>
-      ${list.length ? `<ul class="lecture-list">${list.map(l => `<li>
-        <button class="open" data-open="${esc(l.id)}">${esc(l.title)}<br><span class="meta">${esc(l.section || '')}${l.section ? ' · ' : ''}${new Date(l.createdAt).toLocaleDateString('ko-KR')} · ${(l.paragraphs || []).length}문단</span></button>
-        <span class="ko ${l.paragraphs_ko?.length ? 'yes' : 'no'}">${l.paragraphs_ko?.length ? '한국어 있음' : '영어만'}</span></li>`).join('')}</ul>` : '<p class="empty">아직 저장된 강의가 없어요. 아래에 첫 대본을 붙여 넣어 보세요.</p>'}
-      <h2 class="sec">새 강의 붙여 넣기</h2>
-      <form class="form" data-new>
+      <div class="subtitle">대본을 붙여 넣으면 저장과 동시에 한국어 번역이 시작돼요. 저장한 강의는 아래 목록에 남아요.</div>
+      <div class="newbtn"><button class="btn" data-toggle-form>${showForm ? '목록만 보기' : '+ 새 강의 붙여 넣기'}</button></div>
+      <form class="form" data-new ${showForm ? '' : 'hidden'}>
         <div class="row">
-          <label>섹션<input name="section" placeholder="예: Section 3 · Tool use" style="min-width:240px"></label>
-          <label>강의 제목<input name="title" placeholder="예: 3.2 Reliable structured output" style="min-width:260px" required></label>
+          <label>섹션<input name="section" placeholder="예: Reliable Prompts & Structured Output" style="min-width:280px" value="${esc(list[0]?.section || '')}"></label>
+          <label>강의 제목<input name="title" placeholder="예: 23. JSON and Schemas for Non-Programmers" style="min-width:280px" required></label>
         </div>
         <label>영어 대본 (Udemy Transcript 를 그대로)<textarea name="transcript" required></textarea></label>
         <div class="err" data-err></div>
         <div class="row">
-          <button class="btn" type="submit">저장하고 열기</button>
-          <span class="hint">저장한 뒤 열린 장에서 한국어 번역과 요약을 만들 수 있어요.</span>
+          <button class="btn" type="submit">저장하고 번역 시작</button>
+          <span class="hint">${state.sample ? '저장하면 바로 그 강의 장이 열리고 번역이 채워져요.' : '지금은 저장만 돼요. python3 serve.py 로 열거나 claude.ai 에서 열면 번역까지 돼요.'}</span>
         </div>
-      </form>`;
+      </form>
+      ${list.length ? `<h2 class="sec">저장된 강의 ${list.length}편</h2><ul class="lecture-list">${list.map(l => { const [cls, lbl] = lectureStatus(l); return `<li>
+        <button class="open" data-open="${esc(l.id)}"><span class="title">${esc(l.title)}</span><br><span class="meta">${esc(l.section || '')}${l.section ? ' · ' : ''}${new Date(l.createdAt).toLocaleDateString('ko-KR')} · ${(l.paragraphs || []).length}문단</span></button>
+        <span class="pill ${cls}">${lbl}</span></li>`; }).join('')}</ul>` : ''}`;
+    pageEl.querySelector('[data-toggle-form]').addEventListener('click', () => renderLectures(!showForm));
     pageEl.querySelectorAll('[data-open]').forEach(b => b.addEventListener('click', () => go('lecture', b.dataset.open)));
     const form = pageEl.querySelector('[data-new]');
     form.addEventListener('submit', async e => {
@@ -937,76 +1023,50 @@
       if (!title || !transcript) { err.textContent = '제목과 대본을 채워 주세요.'; return; }
       const id = 'lec-' + Date.now().toString(36);
       const doc = { id, title, section, transcript, paragraphs: splitParagraphs(transcript), paragraphs_ko: [], summary: '', createdAt: new Date().toISOString() };
-      try { await saveLecture(doc); go('lecture', id); }
-      catch (e2) { err.textContent = '저장에 실패했어요. ' + (e2?.message || e2?.code || ''); }
+      try {
+        await saveLecture(doc);
+        if (!state.lectures.some(x => x.id === id)) state.lectures.push(doc);
+        go('lecture', id);
+        translateLecture(id);
+      } catch (e2) { err.textContent = '저장에 실패했어요. ' + (e2?.message || e2?.code || ''); }
     });
   }
 
+  function paraHtml(l) {
+    return (l.paragraphs || []).map((p, i) => `<p class="para"><span class="en">${esc(p)}</span>${l.paragraphs_ko?.[i] ? `<span class="sub">${esc(l.paragraphs_ko[i])}</span>` : '<span class="sub" style="color:var(--ink-faint)">…</span>'}</p>`).join('');
+  }
   function renderLecture() {
     const l = state.lectures.find(x => x.id === state.lectureId);
-    if (!l) { pageEl.innerHTML = '<div class="washi purple"></div><p class="empty">그 강의를 찾을 수 없어요.</p><div class="toolrow"><button class="btn ghost" data-back>목록으로</button></div>'; pageEl.querySelector('[data-back]').addEventListener('click', () => go('lectures')); return; }
-    const hasKo = (l.paragraphs_ko || []).length === (l.paragraphs || []).length && l.paragraphs.length;
+    if (!l) { pageEl.innerHTML = '<div class="washi purple"></div><div class="crumb"><button data-back>인강 듣기</button> › ?</div><p class="empty">그 강의를 찾을 수 없어요.</p>'; pageEl.querySelector('[data-back]').addEventListener('click', () => go('lectures')); return; }
+    const [cls, lbl] = lectureStatus(l); const t = tasks[l.id];
+    const running = t && !t.error && t.done < t.total;
     pageEl.innerHTML = `<div class="washi purple"></div>
-      <div class="eyebrow"><span>Lecture</span>${l.section ? `<span class="chip">${esc(l.section)}</span>` : ''}</div>
+      <div class="crumb"><button data-back>인강 듣기</button> › ${esc(l.title)}</div>
       <h1 class="title">${esc(l.title)}</h1>
-      ${l.summary ? `<div class="summary"><span class="lbl">Summary</span>${bi(l.summary)}</div>` : ''}
-      <div class="toolrow">
-        <button class="btn" data-translate ${state.sample ? '' : 'disabled'}>${hasKo ? '한국어 다시 만들기' : '한국어 번역·요약 만들기'}</button>
-        <button class="btn ghost" data-back>목록으로</button>
-        <button class="btn ghost" data-del style="color:var(--wrong);border-color:var(--wrong)">삭제</button>
-        <span class="hint" style="font-size:13px;color:var(--ink-faint)">${state.sample ? '문단마다 영어 밑에 한국어가 붙고, 위에 요약이 생겨요.' : 'python3 serve.py 로 열거나 claude.ai 에서 열면 번역과 요약을 만들 수 있어요.'}</span>
+      ${l.section ? `<div class="subtitle">${esc(l.section)}</div>` : ''}
+      <div class="statusline">
+        <span class="pill ${cls}">${lbl}</span>
+        ${running ? `<span class="progress"><i style="width:${Math.round(t.done / t.total * 100)}%"></i></span>` : ''}
+        ${!running && cls !== 'done' && state.sample ? '<button class="btn" data-translate>한국어 번역 만들기</button>' : ''}
+        ${!running && cls === 'done' && state.sample ? '<button class="btn ghost" data-translate>다시 번역</button>' : ''}
+        ${!state.sample && cls !== 'done' ? '<span class="hint" style="font-size:13px;color:var(--ink-faint)">번역은 python3 serve.py 로 열거나 claude.ai 에서 돼요.</span>' : ''}
+        <button class="btn ghost" data-del style="color:var(--wrong);border-color:var(--wrong);margin-left:auto">삭제</button>
       </div>
-      <div class="working" data-working></div>
-      <div class="err" data-err></div>
-      <div class="prose">${(l.paragraphs || []).map((p, i) => `<p class="para"><span class="en">${esc(p)}</span>${l.paragraphs_ko?.[i] ? `<span class="sub">${esc(l.paragraphs_ko[i])}</span>` : ''}</p>`).join('')}</div>`;
+      ${t?.error ? `<div class="err">${esc(t.error)}</div>` : ''}
+      ${l.summary ? `<div class="summary"><span class="lbl">Summary</span>${bi(l.summary)}</div>` : ''}
+      <div class="prose">${paraHtml(l)}</div>`;
     pageEl.querySelector('[data-back]').addEventListener('click', () => go('lectures'));
     pageEl.querySelector('[data-del]').addEventListener('click', async () => {
       if (!confirm('이 강의 대본과 번역을 지울까요?')) return;
-      await deleteLecture(l.id); go('lectures');
+      await deleteLecture(l.id); delete tasks[l.id]; taskBadge(); go('lectures');
     });
-    const tBtn = pageEl.querySelector('[data-translate]');
-    tBtn.addEventListener('click', async () => {
-      const working = pageEl.querySelector('[data-working]'), err = pageEl.querySelector('[data-err]');
-      err.textContent = ''; tBtn.disabled = true;
-      const paras = l.paragraphs || [];
-      const ko = new Array(paras.length).fill('');
-      try {
-        // translate in batches of ~8 paragraphs so each answer stays small and streams in
-        const BATCH = 8;
-        for (let s = 0; s < paras.length; s += BATCH) {
-          const chunk = paras.slice(s, s + BATCH);
-          working.textContent = `번역 중… ${Math.min(s + BATCH, paras.length)} / ${paras.length} 문단`;
-          const r = await state.sample.json(
-`너는 Claude Certified Architect - Foundations 강의를 듣는 한국인 학습자를 돕는 번역가다. 아래 영어 강의 문단들을 자연스러운 한국어로 번역하라. 기술 용어·API 이름·식별자(tool_use, tool_choice, enum, JSON 등)는 영어 그대로 두고, 필요하면 괄호로 짧게 풀어 준다. 문단 수와 순서를 정확히 유지하라. 반드시 JSON 배열 하나만 답하라: ["문단1 번역", "문단2 번역", ...]
-
-${chunk.map((p, i) => `[${i + 1}]\n${p}`).join('\n\n')}`, { modelTier: 'quick' });
-          if (!Array.isArray(r) || r.length !== chunk.length) throw { code: 'invalid_json', message: '문단 수가 맞지 않아요' };
-          r.forEach((t, i) => { ko[s + i] = String(t); });
-          const doc = { ...l, paragraphs_ko: ko.slice() };
-          await saveLecture(doc);
-          Object.assign(l, doc);
-          renderLectureBodyOnly(l);
-        }
-        working.textContent = '요약 만드는 중…';
-        const sum = await state.sample(
-`아래 강의 대본을 두 문장으로 요약하라. 첫 줄은 영어 요약, 그다음 " // " 를 붙이고 한국어 요약. 형식 예: "Tool use with a JSON schema gives schema-compliant output. // 툴 사용과 JSON 스키마로 스키마를 따르는 출력을 얻는다." 다른 말은 쓰지 마라.
-
-${paras.join('\n\n').slice(0, 30000)}`, { modelTier: 'quick' });
-        const doc = { ...l, paragraphs_ko: ko, summary: sum.text.trim().replace(/\n+/g, ' ') };
-        await saveLecture(doc);
-        Object.assign(l, doc);
-        working.textContent = '';
-        renderLecture();
-      } catch (e) {
-        working.textContent = '';
-        err.textContent = e?.code === 'not_granted' ? '이 화면에서는 Claude 를 쓸 수 없어요.' : e?.code === 'rate_limited' ? '잠시 후 다시 눌러 주세요.' : e?.code === 'invalid_json' ? '번역 결과를 읽지 못했어요. 한 번 더 눌러 보세요.' : '실패했어요. ' + (e?.message || e?.code || '');
-        tBtn.disabled = false;
-      }
-    });
+    const tb = pageEl.querySelector('[data-translate]');
+    if (tb) tb.addEventListener('click', () => { if (cls === 'done') { l.paragraphs_ko = []; l.summary = ''; } translateLecture(l.id); });
   }
   function renderLectureBodyOnly(l) {
-    const prose = pageEl.querySelector('.prose'); if (!prose) return;
-    prose.innerHTML = (l.paragraphs || []).map((p, i) => `<p class="para"><span class="en">${esc(p)}</span>${l.paragraphs_ko?.[i] ? `<span class="sub">${esc(l.paragraphs_ko[i])}</span>` : ''}</p>`).join('');
+    const prose = pageEl.querySelector('.prose'); if (prose) prose.innerHTML = paraHtml(l);
+    const t = tasks[l.id]; const bar = pageEl.querySelector('.progress i'); if (bar && t) bar.style.width = Math.round(t.done / t.total * 100) + '%';
+    const pill = pageEl.querySelector('.statusline .pill'); if (pill) { const [c, lb] = lectureStatus(l); pill.className = 'pill ' + c; pill.textContent = lb; }
   }
 
   // ---------- global wiring ----------
