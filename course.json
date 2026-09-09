@@ -34,6 +34,10 @@
         {
           "no": "30",
           "title": "Understanding the Tool Use Lifecycle"
+        },
+        {
+          "no": "31",
+          "title": "Designing Effective Tools and Structured MCP Errors"
         }
       ]
     }

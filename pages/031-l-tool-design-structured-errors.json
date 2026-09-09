@@ -1,0 +1,470 @@
+{
+ "id": "l-031",
+ "kind": "lesson",
+ "order": 31,
+ "section": "Tools, MCP, and Agentic Loop",
+ "lecture": "31",
+ "title_en": "Designing Effective Tools and Structured MCP Errors",
+ "title": "효과적인 툴 설계와 구조화된 MCP 에러",
+ "domain": "툴·에이전트 루프",
+ "summary": "Tool names and descriptions guide Claude's routing (purpose, input, output, examples, boundaries), tools are split to reduce ambiguity or consolidated to reduce complexity, and errors come back structured with an error_category (transient, validation, business, permission) and is_retriable so Claude can recover locally before escalating. // 툴 이름과 description(목적·입력·출력·예시·경계)이 Claude 의 라우팅을 안내하고, 모호함이 줄면 나누고 복잡함이 줄면 합치며, 에러는 error_category(transient·validation·business·permission)와 is_retriable 을 담아 구조화해서 에스컬레이션 전에 로컬 복구를 하게 한다.",
+ "paragraphs": [
+  {
+   "en": "In the previous lesson, we looked at the agentic loop. Claude can decide that a tool is needed,",
+   "ko": "지난 강의에서 에이전트 루프를 봤습니다. Claude 는 툴이 필요하다고 결정하고,"
+  },
+  {
+   "en": "request a tool call, wait for our application to execute it,",
+   "ko": "툴 호출을 요청하고, 애플리케이션이 실행하기를 기다리고,"
+  },
+  {
+   "en": "and then use the tool result to continue the conversation.",
+   "ko": "그 툴 결과로 대화를 이어갈 수 있습니다."
+  },
+  {
+   "en": "But now we need to solve a more practical problem.",
+   "ko": "이제 더 실용적인 문제를 풀어야 합니다."
+  },
+  {
+   "en": "How does Claude know which tool to choose?",
+   "ko": "Claude 는 어떤 툴을 고를지 어떻게 알까요?"
+  },
+  {
+   "en": "The most important mechanism is the tool description.",
+   "ko": "가장 중요한 메커니즘은 툴 description 입니다."
+  },
+  {
+   "en": "Claude can see the tool name, the input schema, and the conversation context,",
+   "ko": "Claude 는 툴 이름, 입력 schema, 대화 맥락을 볼 수 있지만,"
+  },
+  {
+   "en": "but the description explains when the tool should be used.",
+   "ko": "툴을 언제 써야 하는지는 description 이 설명합니다."
+  },
+  {
+   "en": "So if our descriptions are too short, too generic, or too similar,",
+   "ko": "그래서 description 이 너무 짧거나, 너무 일반적이거나, 서로 너무 비슷하면"
+  },
+  {
+   "en": "Claude can select the wrong tool.",
+   "ko": "Claude 는 잘못된 툴을 고를 수 있습니다."
+  },
+  {
+   "en": "Let's start with a weak version.",
+   "ko": "약한 버전부터 봅시다."
+  },
+  {
+   "en": "In this version, we have two tools.",
+   "ko": "이 버전에는 툴이 두 개 있습니다."
+  },
+  {
+   "en": "get_customer returns customer data.",
+   "ko": "get_customer 는 고객 데이터를 돌려준다."
+  },
+  {
+   "en": "lookup_order returns order data.",
+   "ko": "lookup_order 는 주문 데이터를 돌려준다."
+  },
+  {
+   "en": "But the descriptions are too minimal.",
+   "ko": "하지만 description 이 너무 빈약합니다."
+  },
+  {
+   "en": "They do not explain when each tool should be used.",
+   "ko": "각 툴을 언제 써야 하는지 설명하지 않습니다."
+  },
+  {
+   "en": "They do not explain the boundary between a customer lookup and an order lookup.",
+   "ko": "고객 조회와 주문 조회의 경계를 설명하지 않습니다."
+  },
+  {
+   "en": "And they do not explain what Claude should do when the user gives only partial information.",
+   "ko": "그리고 사용자가 정보를 일부만 줬을 때 Claude 가 뭘 해야 하는지 설명하지 않습니다."
+  },
+  {
+   "en": "For example, imagine the user says,",
+   "ko": "예를 들어 사용자가 이렇게 말한다고 해 봅시다."
+  },
+  {
+   "en": "Can you check my order? My email is alex at example.com",
+   "ko": "\"제 주문 좀 확인해 주세요. 이메일은 alex@example.com 이에요.\""
+  },
+  {
+   "en": "The user mentioned an order, so Claude may try to call lookup order.",
+   "ko": "사용자가 주문을 언급했으니 Claude 는 lookup_order 를 부르려 할 수 있습니다."
+  },
+  {
+   "en": "But the user did not provide an order ID.",
+   "ko": "하지만 사용자는 order ID 를 주지 않았습니다."
+  },
+  {
+   "en": "They only provided an email address.",
+   "ko": "이메일 주소만 줬죠."
+  },
+  {
+   "en": "So the better first step is to call the customer lookup tool,",
+   "ko": "그러니 더 좋은 첫 단계는 고객 조회 툴을 불러"
+  },
+  {
+   "en": "identify the customer, and then continue from there.",
+   "ko": "고객을 식별하고, 거기서부터 이어가는 것입니다."
+  },
+  {
+   "en": "This is a tool design problem.",
+   "ko": "이건 툴 설계 문제입니다."
+  },
+  {
+   "en": "Now let's improve the same tools.",
+   "ko": "이제 같은 툴을 개선해 봅시다."
+  },
+  {
+   "en": "This version is much better.",
+   "ko": "이 버전이 훨씬 낫습니다."
+  },
+  {
+   "en": "First, the tool names are more specific.",
+   "ko": "첫째, 툴 이름이 더 구체적입니다."
+  },
+  {
+   "en": "Instead of get_customer, we use get_customer_by_email.",
+   "ko": "get_customer 대신 get_customer_by_email 을 씁니다."
+  },
+  {
+   "en": "Instead of lookup_order, we use lookup_order_by_id.",
+   "ko": "lookup_order 대신 lookup_order_by_id 를 씁니다."
+  },
+  {
+   "en": "The name already tells Claude what the tool does and what input it expects.",
+   "ko": "이름만으로도 툴이 뭘 하고 어떤 입력을 기대하는지 Claude 에 알려줍니다."
+  },
+  {
+   "en": "Second, the descriptions explain the purpose, input, output, examples, and boundaries.",
+   "ko": "둘째, description 이 목적, 입력, 출력, 예시, 경계를 설명합니다."
+  },
+  {
+   "en": "get_customer_by_email says that it should be used when the user provides an email but no order ID.",
+   "ko": "get_customer_by_email 은 사용자가 이메일은 줬지만 order ID 는 안 줬을 때 쓰라고 말합니다."
+  },
+  {
+   "en": "lookup_order_by_id says that it requires an order ID and should not be used with an email address.",
+   "ko": "lookup_order_by_id 는 order ID 가 필요하고 이메일 주소로는 쓰면 안 된다고 말합니다."
+  },
+  {
+   "en": "This is the key idea.",
+   "ko": "이게 핵심입니다."
+  },
+  {
+   "en": "A good tool description does not only describe the function.",
+   "ko": "좋은 툴 description 은 함수만 설명하지 않습니다."
+  },
+  {
+   "en": "It guides Claude's routing decision.",
+   "ko": "Claude 의 라우팅 결정을 안내합니다."
+  },
+  {
+   "en": "Another important design choice is whether to split or consolidate tools.",
+   "ko": "또 다른 중요한 설계 선택은 툴을 나눌지 합칠지입니다."
+  },
+  {
+   "en": "If one generic tool handles customers, orders, refunds, and policy checks,",
+   "ko": "범용 툴 하나가 고객, 주문, 환불, 정책 확인을 다 다루면"
+  },
+  {
+   "en": "the interface becomes vague.",
+   "ko": "인터페이스가 모호해집니다."
+  },
+  {
+   "en": "In that case, it is usually better to split it into purpose-specific tools.",
+   "ko": "그럴 때는 보통 목적별 툴로 나누는 게 낫습니다."
+  },
+  {
+   "en": "For example, get_customer_by_email, lookup_order_by_id, check_refund_eligibility, create_human_escalation.",
+   "ko": "예를 들어 get_customer_by_email, lookup_order_by_id, check_refund_eligibility, create_human_escalation."
+  },
+  {
+   "en": "But too many tiny tools can also create complexity.",
+   "ko": "하지만 너무 작은 툴이 너무 많아도 복잡해집니다."
+  },
+  {
+   "en": "If three tools are always called together, use the same input,",
+   "ko": "툴 세 개가 항상 같이 불리고, 같은 입력을 쓰고,"
+  },
+  {
+   "en": "and return pieces of the same business operation, it may be better to combine them.",
+   "ko": "같은 비즈니스 작업의 조각들을 돌려준다면 합치는 게 나을 수 있습니다."
+  },
+  {
+   "en": "The rule is simple.",
+   "ko": "규칙은 단순합니다."
+  },
+  {
+   "en": "Split tools when it reduces ambiguity.",
+   "ko": "모호함이 줄면 나눈다."
+  },
+  {
+   "en": "Consolidate tools when it reduces complexity.",
+   "ko": "복잡함이 줄면 합친다."
+  },
+  {
+   "en": "Now, let's look at tool errors.",
+   "ko": "이제 툴 에러를 봅시다."
+  },
+  {
+   "en": "In production, tools do not always return successful data.",
+   "ko": "프로덕션에서 툴이 항상 성공 데이터를 돌려주지는 않습니다."
+  },
+  {
+   "en": "The order ID may be invalid.",
+   "ko": "order ID 가 무효할 수도 있고,"
+  },
+  {
+   "en": "The customer may not have permission.",
+   "ko": "고객에게 권한이 없을 수도 있고,"
+  },
+  {
+   "en": "The refund may violate policy.",
+   "ko": "환불이 정책을 위반할 수도 있고,"
+  },
+  {
+   "en": "Or the backend may time out.",
+   "ko": "백엔드가 타임아웃될 수도 있습니다."
+  },
+  {
+   "en": "A weak error response would look like this.",
+   "ko": "약한 에러 응답은 이런 모양입니다."
+  },
+  {
+   "en": "Something went wrong.",
+   "ko": "\"Something went wrong.\""
+  },
+  {
+   "en": "This does not give Claude enough information to recover.",
+   "ko": "이건 Claude 가 복구할 만큼의 정보를 주지 않습니다."
+  },
+  {
+   "en": "Claude does not know whether it should retry, ask the user for better information,",
+   "ko": "Claude 는 재시도해야 할지, 사용자에게 더 나은 정보를 요청해야 할지,"
+  },
+  {
+   "en": "explain a policy issue, or escalate.",
+   "ko": "정책 문제를 설명해야 할지, 에스컬레이션해야 할지 모릅니다."
+  },
+  {
+   "en": "So our tool should return structured errors.",
+   "ko": "그래서 툴은 구조화된 에러를 돌려줘야 합니다."
+  },
+  {
+   "en": "Here is a simple example for lookup_order_by_id.",
+   "ko": "lookup_order_by_id 의 간단한 예시입니다."
+  },
+  {
+   "en": "This function shows several important cases.",
+   "ko": "이 함수는 중요한 케이스 몇 가지를 보여줍니다."
+  },
+  {
+   "en": "If the order ID has the wrong format, we return a validation error.",
+   "ko": "order ID 형식이 틀리면 validation 에러를 돌려줍니다."
+  },
+  {
+   "en": "The request is not retriable,",
+   "ko": "이 요청은 재시도 불가입니다."
+  },
+  {
+   "en": "because calling the same tool again with the same invalid input will not help.",
+   "ko": "같은 무효 입력으로 같은 툴을 다시 불러도 소용없기 때문입니다."
+  },
+  {
+   "en": "Claude should ask the user to check the order number.",
+   "ko": "Claude 는 사용자에게 주문 번호를 확인해 달라고 해야 합니다."
+  },
+  {
+   "en": "If the order ID is valid, but no matching order is found, we return something like this.",
+   "ko": "order ID 는 유효한데 맞는 주문이 없으면 이런 것을 돌려줍니다."
+  },
+  {
+   "en": "This is important.",
+   "ko": "이게 중요합니다."
+  },
+  {
+   "en": "An empty result is not the same as an error.",
+   "ko": "빈 결과는 에러와 같지 않습니다."
+  },
+  {
+   "en": "The tool worked, it just did not find matching data.",
+   "ko": "툴은 작동했고, 그냥 맞는 데이터를 못 찾았을 뿐입니다."
+  },
+  {
+   "en": "Claude may ask the user for another email address or order ID.",
+   "ko": "Claude 는 사용자에게 다른 이메일이나 order ID 를 요청할 수 있습니다."
+  },
+  {
+   "en": "If the user does not have access to the order, we return a permission error.",
+   "ko": "사용자에게 그 주문에 대한 접근 권한이 없으면 permission 에러를 돌려줍니다."
+  },
+  {
+   "en": "This should not be retried.",
+   "ko": "이건 재시도하면 안 됩니다."
+  },
+  {
+   "en": "Claude should not reveal private data.",
+   "ko": "Claude 는 개인 데이터를 드러내면 안 됩니다."
+  },
+  {
+   "en": "And the application may escalate if needed.",
+   "ko": "그리고 필요하면 애플리케이션이 에스컬레이션할 수 있습니다."
+  },
+  {
+   "en": "If the backend times out, we return a transient error.",
+   "ko": "백엔드가 타임아웃되면 transient 에러를 돌려줍니다."
+  },
+  {
+   "en": "This one is retriable, because the same request may work later.",
+   "ko": "이건 재시도 가능입니다. 같은 요청이 나중에는 될 수 있으니까요."
+  },
+  {
+   "en": "So error_category helps the system understand the type of failure.",
+   "ko": "그래서 error_category 는 시스템이 실패 유형을 이해하게 돕습니다."
+  },
+  {
+   "en": "A useful set of categories is transient, validation, business, permission.",
+   "ko": "유용한 카테고리 세트는 transient, validation, business, permission 입니다."
+  },
+  {
+   "en": "A transient error means a temporary system problem, like a timeout.",
+   "ko": "transient 에러는 타임아웃 같은 일시적 시스템 문제입니다."
+  },
+  {
+   "en": "A validation error means the input is malformed or incomplete.",
+   "ko": "validation 에러는 입력이 잘못됐거나 불완전하다는 뜻입니다."
+  },
+  {
+   "en": "A business error means the request was understood, but business rules do not allow it.",
+   "ko": "business 에러는 요청은 이해했지만 비즈니스 규칙이 허용하지 않는다는 뜻입니다."
+  },
+  {
+   "en": "A permission error means the user is not allowed to access or perform the action.",
+   "ko": "permission 에러는 사용자가 접근하거나 수행할 권한이 없다는 뜻입니다."
+  },
+  {
+   "en": "The is_retriable field tells the application whether another attempt makes sense.",
+   "ko": "is_retriable 필드는 재시도가 의미 있는지 애플리케이션에 알려줍니다."
+  },
+  {
+   "en": "Now let's add one more ShopAssist example.",
+   "ko": "ShopAssist 예시를 하나 더 봅시다."
+  },
+  {
+   "en": "Refund eligibility.",
+   "ko": "환불 자격."
+  },
+  {
+   "en": "This is a business error.",
+   "ko": "이건 business 에러입니다."
+  },
+  {
+   "en": "The input is valid.",
+   "ko": "입력은 유효합니다."
+  },
+  {
+   "en": "The customer may have permission.",
+   "ko": "고객에게 권한도 있을 수 있습니다."
+  },
+  {
+   "en": "The backend is working.",
+   "ko": "백엔드도 작동합니다."
+  },
+  {
+   "en": "But the refund cannot be processed because the order is outside the return window.",
+   "ko": "하지만 주문이 반품 기간 밖이라 환불을 처리할 수 없습니다."
+  },
+  {
+   "en": "Retrying will not change that.",
+   "ko": "재시도해도 바뀌지 않습니다."
+  },
+  {
+   "en": "Claude should explain the situation using the customer-friendly message.",
+   "ko": "Claude 는 고객 친화적 메시지로 상황을 설명해야 합니다."
+  },
+  {
+   "en": "Or escalate if the workflow allows manual exceptions.",
+   "ko": "또는 워크플로우가 수동 예외를 허용하면 에스컬레이션합니다."
+  },
+  {
+   "en": "One final production pattern is local recovery.",
+   "ko": "마지막 프로덕션 패턴은 로컬 복구입니다."
+  },
+  {
+   "en": "Not every error should immediately go to a coordinator or a human.",
+   "ko": "모든 에러가 곧바로 코디네이터나 사람에게 갈 필요는 없습니다."
+  },
+  {
+   "en": "If the backend times out once, the application can retry locally.",
+   "ko": "백엔드가 한 번 타임아웃되면 애플리케이션이 로컬에서 재시도할 수 있습니다."
+  },
+  {
+   "en": "If the order ID has extra spaces or lowercase letters, the application can normalize it.",
+   "ko": "order ID 에 여분 공백이나 소문자가 있으면 애플리케이션이 정규화할 수 있습니다."
+  },
+  {
+   "en": "If required information is missing, Claude can ask the user for it.",
+   "ko": "필수 정보가 없으면 Claude 가 사용자에게 물어볼 수 있습니다."
+  },
+  {
+   "en": "Escalation should happen after local recovery fails, or when the error requires human judgment.",
+   "ko": "에스컬레이션은 로컬 복구가 실패한 뒤에, 또는 에러가 사람의 판단을 요구할 때 해야 합니다."
+  },
+  {
+   "en": "So the main lesson is, tool design is not only about schemas.",
+   "ko": "그래서 핵심 교훈은, 툴 설계는 schema 만의 문제가 아니라는 것입니다."
+  },
+  {
+   "en": "A good tool interface helps Claude choose the right tool, send the right input,",
+   "ko": "좋은 툴 인터페이스는 Claude 가 올바른 툴을 고르고, 올바른 입력을 보내고,"
+  },
+  {
+   "en": "understand the result, and recover safely from errors.",
+   "ko": "결과를 이해하고, 에러에서 안전하게 복구하게 돕습니다."
+  },
+  {
+   "en": "For ShopAssist, this means better names, better descriptions,",
+   "ko": "ShopAssist 에서는 더 좋은 이름, 더 좋은 description,"
+  },
+  {
+   "en": "clear input boundaries, and structured MCP errors.",
+   "ko": "분명한 입력 경계, 구조화된 MCP 에러를 뜻합니다."
+  },
+  {
+   "en": "That gives Claude less room to guess, gives the backend more control,",
+   "ko": "그러면 Claude 는 추측할 여지가 줄고, 백엔드는 통제력이 커지고,"
+  },
+  {
+   "en": "and gives the customer a better experience when something goes wrong.",
+   "ko": "고객은 문제가 생겼을 때 더 나은 경험을 얻습니다."
+  }
+ ],
+ "body": "### How Claude picks a tool\n- Claude sees the tool name, the input schema, and the conversation, but the ==description says when the tool should be used==. // 언제 쓰는지는 description 이 말한다.\n- Descriptions that are too short, too generic, or too similar to each other lead to the ==wrong tool==. // 짧거나 비슷하면 잘못 고른다.\n- \"Check my order, my email is alex@example.com\": the word \"order\" pulls Claude toward lookup_order, but there is no order ID. The right first step is the customer lookup by email. That is a ==tool design problem==, not a model problem. // 이메일만 있으면 고객 조회부터.\n\n### Weak vs strong tool definitions\n| Weak // 약한 버전 | Strong // 강한 버전 |\n|---|---|\n| get_customer: returns customer data // 고객 데이터 반환 | get_customer_by_email: use when the user gives an email but no order ID // 이메일만 있을 때 |\n| lookup_order: returns order data // 주문 데이터 반환 | lookup_order_by_id: requires an order ID, do not use with an email // order ID 필요, 이메일로 쓰지 말 것 |\n- Specific **names** already say what the tool does and what input it expects. // 이름이 입력까지 말해 준다.\n- Descriptions cover ==purpose, input, output, examples, and boundaries==. A good description ==guides Claude's routing decision==, not just documents the function. // 목적·입력·출력·예시·경계.\n\n### Split or consolidate\n- One generic tool for customers, orders, refunds, and policy checks makes the interface vague: split into purpose-specific tools (get_customer_by_email, lookup_order_by_id, check_refund_eligibility, create_human_escalation). // 범용 하나는 모호, 목적별로 나눈다.\n- Too many tiny tools add complexity: if three tools are always called together with the same input and return pieces of one business operation, combine them. // 항상 같이 불리면 합친다.\n- ((Split when it reduces ambiguity. Consolidate when it reduces complexity.)) // 나누면 모호함 감소, 합치면 복잡함 감소.\n\n### Structured errors instead of \"Something went wrong\"\n- A vague error gives Claude nothing to act on: retry? ask the user? explain policy? escalate? // 막연한 에러는 복구 불가.\n- Return an ==error_category== and an ==is_retriable== flag plus a customer-friendly message. // 카테고리 + 재시도 가능 여부 + 메시지.\n\n| error_category | Meaning // 뜻 | is_retriable | What Claude does // Claude 의 행동 |\n|---|---|---|---|\n| transient | Temporary system problem such as a timeout // 타임아웃 같은 일시 장애 | true | Retry, the same request may work later // 재시도 |\n| validation | Input malformed or incomplete (bad order ID format) // 입력 형식 오류 | false | Ask the user to check the order number // 사용자에게 확인 요청 |\n| business | Understood, but rules do not allow it (outside return window) // 규칙상 불가 | false | Explain with the friendly message, or escalate if manual exceptions exist // 설명 또는 에스컬레이션 |\n| permission | User may not access or perform the action // 권한 없음 | false | Do not reveal private data; escalate if needed // 데이터 노출 금지 |\n\n- ==An empty result is not an error==. The tool worked and found nothing; Claude can ask for another email or order ID. // 빈 결과 ≠ 에러.\n\n### Local recovery before escalation\n- Timeout once → the application retries locally. Order ID with extra spaces or lowercase → normalize it. Missing required info → Claude asks the user. // 로컬에서 먼저 복구.\n- Escalate ==after local recovery fails or when the error needs human judgment==, not on every error. // 에스컬레이션은 그다음.\n\n### The lesson\n- Tool design is not only schemas. A good interface helps Claude ==choose the right tool, send the right input, understand the result, and recover safely==. // 선택·입력·이해·복구.\n- For ShopAssist: better names, better descriptions, clear input boundaries, structured MCP errors. Less guessing for Claude, more control for the backend, better experience for the customer. // 이름·설명·경계·구조화 에러.",
+ "keyPoints": [
+  "The description tells Claude when to use a tool; short, generic, or look-alike descriptions cause wrong tool choice. // description 이 라우팅을 정한다.",
+  "Specific names (get_customer_by_email, lookup_order_by_id) plus boundaries (\"requires an order ID, not an email\") remove guessing. // 구체적 이름 + 경계.",
+  "Split tools when it reduces ambiguity, consolidate when it reduces complexity. // 나누기·합치기 규칙.",
+  "Structured errors carry error_category (transient / validation / business / permission) and is_retriable; only transient is retriable. // 네 카테고리, 재시도는 transient 만.",
+  "Empty result is not an error; recover locally (retry once, normalize input, ask the user) before escalating. // 빈 결과 ≠ 에러, 로컬 복구 먼저."
+ ],
+ "examTrends": {
+  "how": "Two shapes. First, a tool-selection failure (Claude calls the wrong tool or with the wrong input) where the fix is a better name, description, and boundary. Second, an error-handling scenario (timeout, bad ID, outside policy, no access) asking which category it is, whether to retry, and whether to escalate. // 두 형태. 툴을 잘못 고르는 시나리오는 이름·description·경계로 고치고, 에러 시나리오는 카테고리·재시도 여부·에스컬레이션 여부를 묻는다.",
+  "answerLooks": [
+   "Rewrite descriptions with purpose, input, output, examples, and boundaries such as \"use when the user gives an email but no order ID\". // 목적·입력·출력·예시·경계가 있는 description.",
+   "Return structured errors with error_category and is_retriable, plus a customer-friendly message. // 구조화 에러 + 재시도 플래그.",
+   "Transient → retry locally; validation → ask the user to fix input; business → explain or escalate; permission → do not reveal, escalate. // 카테고리별 행동.",
+   "Escalate only after local recovery fails or when human judgment is needed. // 로컬 복구 후 에스컬레이션."
+  ],
+  "traps": [
+   "\"Add more tools\" or \"switch to a larger model\" when the real problem is two look-alike descriptions. // 원인은 description 인데 다른 곳을 고치는 보기.",
+   "\"Return a generic error string and let Claude figure it out\" leaves no signal for retry, ask, explain, or escalate. // 막연한 에러 문자열은 오답.",
+   "\"Retry validation, business, or permission errors\" ignores that only transient errors change on retry. // transient 외 재시도는 오답.",
+   "\"Treat an empty lookup result as a failure and escalate\" or \"escalate every error immediately\" skips local recovery. // 빈 결과를 에러로, 모든 에러를 즉시 에스컬레이션은 오답."
+  ],
+  "memorize": "Name + description + boundary route the tool; error_category + is_retriable route the recovery. Only transient retries; empty is not an error; local recovery before escalation. // 이름·설명·경계로 툴 선택, 카테고리·재시도 플래그로 복구. transient 만 재시도, 빈 결과는 에러 아님, 로컬 복구 먼저."
+ },
+ "createdAt": "2026-09-09T10:30:00Z"
+}
