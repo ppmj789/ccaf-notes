@@ -1,0 +1,12 @@
+{
+  "title": "Claude Certified Architect - Foundations (Udemy)",
+  "sections": [
+    {
+      "title": "Reliable Prompts & Structured Output",
+      "lectures": [
+        { "no": "23", "title": "JSON and Schemas for Non-Programmers" },
+        { "no": "24", "title": "Reliable Structured Output with Tool Use" }
+      ]
+    }
+  ]
+}

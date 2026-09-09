@@ -532,6 +532,24 @@
   .topbar .task.on { display: inline-block; }
   .para { margin: 0 0 18px; }
   .para .sub { margin-top: 4px; }
+
+  .divider { min-height: 520px; display: grid; align-content: center; gap: 14px; padding: 10px 0; }
+  .divider .secno { font-family: "Gaegu", sans-serif; font-size: 20px; letter-spacing: 0.18em; color: var(--ink-soft); }
+  .divider h1 { font-family: "Gowun Batang", serif; font-size: clamp(26px, 4vw, 36px); font-weight: 700; margin: 0; line-height: 1.25; text-wrap: balance; }
+  .divider .lect { list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 6px; max-width: 560px; }
+  .divider .lect li { display: grid; grid-template-columns: 44px 1fr auto; gap: 10px; align-items: baseline; padding: 6px 0; border-bottom: 1px dotted var(--line); }
+  .divider .lect .no { font-family: "IBM Plex Mono", monospace; color: var(--ink-faint); font-size: 13px; }
+  .divider .lect button { border: none; background: none; text-align: left; padding: 0; font: inherit; line-height: 1.5; }
+  .divider .lect button:hover { text-decoration: underline; }
+  .divider .lect .cnt { font-family: "Gaegu", sans-serif; font-size: 15px; color: var(--ink-soft); }
+  .lecthead { display: grid; grid-template-columns: 44px 1fr; gap: 10px; align-items: baseline; margin: 14px 0 2px; }
+  .lecthead .no { font-family: "IBM Plex Mono", monospace; color: var(--ink-faint); font-size: 13px; }
+  .lecthead .t { font-family: "Gowun Batang", serif; font-weight: 700; font-size: 16px; }
+  .lecthead .links { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
+  .lnk { border: 1px solid var(--line); background: none; border-radius: 999px; padding: 0 10px; font-family: "Gaegu", sans-serif; font-size: 15px; line-height: 1.7; color: var(--ink); }
+  .lnk.ok { border-color: var(--sage); } .lnk.no { border-color: var(--wrong); } .lnk.todo { color: var(--ink-soft); }
+  .lnk:hover { background: var(--paper-deep); }
+  .toc.inlect { margin: 0 0 6px 54px; }
 </style>
 
 <div class="desk">
@@ -554,6 +572,7 @@
 </div>
 
 <script id="pages-data" type="application/json">/*__PAGES__*/</script>
+<script id="course-data" type="application/json">/*__COURSE__*/</script>
 <script>
 (() => {
   'use strict';
@@ -575,8 +594,42 @@
   const pageEl = $('#page');
 
   try { state.pages = JSON.parse($('#pages-data').textContent); } catch { state.pages = []; }
+  let course = { sections: [] };
+  try { course = JSON.parse($('#course-data').textContent) || course; } catch {}
   state.pages.sort((a, b) => (a.order || 0) - (b.order || 0));
-  const book = () => [{ kind: 'cover', id: '_cover' }, { kind: 'toc', id: '_toc' }, ...state.pages];
+
+  // Course outline: sections in order, each lecture with its note pages and quiz pages.
+  function outline() {
+    const used = new Set();
+    const secs = course.sections.map((sec, si) => {
+      const lectures = (sec.lectures || []).map(lec => {
+        const mine = state.pages.filter(p => p.section === sec.title && String(p.lecture || '') === String(lec.no));
+        mine.forEach(p => used.add(p.id));
+        return { no: String(lec.no), title: lec.title, notes: mine.filter(p => p.kind === 'lesson'), quiz: mine.filter(p => p.kind !== 'lesson'),
+                 transcript: state.lectures.find(l => String(l.lecture || (l.title.match(/^(\d+)[.)]/) || [])[1] || '') === String(lec.no)) };
+      });
+      const loose = state.pages.filter(p => p.section === sec.title && !used.has(p.id));
+      loose.forEach(p => used.add(p.id));
+      return { no: si + 1, title: sec.title, lectures, loose };
+    });
+    const rest = state.pages.filter(p => !used.has(p.id));
+    if (rest.length) secs.push({ no: secs.length + 1, title: 'Unsorted', unsorted: true, lectures: [], loose: rest });
+    return secs;
+  }
+  function book() {
+    const out = [{ kind: 'cover', id: '_cover' }, { kind: 'toc', id: '_toc' }];
+    for (const sec of outline()) {
+      out.push({ kind: 'divider', id: '_sec-' + sec.no, sec });
+      for (const lec of sec.lectures) {
+        lec.notes.forEach(p => out.push(Object.assign(p, { _sec: sec, _lec: lec })));
+        lec.quiz.forEach((p, i) => out.push(Object.assign(p, { _sec: sec, _lec: lec, _qi: i + 1, _qn: lec.quiz.length })));
+      }
+      const lq = sec.loose.filter(p => p.kind !== 'lesson');
+      sec.loose.forEach(p => out.push(Object.assign(p, { _sec: sec, _lec: null, _qi: p.kind !== 'lesson' ? lq.indexOf(p) + 1 : 0, _qn: lq.length })));
+    }
+    return out;
+  }
+  const pageIndex = id => book().findIndex(p => p.id === id);
 
   // ---------- tiny markup ----------
   function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -761,8 +814,8 @@
   }
   function eyebrow(p, lead) {
     const bits = [`<span>${lead}</span>`];
-    if (p.section) bits.push(`<span class="chip">${esc(p.section)}</span>`);
-    if (p.lecture) bits.push(`<span class="chip">${esc(p.lecture)}</span>`);
+    if (p._sec) bits.push(`<span class="chip">${p._sec.unsorted ? '섹션 미정' : 'Section ' + p._sec.no + ' · ' + esc(p._sec.title)}</span>`);
+    if (p._lec) bits.push(`<span class="chip">Lecture ${esc(p._lec.no)} · ${esc(p._lec.title)}</span>`);
     if (p.domain) bits.push(`<span class="chip">${esc(p.domain)}</span>`);
     return `<div class="eyebrow">${bits.join('')}</div>`;
   }
@@ -774,6 +827,7 @@
     const p = pages[state.idx];
     if (p.kind === 'cover') return renderCover(total);
     if (p.kind === 'toc') return renderToc(total);
+    if (p.kind === 'divider') return renderDivider(p.sec, total);
     const pr = state.progress[p.id] || {};
     const washi = ['', 'blue', 'green', 'purple'][state.idx % 4];
     if (p.kind === 'lesson') {
@@ -788,7 +842,7 @@
     } else {
       const answered = !!pr.chosen;
       pageEl.innerHTML = `<div class="washi ${washi}"></div>
-        ${eyebrow(p, 'Question ' + String(qNumber(p)).padStart(2, '0'))}
+        ${eyebrow(p, p._qn ? `Quiz ${p._qi} / ${p._qn}` : 'Quiz')}
         ${titleBlock(p)}
         <div class="prose">
           <p>${p.question_en ? esc(p.question_en) : inline(p.question_ko)}${p.question_en && p.question_ko ? `<span class="sub">${inline(p.question_ko)}</span>` : ''}</p>
@@ -855,7 +909,7 @@
           <div class="owner">
             <span>이름</span><span>${esc(OWNER.name)}</span>
             <span>시작</span><span>${esc(OWNER.started)}</span>
-            <span>내용</span><span>강의 노트 ${notes}장 · 문제 ${qs.length}장 · 대본 ${state.lectures.length}편</span>
+            <span>내용</span><span>섹션 ${course.sections.length} · 노트 ${notes}장 · 문제 ${qs.length}장 · 대본 ${state.lectures.length}편</span>
           </div>
         </div>
         <div class="legend">
@@ -881,26 +935,51 @@
     return `<ul class="toc">${items.map(p => {
       const [cls, lbl] = statusOf(p); const i = all.indexOf(p);
       return `<li><span class="n">${String(i + 1).padStart(2, '0')}</span>
-        <button data-jump="${i}">${esc(p.title_en || p.title)}<span class="dom">${p.title_en ? esc(p.title) + ' · ' : ''}${p.kind === 'lesson' ? 'note' : esc(p.domain || '')}</span></button>
+        <button data-jump="${i}">${esc(p.title_en || p.title)}<span class="dom">${p._lec ? 'Lecture ' + esc(p._lec.no) + ' · ' : ''}${p.kind === 'lesson' ? '노트' : '문제'}</span></button>
         <span class="st ${cls}">${lbl}</span>
         ${p.kind === 'lesson' && p.summary ? `<span class="sum">${bi(p.summary)}</span>` : ''}</li>`;
     }).join('')}</ul>`;
   }
-  function tocList(items, grouped) {
+  function tocList(items) {
     if (!items.length) return '<p class="empty">여기 들어갈 장이 아직 없어요.</p>';
-    if (!grouped) return tocRows(items);
-    const groups = [];
-    for (const p of items) {
-      const key = p.section || 'Ungrouped';
-      let g = groups.find(x => x.key === key); if (!g) groups.push(g = { key, items: [] });
-      g.items.push(p);
-    }
-    return groups.map(g => `<div class="sechead">${esc(g.key)}</div>${tocRows(g.items)}`).join('');
+    return tocRows(items);
   }
-  function wireJumps() { pageEl.querySelectorAll('[data-jump]').forEach(b => b.addEventListener('click', () => go('study', Number(b.dataset.jump)))); }
+  function wireJumps() {
+    pageEl.querySelectorAll('[data-jump]').forEach(b => b.addEventListener('click', () => go('study', Number(b.dataset.jump))));
+    pageEl.querySelectorAll('[data-jump-id]').forEach(b => b.addEventListener('click', () => go('study', pageIndex(b.dataset.jumpId))));
+    pageEl.querySelectorAll('[data-open]').forEach(b => b.addEventListener('click', () => go('lecture', b.dataset.open)));
+  }
 
+  function renderDivider(sec, total) {
+    pageEl.innerHTML = `<div class="washi green"></div>
+      <div class="divider">
+        <div class="secno">${sec.unsorted ? 'UNSORTED' : 'SECTION ' + sec.no}</div>
+        <h1>${esc(sec.title)}</h1>
+        ${sec.unsorted ? '<p class="empty" style="padding:0">아직 어느 강의에 속하는지 정하지 않은 장이에요. course.json 에 섹션과 강의를 적으면 제자리로 갑니다.</p>' : ''}
+        <ul class="lect">${sec.lectures.map(lec => {
+          const first = lec.notes[0] || lec.quiz[0];
+          const cnt = [lec.notes.length ? '노트' : '', lec.quiz.length ? '문제 ' + lec.quiz.length : '', lec.transcript ? '대본' : ''].filter(Boolean).join(' · ') || '아직 없음';
+          return `<li><span class="no">${esc(lec.no)}</span>${first ? `<button data-jump-id="${esc(first.id)}">${esc(lec.title)}</button>` : lec.transcript ? `<button data-open="${esc(lec.transcript.id)}">${esc(lec.title)}</button>` : `<span style="color:var(--ink-faint)">${esc(lec.title)}</span>`}<span class="cnt">${cnt}</span></li>`; }).join('')}
+        ${sec.loose.map(p => `<li><span class="no">·</span><button data-jump-id="${esc(p.id)}">${esc(p.title_en || p.title)}</button><span class="cnt">${p.kind === 'lesson' ? '노트' : '문제'}</span></li>`).join('')}</ul>
+      </div>${pager(state.idx, total)}`;
+    wireJumps(); wirePager();
+  }
+  function lecRow(lec) {
+    const st = p => { const [c, l] = statusOf(p); return { ok: 'ok', no: 'no', todo: 'todo', lesson: 'ok' }[c] + '" title="' + l; };
+    const links = [
+      ...lec.notes.map(p => `<button class="lnk ${st(p)}" data-jump-id="${esc(p.id)}">노트</button>`),
+      ...lec.quiz.map((p, i) => `<button class="lnk ${st(p)}" data-jump-id="${esc(p.id)}">문제 ${i + 1}</button>`),
+      lec.transcript ? `<button class="lnk ${lec.transcript.paragraphs_ko?.length ? 'ok' : 'todo'}" data-open="${esc(lec.transcript.id)}">대본${lec.transcript.paragraphs_ko?.length ? ' · 한국어' : ''}</button>` : '',
+    ].filter(Boolean).join('');
+    return `<div class="lecthead"><span class="no">${esc(lec.no)}</span><div><span class="t">${esc(lec.title)}</span><div class="links">${links || '<span class="hint" style="font-size:13px;color:var(--ink-faint)">아직 아무것도 없음</span>'}</div></div></div>`;
+  }
   function renderToc(total) {
-    pageEl.innerHTML = `<div class="washi blue"></div><div class="eyebrow">Contents</div><h1 class="title">Course index</h1><div class="subtitle">섹션별 강의 노트와 문제. 제목을 누르면 그 장으로 갑니다.</div>${tocList(state.pages, true)}${pager(state.idx, total)}`;
+    const secs = outline();
+    pageEl.innerHTML = `<div class="washi blue"></div><div class="eyebrow">Contents</div><h1 class="title">Course index</h1><div class="subtitle">섹션 → 강의 순서. 강의마다 노트 · 문제 · 대본을 바로 열 수 있어요.</div>
+      ${secs.map(sec => `<div class="sechead">${sec.unsorted ? '섹션 미정' : 'Section ' + sec.no + ' · ' + esc(sec.title)}</div>
+        ${sec.lectures.map(lecRow).join('')}
+        ${sec.loose.length ? tocRows(sec.loose) : ''}`).join('')}
+      ${pager(state.idx, total)}`;
     wireJumps(); wirePager();
   }
   function renderWrong() {
@@ -1000,7 +1079,8 @@ ${paras.join('\n\n').slice(0, 30000)}`, { modelTier: 'quick' });
       <form class="form" data-new ${showForm ? '' : 'hidden'}>
         <div class="row">
           <label>섹션<input name="section" placeholder="예: Reliable Prompts & Structured Output" style="min-width:280px" value="${esc(list[0]?.section || '')}"></label>
-          <label>강의 제목<input name="title" placeholder="예: 23. JSON and Schemas for Non-Programmers" style="min-width:280px" required></label>
+          <label>강의 번호<input name="lecture" placeholder="23" style="width:90px"></label>
+          <label>강의 제목<input name="title" placeholder="예: JSON and Schemas for Non-Programmers" style="min-width:280px" required></label>
         </div>
         <label>영어 대본 (Udemy Transcript 를 그대로)<textarea name="transcript" required></textarea></label>
         <div class="err" data-err></div>
@@ -1010,7 +1090,7 @@ ${paras.join('\n\n').slice(0, 30000)}`, { modelTier: 'quick' });
         </div>
       </form>
       ${list.length ? `<h2 class="sec">저장된 강의 ${list.length}편</h2><ul class="lecture-list">${list.map(l => { const [cls, lbl] = lectureStatus(l); return `<li>
-        <button class="open" data-open="${esc(l.id)}"><span class="title">${esc(l.title)}</span><br><span class="meta">${esc(l.section || '')}${l.section ? ' · ' : ''}${new Date(l.createdAt).toLocaleDateString('ko-KR')} · ${(l.paragraphs || []).length}문단</span></button>
+        <button class="open" data-open="${esc(l.id)}"><span class="title">${l.lecture ? esc(l.lecture) + '. ' : ''}${esc(l.title)}</span><br><span class="meta">${esc(l.section || '')}${l.section ? ' · ' : ''}${new Date(l.createdAt).toLocaleDateString('ko-KR')} · ${(l.paragraphs || []).length}문단</span></button>
         <span class="pill ${cls}">${lbl}</span></li>`; }).join('')}</ul>` : ''}`;
     pageEl.querySelector('[data-toggle-form]').addEventListener('click', () => renderLectures(!showForm));
     pageEl.querySelectorAll('[data-open]').forEach(b => b.addEventListener('click', () => go('lecture', b.dataset.open)));
@@ -1018,11 +1098,13 @@ ${paras.join('\n\n').slice(0, 30000)}`, { modelTier: 'quick' });
     form.addEventListener('submit', async e => {
       e.preventDefault();
       const err = form.querySelector('[data-err]'); err.textContent = '';
-      const title = form.elements.title.value.trim(), section = form.elements.section.value.trim();
+      const section = form.elements.section.value.trim();
+      let lecture = form.elements.lecture.value.trim(), title = form.elements.title.value.trim();
+      const m = title.match(/^(\d+)[.)]\s*(.*)$/); if (m && !lecture) { lecture = m[1]; title = m[2] || title; }
       const transcript = fixTranscript(form.elements.transcript.value.trim());
       if (!title || !transcript) { err.textContent = '제목과 대본을 채워 주세요.'; return; }
       const id = 'lec-' + Date.now().toString(36);
-      const doc = { id, title, section, transcript, paragraphs: splitParagraphs(transcript), paragraphs_ko: [], summary: '', createdAt: new Date().toISOString() };
+      const doc = { id, title, section, lecture, transcript, paragraphs: splitParagraphs(transcript), paragraphs_ko: [], summary: '', createdAt: new Date().toISOString() };
       try {
         await saveLecture(doc);
         if (!state.lectures.some(x => x.id === id)) state.lectures.push(doc);
@@ -1041,8 +1123,8 @@ ${paras.join('\n\n').slice(0, 30000)}`, { modelTier: 'quick' });
     const [cls, lbl] = lectureStatus(l); const t = tasks[l.id];
     const running = t && !t.error && t.done < t.total;
     pageEl.innerHTML = `<div class="washi purple"></div>
-      <div class="crumb"><button data-back>인강 듣기</button> › ${esc(l.title)}</div>
-      <h1 class="title">${esc(l.title)}</h1>
+      <div class="crumb"><button data-back>인강 듣기</button> › ${l.lecture ? esc(l.lecture) + '. ' : ''}${esc(l.title)}</div>
+      <h1 class="title">${l.lecture ? esc(l.lecture) + '. ' : ''}${esc(l.title)}</h1>
       ${l.section ? `<div class="subtitle">${esc(l.section)}</div>` : ''}
       <div class="statusline">
         <span class="pill ${cls}">${lbl}</span>

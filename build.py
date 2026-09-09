@@ -25,10 +25,17 @@ ids = [p['id'] for p in pages]
 if len(ids) != len(set(ids)):
     sys.exit('id 중복: ' + ', '.join(i for i in ids if ids.count(i) > 1))
 
-data = json.dumps(pages, ensure_ascii=False).replace('</', '<\\/')
+course = json.loads((ROOT / 'course.json').read_text(encoding='utf-8')) if (ROOT / 'course.json').exists() else {'sections': []}
+known = {s['title'] for s in course['sections']}
+for p in pages:
+    sec = p.get('section') or 'Unsorted'
+    if sec not in known and sec != 'Unsorted':
+        print(f'경고: {p["id"]} 의 section "{sec}" 이 course.json 에 없습니다 (책 끝에 Unsorted 로 감)')
+
+esc = lambda o: json.dumps(o, ensure_ascii=False).replace('</', '<\\/')
 tpl = (ROOT / 'template.html').read_text(encoding='utf-8')
-assert '/*__PAGES__*/' in tpl
+assert '/*__PAGES__*/' in tpl and '/*__COURSE__*/' in tpl
 out = ROOT / 'dist' / 'index.html'
 out.parent.mkdir(exist_ok=True)
-out.write_text(tpl.replace('/*__PAGES__*/', data), encoding='utf-8')
+out.write_text(tpl.replace('/*__PAGES__*/', esc(pages)).replace('/*__COURSE__*/', esc(course)), encoding='utf-8')
 print(f'{out}: {len(pages)} pages ({sum(p["kind"]=="question" for p in pages)} questions, {sum(p["kind"]=="lesson" for p in pages)} lessons)')

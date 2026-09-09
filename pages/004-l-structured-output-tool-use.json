@@ -13,7 +13,7 @@
   ],
   "createdAt": "2026-09-09T00:00:00Z",
   "title_en": "Reliable structured output with tool use",
-  "section": "Tool use",
-  "lecture": "Structured output",
+  "section": "Reliable Prompts & Structured Output",
+  "lecture": "24",
   "summary": "Define the output as a tool with a JSON schema and force it with tool_choice; the schema guarantees the shape, and prompt criteria plus evals guarantee the judgment. // 출력을 JSON 스키마를 가진 툴로 정의하고 tool_choice 로 강제한다. 스키마는 모양을, 프롬프트 기준과 평가는 판단을 책임진다."
 }
