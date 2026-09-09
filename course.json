@@ -19,6 +19,10 @@
         {
           "no": "28",
           "title": "Batch Processing and Multi-Pass Review Architectures"
+        },
+        {
+          "no": "29",
+          "title": "BUILD: ShopAssist Extracts Structured Return Requests"
         }
       ]
     }

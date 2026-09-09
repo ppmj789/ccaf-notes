@@ -1,0 +1,546 @@
+{
+ "id": "l-029",
+ "kind": "lesson",
+ "order": 29,
+ "section": "Reliable Prompts & Structured Output",
+ "lecture": "29",
+ "title_en": "BUILD: ShopAssist Extracts Structured Return Requests",
+ "title": "BUILD: ShopAssist 가 구조화 반품 요청을 추출한다",
+ "domain": "툴·에이전트 루프",
+ "summary": "A six-step extraction module: define a schema with nullable fields, enums, and a human_review_required flag; force the tool; read the tool_use input; validate in code; retry only fixable mistakes; route low-confidence, contradictory, or out-of-policy cases to a human. // 6단계 추출 모듈. nullable 필드·enum·human_review_required 가 있는 schema 정의, 툴 강제, tool_use input 읽기, 코드 검증, 고칠 수 있는 실수만 retry, 낮은 confidence·모순·정책 밖 케이스는 사람에게.",
+ "paragraphs": [
+  {
+   "en": "In the previous lessons we learned three important patterns.",
+   "ko": "지난 강의들에서 중요한 패턴 세 가지를 배웠습니다."
+  },
+  {
+   "en": "First, we learned how explicit criteria and examples make Claude's judgment more consistent.",
+   "ko": "첫째, 명시적인 기준과 예시가 Claude 의 판단을 더 일관되게 만든다는 것."
+  },
+  {
+   "en": "Then, we learned how to use tool use, JSON schema, and tool choice to get reliable structured output.",
+   "ko": "다음으로, 툴 사용과 JSON schema, tool_choice 로 신뢰할 수 있는 구조화 출력을 얻는 법."
+  },
+  {
+   "en": "And finally, we learned how to validate model output, retry when the error is fixable,",
+   "ko": "마지막으로, 모델 출력을 검증하고, 고칠 수 있는 에러면 retry 하고,"
+  },
+  {
+   "en": "and route uncertain cases to human review.",
+   "ko": "불확실한 케이스는 사람 검토로 보내는 법."
+  },
+  {
+   "en": "In this lesson, we will combine those ideas into one practical ShopAssist module.",
+   "ko": "이번 강의에서는 그 아이디어들을 하나의 실용적인 ShopAssist 모듈로 합칩니다."
+  },
+  {
+   "en": "The goal is simple.",
+   "ko": "목표는 단순합니다."
+  },
+  {
+   "en": "Take a messy customer message and convert it into a validated structured return request.",
+   "ko": "지저분한 고객 메시지를 받아 검증된 구조화 반품 요청으로 바꾸는 것."
+  },
+  {
+   "en": "This is a common real-world pattern.",
+   "ko": "이건 실무에서 흔한 패턴입니다."
+  },
+  {
+   "en": "Before ShopAssist can check an order, apply a policy, or create a refund,",
+   "ko": "ShopAssist 가 주문을 확인하고, 정책을 적용하고, 환불을 만들기 전에"
+  },
+  {
+   "en": "it needs to understand what the customer is asking for.",
+   "ko": "고객이 무엇을 요구하는지 이해해야 합니다."
+  },
+  {
+   "en": "So, this extraction step becomes the bridge between natural language and backend logic.",
+   "ko": "그래서 이 추출 단계가 자연어와 백엔드 로직 사이의 다리가 됩니다."
+  },
+  {
+   "en": "A customer might write something like,",
+   "ko": "고객은 이런 식으로 쓸 수 있습니다."
+  },
+  {
+   "en": "Hi, I got my headphones yesterday, but the box was crushed and one side does not work.",
+   "ko": "\"안녕하세요, 어제 헤드폰을 받았는데 상자가 찌그러졌고 한쪽이 안 돼요."
+  },
+  {
+   "en": "Can I send it back?",
+   "ko": "반품할 수 있나요?"
+  },
+  {
+   "en": "I think the order was 1, 2, 3, 4, 5.",
+   "ko": "주문 번호는 12345 였던 것 같아요.\""
+  },
+  {
+   "en": "This message contains useful information, but it is not structured.",
+   "ko": "이 메시지에는 유용한 정보가 있지만 구조화되어 있지 않습니다."
+  },
+  {
+   "en": "For our application, we want something closer to this.",
+   "ko": "우리 애플리케이션에는 이것에 가까운 형태가 필요합니다."
+  },
+  {
+   "en": "This structure is much easier for code to validate and process.",
+   "ko": "이 구조는 코드가 검증하고 처리하기 훨씬 쉽습니다."
+  },
+  {
+   "en": "But we need to be careful.",
+   "ko": "하지만 조심해야 합니다."
+  },
+  {
+   "en": "If the customer does not provide an order ID, Claude should not invent one.",
+   "ko": "고객이 order ID 를 주지 않았으면 Claude 가 지어내면 안 됩니다."
+  },
+  {
+   "en": "If the reason is ambiguous, Claude should mark it as unclear.",
+   "ko": "사유가 애매하면 Claude 는 unclear 로 표시해야 합니다."
+  },
+  {
+   "en": "If the message suggests a policy exception or contradiction, we may need human review.",
+   "ko": "메시지가 정책 예외나 모순을 암시하면 사람 검토가 필요할 수 있습니다."
+  },
+  {
+   "en": "That is the point of this build lesson.",
+   "ko": "그게 이 빌드 강의의 요점입니다."
+  },
+  {
+   "en": "We are not just extracting fields.",
+   "ko": "단순히 필드를 뽑는 게 아닙니다."
+  },
+  {
+   "en": "We are designing a reliable extraction workflow.",
+   "ko": "신뢰할 수 있는 추출 워크플로우를 설계하는 것입니다."
+  },
+  {
+   "en": "Step 1. Define the extraction schema.",
+   "ko": "1단계. 추출 schema 를 정의한다."
+  },
+  {
+   "en": "First, we define the schema for the structured return request.",
+   "ko": "먼저 구조화 반품 요청의 schema 를 정의합니다."
+  },
+  {
+   "en": "This schema tells Claude exactly what fields we expect.",
+   "ko": "이 schema 는 우리가 기대하는 필드를 Claude 에 정확히 알려줍니다."
+  },
+  {
+   "en": "For example, we might include,",
+   "ko": "예를 들어 이런 것을 넣을 수 있습니다."
+  },
+  {
+   "en": "Notice a few important choices.",
+   "ko": "중요한 선택 몇 가지를 보세요."
+  },
+  {
+   "en": "Order ID and item are nullable.",
+   "ko": "order_id 와 item 은 nullable 입니다."
+  },
+  {
+   "en": "That means Claude can return null when the customer did not provide the information.",
+   "ko": "즉 고객이 정보를 주지 않았을 때 Claude 가 null 을 돌려줄 수 있습니다."
+  },
+  {
+   "en": "This is better than forcing Claude to guess.",
+   "ko": "Claude 에게 추측을 강요하는 것보다 낫습니다."
+  },
+  {
+   "en": "The reason field uses an enum.",
+   "ko": "reason 필드는 enum 을 씁니다."
+  },
+  {
+   "en": "This keeps the output consistent.",
+   "ko": "이렇게 하면 출력이 일관됩니다."
+  },
+  {
+   "en": "Instead of getting 10 different variations of damaged,",
+   "ko": "damaged 의 변형 열 가지를 받는 대신"
+  },
+  {
+   "en": "we normalize the reason into damaged item.",
+   "ko": "사유를 damaged item 으로 정규화합니다."
+  },
+  {
+   "en": "We also include other and reason details.",
+   "ko": "other 와 reason_details 도 넣습니다."
+  },
+  {
+   "en": "This gives us structure without losing flexibility.",
+   "ko": "유연성을 잃지 않으면서 구조를 얻습니다."
+  },
+  {
+   "en": "And we include human review required.",
+   "ko": "그리고 human_review_required 를 넣습니다."
+  },
+  {
+   "en": "This lets the extraction step tell the rest of the system.",
+   "ko": "이렇게 하면 추출 단계가 시스템의 나머지에 알릴 수 있습니다."
+  },
+  {
+   "en": "This case may need a person.",
+   "ko": "\"이 케이스는 사람이 필요할 수 있다\" 고."
+  },
+  {
+   "en": "Step 2. Use forced tool choice.",
+   "ko": "2단계. 강제 tool_choice 를 쓴다."
+  },
+  {
+   "en": "For this task, we do not want Claude to decide whether to return text or structured output.",
+   "ko": "이 작업에서는 텍스트를 돌려줄지 구조화 출력을 돌려줄지 Claude 가 정하게 두고 싶지 않습니다."
+  },
+  {
+   "en": "This step is an extraction module.",
+   "ko": "이 단계는 추출 모듈입니다."
+  },
+  {
+   "en": "So we want structured output every time.",
+   "ko": "그래서 매번 구조화 출력을 원합니다."
+  },
+  {
+   "en": "That is why we use a forced tool choice.",
+   "ko": "그래서 강제 tool_choice 를 씁니다."
+  },
+  {
+   "en": "This tells Claude,",
+   "ko": "이것은 Claude 에게 이렇게 말합니다."
+  },
+  {
+   "en": "Use this specific schema.",
+   "ko": "\"이 특정 schema 를 써라."
+  },
+  {
+   "en": "Do not answer conversationally.",
+   "ko": "대화체로 답하지 마라."
+  },
+  {
+   "en": "Return the structured extraction.",
+   "ko": "구조화된 추출 결과를 돌려줘라.\""
+  },
+  {
+   "en": "This is an important exam pattern.",
+   "ko": "이건 중요한 시험 패턴입니다."
+  },
+  {
+   "en": "When your application needs reliable structured output,",
+   "ko": "애플리케이션에 신뢰할 수 있는 구조화 출력이 필요할 때는"
+  },
+  {
+   "en": "forced tool use is usually better than asking the model to return JSON.",
+   "ko": "모델에게 JSON 을 돌려달라고 부탁하는 것보다 강제 툴 사용이 보통 낫습니다."
+  },
+  {
+   "en": "Step 3. Extract the tool input.",
+   "ko": "3단계. 툴 input 을 꺼낸다."
+  },
+  {
+   "en": "After Claude responds, we read the tool use block.",
+   "ko": "Claude 가 응답하면 tool_use 블록을 읽습니다."
+  },
+  {
+   "en": "In a demo, I would print it in a readable format.",
+   "ko": "데모에서는 읽기 좋은 형식으로 출력해 보겠습니다."
+  },
+  {
+   "en": "This shows the actual structured block returned by Claude.",
+   "ko": "Claude 가 실제로 돌려준 구조화 블록이 보입니다."
+  },
+  {
+   "en": "At this point, we have a Python dictionary that our code can validate.",
+   "ko": "이 시점에 우리 코드가 검증할 수 있는 Python 딕셔너리가 생겼습니다."
+  },
+  {
+   "en": "But remember, a schema helps with structure.",
+   "ko": "하지만 기억하세요, schema 는 구조를 돕습니다."
+  },
+  {
+   "en": "It does not guarantee that every value is semantically correct.",
+   "ko": "모든 값이 의미적으로 맞다고 보장하지는 않습니다."
+  },
+  {
+   "en": "So the next step is validation.",
+   "ko": "그래서 다음 단계는 validation 입니다."
+  },
+  {
+   "en": "Step 4. Validate the result.",
+   "ko": "4단계. 결과를 검증한다."
+  },
+  {
+   "en": "Now we check the extracted values.",
+   "ko": "이제 추출된 값을 확인합니다."
+  },
+  {
+   "en": "For example, this is a simple validation function.",
+   "ko": "예를 들어 이건 간단한 validation 함수입니다."
+  },
+  {
+   "en": "In production, we would likely use stronger validation with a formal schema validator.",
+   "ko": "프로덕션에서는 정식 schema validator 로 더 강한 검증을 쓸 것입니다."
+  },
+  {
+   "en": "But for the course demo, this is enough to show the architecture pattern.",
+   "ko": "하지만 강의 데모에서는 아키텍처 패턴을 보여주기에 이 정도면 충분합니다."
+  },
+  {
+   "en": "The key idea is Claude extracts. Code validates.",
+   "ko": "핵심은 \"Claude 는 추출하고, 코드는 검증한다\" 입니다."
+  },
+  {
+   "en": "The model should not be the only line of defense.",
+   "ko": "모델이 유일한 방어선이어서는 안 됩니다."
+  },
+  {
+   "en": "Step 5. Retry only when it helps.",
+   "ko": "5단계. 도움이 될 때만 retry 한다."
+  },
+  {
+   "en": "If validation fails, we need to decide what to do.",
+   "ko": "validation 이 실패하면 어떻게 할지 정해야 합니다."
+  },
+  {
+   "en": "Some errors are fixable.",
+   "ko": "어떤 에러는 고칠 수 있습니다."
+  },
+  {
+   "en": "For example, if Claude placed information in the wrong field",
+   "ko": "예를 들어 Claude 가 정보를 엉뚱한 필드에 넣었거나"
+  },
+  {
+   "en": "or forgot to fill reason details, we can retry with specific feedback.",
+   "ko": "reason_details 를 채우는 것을 잊었다면, 구체적인 피드백과 함께 retry 할 수 있습니다."
+  },
+  {
+   "en": "But some errors are not fixable.",
+   "ko": "하지만 어떤 에러는 고칠 수 없습니다."
+  },
+  {
+   "en": "If the customer never provided an order ID,",
+   "ko": "고객이 order ID 를 준 적이 없다면"
+  },
+  {
+   "en": "retrying will not magically produce a real order ID.",
+   "ko": "retry 한다고 진짜 order ID 가 마법처럼 나오지 않습니다."
+  },
+  {
+   "en": "In that case, the correct behavior is to return null,",
+   "ko": "그럴 때 올바른 동작은 null 을 돌려주고,"
+  },
+  {
+   "en": "add order ID to missing information, and possibly ask the customer for clarification.",
+   "ko": "order ID 를 missing_information 에 넣고, 필요하면 고객에게 확인을 요청하는 것입니다."
+  },
+  {
+   "en": "This is a very important reliability point.",
+   "ko": "이건 아주 중요한 신뢰성 포인트입니다."
+  },
+  {
+   "en": "Retries are useful for fixing extraction mistakes.",
+   "ko": "retry 는 추출 실수를 고치는 데 유용합니다."
+  },
+  {
+   "en": "Retries are not a license to fabricate missing information.",
+   "ko": "retry 는 없는 정보를 지어내도 된다는 허가가 아닙니다."
+  },
+  {
+   "en": "Step 6. Human review routing.",
+   "ko": "6단계. 사람 검토 라우팅."
+  },
+  {
+   "en": "Finally, we decide whether this request can continue automatically.",
+   "ko": "마지막으로 이 요청을 자동으로 계속 진행해도 되는지 정합니다."
+  },
+  {
+   "en": "ShopAssist should route the case to human review when the confidence is low.",
+   "ko": "ShopAssist 는 confidence 가 낮을 때 케이스를 사람 검토로 보내야 합니다."
+  },
+  {
+   "en": "The reason is unclear.",
+   "ko": "사유가 unclear 일 때."
+  },
+  {
+   "en": "The customer message contains contradictory information.",
+   "ko": "고객 메시지에 모순된 정보가 있을 때."
+  },
+  {
+   "en": "The request looks like a policy exception.",
+   "ko": "요청이 정책 예외처럼 보일 때."
+  },
+  {
+   "en": "Or the customer is asking for something sensitive,",
+   "ko": "또는 고객이 민감한 것을 요구할 때,"
+  },
+  {
+   "en": "such as a refund outside the normal policy.",
+   "ko": "예를 들어 정상 정책 밖의 환불 같은 것."
+  },
+  {
+   "en": "For the demo, we can run a few realistic messages.",
+   "ko": "데모에서는 현실적인 메시지 몇 개를 돌려 볼 수 있습니다."
+  },
+  {
+   "en": "First, a complete return request.",
+   "ko": "첫째, 완전한 반품 요청."
+  },
+  {
+   "en": "I want to return order 12345.",
+   "ko": "\"주문 12345 를 반품하고 싶어요."
+  },
+  {
+   "en": "The headphones arrived broken.",
+   "ko": "헤드폰이 망가진 채로 왔어요.\""
+  },
+  {
+   "en": "This should extract cleanly.",
+   "ko": "이건 깔끔하게 추출되어야 합니다."
+  },
+  {
+   "en": "Second, a missing order ID.",
+   "ko": "둘째, order ID 누락."
+  },
+  {
+   "en": "I bought a jacket last week and want to return it.",
+   "ko": "\"지난주에 재킷을 샀는데 반품하고 싶어요."
+  },
+  {
+   "en": "I do not have the order number.",
+   "ko": "주문 번호가 없어요.\""
+  },
+  {
+   "en": "Here, order ID should be null, and missing information should include order ID.",
+   "ko": "여기서 order_id 는 null 이어야 하고 missing_information 에 order ID 가 들어가야 합니다."
+  },
+  {
+   "en": "Third, an ambiguous reason.",
+   "ko": "셋째, 애매한 사유."
+  },
+  {
+   "en": "This product is not what I expected.",
+   "ko": "\"이 제품은 제가 기대한 게 아니에요."
+  },
+  {
+   "en": "Can I get my money back?",
+   "ko": "환불받을 수 있나요?\""
+  },
+  {
+   "en": "This may produce reason, unclear or changed mind, depending on the criteria.",
+   "ko": "기준에 따라 reason 이 unclear 나 changed mind 로 나올 수 있습니다."
+  },
+  {
+   "en": "Fourth, a policy exception.",
+   "ko": "넷째, 정책 예외."
+  },
+  {
+   "en": "I bought this six months ago, but I still want a refund because I never used it.",
+   "ko": "\"6개월 전에 샀지만 한 번도 안 써서 환불받고 싶어요.\""
+  },
+  {
+   "en": "This should likely be routed to human review or policy handling.",
+   "ko": "이건 사람 검토나 정책 처리로 보내져야 할 것입니다."
+  },
+  {
+   "en": "And fifth, a contradiction.",
+   "ko": "그리고 다섯째, 모순."
+  },
+  {
+   "en": "The item works perfectly, but it arrived broken and I need a replacement today.",
+   "ko": "\"제품은 완벽하게 작동하는데, 망가진 채로 와서 오늘 교환이 필요해요.\""
+  },
+  {
+   "en": "This should be flagged as contradictory or low confidence.",
+   "ko": "이건 모순 또는 낮은 confidence 로 표시되어야 합니다."
+  },
+  {
+   "en": "These examples show why structured extraction is not just about formatting.",
+   "ko": "이 예시들은 구조화 추출이 단순한 형식 문제가 아님을 보여줍니다."
+  },
+  {
+   "en": "It is about creating reliable inputs for the rest of the system.",
+   "ko": "시스템의 나머지를 위한 신뢰할 수 있는 입력을 만드는 일입니다."
+  },
+  {
+   "en": "The exam will often test the difference between model output,",
+   "ko": "시험은 모델 출력,"
+  },
+  {
+   "en": "schema enforcement and application reliability.",
+   "ko": "schema 강제, 애플리케이션 신뢰성의 차이를 자주 묻습니다."
+  },
+  {
+   "en": "A strong architecture does not rely on prompting alone.",
+   "ko": "강한 아키텍처는 프롬프팅에만 의존하지 않습니다."
+  },
+  {
+   "en": "Use tool use and schemas to get structured output.",
+   "ko": "구조화 출력은 툴 사용과 schema 로 얻는다."
+  },
+  {
+   "en": "Use nullable fields to avoid fabricated data.",
+   "ko": "nullable 필드로 지어낸 데이터를 막는다."
+  },
+  {
+   "en": "Use enums to normalize categories.",
+   "ko": "enum 으로 카테고리를 정규화한다."
+  },
+  {
+   "en": "Use validation to catch structural and semantic problems.",
+   "ko": "validation 으로 구조적·의미적 문제를 잡는다."
+  },
+  {
+   "en": "Use retries only when the problem is fixable.",
+   "ko": "retry 는 문제를 고칠 수 있을 때만 쓴다."
+  },
+  {
+   "en": "And use human review routing when confidence is low,",
+   "ko": "그리고 confidence 가 낮거나,"
+  },
+  {
+   "en": "information is contradictory or the request falls outside normal policy.",
+   "ko": "정보가 모순되거나, 요청이 정상 정책 밖일 때 사람 검토 라우팅을 쓴다."
+  },
+  {
+   "en": "In this lesson, we turned messy customer messages into validated structured return requests.",
+   "ko": "이번 강의에서는 지저분한 고객 메시지를 검증된 구조화 반품 요청으로 바꿨습니다."
+  },
+  {
+   "en": "In the next section, we will move from structured extraction to real tool workflows.",
+   "ko": "다음 섹션에서는 구조화 추출에서 실제 툴 워크플로우로 넘어갑니다."
+  },
+  {
+   "en": "ShopAssist will not only understand what the customer wants.",
+   "ko": "ShopAssist 는 고객이 원하는 것을 이해하는 데 그치지 않고,"
+  },
+  {
+   "en": "It will begin using backend tools to look up customers,",
+   "ko": "백엔드 툴로 고객을 조회하고,"
+  },
+  {
+   "en": "inspect orders, process refunds and escalate cases when needed.",
+   "ko": "주문을 확인하고, 환불을 처리하고, 필요하면 케이스를 에스컬레이션하기 시작할 것입니다."
+  }
+ ],
+ "body": "### What this build combines\n- Three earlier patterns in one module: ==explicit criteria and examples== for consistent judgment, ==tool use + JSON schema + tool_choice== for structured output, and ==validate, retry when fixable, route to human review== for reliability. // 앞선 세 패턴을 하나로.\n- Goal: turn a messy customer message into a ==validated structured return request==. The extraction step is the bridge between natural language and backend logic. // 자연어와 백엔드 사이의 다리.\n- Before ShopAssist checks an order, applies a policy, or creates a refund, it must understand what the customer is asking. // 추출이 먼저.\n\n### Step 1. Define the extraction schema\n- Fields such as order_id, item, reason, reason_details, desired_action, missing_information, confidence, human_review_required. // 반품 요청 schema 의 필드.\n- **order_id and item are nullable**: Claude may return null when the customer did not give the information, which is ==better than forcing a guess==. // 없으면 null.\n- **reason is an enum**: instead of ten variations of \"damaged\", normalize to damaged item. `other` + `reason_details` keeps flexibility. // enum 으로 정규화, other 로 유연성.\n- **human_review_required** lets the extraction step tell the rest of the system \"this case may need a person\". // 사람 필요 신호.\n\n### Step 2. Forced tool choice\n- This step is an extraction module, so we want ==structured output every time==. Forced tool_choice tells Claude: use this schema, do not answer conversationally. // 매번 구조화 출력.\n- Exam pattern: when the app needs reliable structured output, __forced tool use beats asking for JSON__. // JSON 부탁보다 강제 툴.\n\n### Step 3. Read the tool input\n- Read the `tool_use` block; its `input` is already a Python dict the code can validate. // tool_use 블록의 input.\n- A schema helps with structure but ==does not guarantee every value is semantically correct==, so validation follows. // 구조는 보장, 의미는 아님.\n\n### Step 4. Validate\n- A simple validation function for the demo; production uses a formal schema validator plus business rules. // 데모는 간단히, 프로덕션은 정식 validator.\n- ((Claude extracts. Code validates.)) The model should not be the only line of defense. // 모델은 유일한 방어선이 아니다.\n\n### Step 5. Retry only when it helps\n- Fixable: information in the wrong field, reason_details left empty. Retry with ==specific feedback==. // 고칠 수 있는 실수는 retry.\n- Not fixable: the customer never gave an order ID. Retrying will not produce a real one. Return null, add order ID to missing_information, maybe ask the customer. // 없는 정보는 null + missing_information.\n- ==Retries are not a license to fabricate missing information==. // retry 는 지어내기 허가가 아니다.\n\n### Step 6. Human review routing\n- Route to a human when: confidence is low, reason is unclear, the message is contradictory, the request looks like a policy exception, or the ask is sensitive (refund outside normal policy). // 사람 검토 조건.\n\n### Five demo messages\n| Message // 메시지 | Expected // 기대 결과 |\n|---|---|\n| \"Return order 12345, headphones arrived broken\" // 완전한 요청 | Extracts cleanly // 깔끔하게 추출 |\n| \"Bought a jacket last week, no order number\" // order ID 누락 | order_id null, missing_information includes order ID // null + 누락 표시 |\n| \"Not what I expected, can I get my money back?\" // 애매한 사유 | reason unclear or changed mind, per criteria // 기준에 따라 unclear |\n| \"Bought six months ago, never used, want a refund\" // 정책 예외 | Human review or policy handling // 사람 검토 |\n| \"Works perfectly but arrived broken, replace today\" // 모순 | Flag contradictory or low confidence // 모순·낮은 confidence 플래그 |\n\n### The architecture in one list\n- Tool use and schemas for structure; nullable fields against fabrication; enums to normalize; validation for structural and semantic problems; retries only when fixable; human review when confidence is low, information is contradictory, or the request is outside policy. // 강한 아키텍처는 프롬프팅에만 기대지 않는다.\n- Next section: from extraction to real tool workflows, where ShopAssist looks up customers, inspects orders, processes refunds, and escalates. // 다음은 실제 툴 워크플로우.",
+ "keyPoints": [
+  "Six steps: schema, forced tool_choice, read tool_use input, validate, retry only when fixable, human review routing. // 여섯 단계 순서.",
+  "Nullable order_id and item stop fabrication; an enum reason normalizes categories; other + reason_details keeps flexibility. // nullable, enum, other 의 역할.",
+  "Forced tool use beats asking for JSON when the app needs structured output every time. // 강제 툴 사용이 JSON 부탁보다 낫다.",
+  "Claude extracts, code validates: a schema secures shape, not meaning. // 스키마는 모양만, 검증은 코드가.",
+  "Missing order ID means null plus missing_information, not a retry; contradiction, policy exception, unclear reason, low confidence go to a human. // 없으면 null, 위험하면 사람."
+ ],
+ "examTrends": {
+  "how": "End-to-end scenario: ShopAssist receives a messy return message and must produce reliable input for backend logic. Options differ in where the reliability comes from (prompt only, schema only, schema plus validation plus routing) and in how they handle missing or contradictory data. // 지저분한 반품 메시지를 백엔드 입력으로 바꾸는 시나리오. 신뢰성을 어디서 얻는지(프롬프트만, 스키마만, 스키마+검증+라우팅)와 누락·모순 처리 방식으로 보기가 갈린다.",
+  "answerLooks": [
+   "Tool with an input schema, forced tool_choice, nullable fields, enum reason, then application-side validation. // 스키마 툴 + 강제 + nullable + enum + 코드 검증.",
+   "Return null and list the field in missing_information when the customer did not provide it. // 없는 정보는 null + missing_information.",
+   "Retry with specific feedback only for wrong-field or empty-detail mistakes. // 고칠 수 있는 실수만 구체적 피드백으로 retry.",
+   "Set human_review_required for low confidence, unclear reason, contradiction, policy exception, sensitive request. // 사람 검토 플래그 조건."
+  ],
+  "traps": [
+   "\"A careful prompt asking for JSON is enough\" relies on prompting alone and breaks on extra text or invented fields. // 프롬프트만으로 충분하다는 보기는 오답.",
+   "\"The schema validated, so the extraction is correct\" confuses shape with meaning. // 스키마 통과 = 정확 이라는 보기는 오답.",
+   "\"Retry until an order ID appears\" fabricates data the message never contained. // order ID 가 나올 때까지 retry 는 오답.",
+   "\"Let the model decide whether to answer in text or call the tool\" (tool_choice auto) for an extraction module. // 추출 모듈에 auto 는 오답."
+  ],
+  "memorize": "Schema + forced tool + nullable + enum → Claude extracts; code validates; retry if fixable; null if missing; human if risky. // 스키마·강제·nullable·enum 으로 추출, 코드 검증, 고칠 수 있으면 retry, 없으면 null, 위험하면 사람."
+ },
+ "createdAt": "2026-09-09T07:00:00Z"
+}
