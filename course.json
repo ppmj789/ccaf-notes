@@ -46,6 +46,10 @@
         {
           "no": "33",
           "title": "Tool Access, Built-In Tools, and MCP Configuration"
+        },
+        {
+          "no": "34",
+          "title": "BUILD: ShopAssist Backend Tools and MCP Integration"
         }
       ]
     }

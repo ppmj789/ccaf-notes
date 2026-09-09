@@ -1,0 +1,548 @@
+{
+  "id": "l-034",
+  "kind": "lesson",
+  "order": 34,
+  "section": "Tools, MCP, and Agentic Loop",
+  "lecture": "34",
+  "title_en": "BUILD: ShopAssist Backend Tools and MCP Integration",
+  "title": "BUILD: ShopAssist 백엔드 툴과 MCP 연동",
+  "domain": "툴·에이전트 루프",
+  "summary": "ShopAssist gets five backend functions (customer lookup, order lookup, refund eligibility, refund execution, human escalation) that are deliberately not all exposed to one agent: the support agent gets safe lookup and eligibility checks while refund execution stays in a narrower workflow, a not-found result is a structured success rather than a system error, and order lookup distinguishes validation, empty result, and permission cases so Claude handles each differently. Turning the same logic into a FastMCP server with @mcp.tool, typed parameters, and boundary-stating docstrings moves the tool layer behind a server that clients discover through a project .mcp.json, which is why MCP is a standard way to expose controlled backend capabilities rather than just a way to add more tools. // ShopAssist 는 백엔드 함수 다섯 개(고객 조회·주문 조회·환불 자격·환불 실행·사람 에스컬레이션)를 갖되 한 에이전트에 다 주지 않는다. 지원 에이전트는 안전한 조회와 자격 확인만 갖고 환불 실행은 좁은 워크플로에 남기며, 못 찾음은 시스템 오류가 아니라 구조화된 성공이고, 주문 조회는 validation·빈 결과·permission 을 구분해 Claude 가 각각 다르게 처리하게 한다. 같은 로직을 FastMCP 서버로 바꿔 @mcp.tool·타입 파라미터·경계를 담은 docstring 을 붙이면 툴 계층이 서버 뒤로 가고 client 는 프로젝트 .mcp.json 으로 발견하므로, MCP 는 툴을 더 주는 방법이 아니라 통제된 백엔드 기능을 노출하는 표준 방식이다.",
+  "paragraphs": [
+    {
+      "en": "In the previous lessons we designed better tools, structured errors, scoped access, and MCP configuration.",
+      "ko": "앞선 강의들에서 우리는 더 나은 툴, 구조화된 오류, 범위를 좁힌 접근, MCP 설정을 설계했습니다."
+    },
+    {
+      "en": "Now we will apply those ideas in the ShopAssist project.",
+      "ko": "이제 그 아이디어들을 ShopAssist 프로젝트에 적용해 봅시다."
+    },
+    {
+      "en": "This lesson is not about introducing tool design again.",
+      "ko": "이 강의는 툴 설계를 다시 소개하는 게 아닙니다."
+    },
+    {
+      "en": "Here we are building the backend tool layer that our agents can actually use.",
+      "ko": "여기서는 에이전트가 실제로 쓸 백엔드 툴 계층을 만듭니다."
+    },
+    {
+      "en": "For ShopAssist we will start with five backend functions.",
+      "ko": "ShopAssist 는 백엔드 함수 다섯 개로 시작합니다."
+    },
+    {
+      "en": "Get customer by email, lookup order by ID, check refund eligibility,",
+      "ko": "get_customer_by_email, lookup_order_by_id, check_refund_eligibility,"
+    },
+    {
+      "en": "process refund, and create human escalation.",
+      "ko": "process_refund, create_human_escalation."
+    },
+    {
+      "en": "Each tool has a clear job.",
+      "ko": "툴마다 역할이 분명합니다."
+    },
+    {
+      "en": "Get customer by email finds the customer.",
+      "ko": "get_customer_by_email 은 고객을 찾습니다."
+    },
+    {
+      "en": "Lookup order by ID retrieves order data.",
+      "ko": "lookup_order_by_id 는 주문 데이터를 가져옵니다."
+    },
+    {
+      "en": "Check refund eligibility applies the refund policy.",
+      "ko": "check_refund_eligibility 는 환불 정책을 적용합니다."
+    },
+    {
+      "en": "Process refund performs the actual refund action.",
+      "ko": "process_refund 는 실제 환불 행동을 수행합니다."
+    },
+    {
+      "en": "Create human escalation sends the case to a human support team.",
+      "ko": "create_human_escalation 은 사람 지원팀에 케이스를 넘깁니다."
+    },
+    {
+      "en": "The important design choice is that these are not all exposed to the same agent.",
+      "ko": "중요한 설계 선택은, 이 다섯을 같은 에이전트에게 전부 노출하지 않는다는 것입니다."
+    },
+    {
+      "en": "The main support agent can use safe lookup and decision support tools.",
+      "ko": "메인 지원 에이전트는 안전한 조회 툴과 판단 보조 툴을 씁니다."
+    },
+    {
+      "en": "The refund execution tool is more sensitive, so we can keep it for a narrower refund workflow.",
+      "ko": "환불 실행 툴은 더 민감하므로, 더 좁은 환불 워크플로에만 남겨 둘 수 있습니다."
+    },
+    {
+      "en": "This keeps the main support agent helpful but not overpowered.",
+      "ko": "이렇게 하면 메인 지원 에이전트가 도움은 되지만 힘이 과하지는 않게 됩니다."
+    },
+    {
+      "en": "Now let's implement mocked backend functions.",
+      "ko": "이제 목업 백엔드 함수를 구현해 봅시다."
+    },
+    {
+      "en": "In a real application these functions would call databases, order systems, payment providers, or internal APIs.",
+      "ko": "실제 애플리케이션이라면 이 함수들은 데이터베이스, 주문 시스템, 결제 사업자, 내부 API 를 호출할 것입니다."
+    },
+    {
+      "en": "For the course demo we will use test data so we can focus on the interface.",
+      "ko": "강의 데모에서는 인터페이스에 집중하려고 테스트 데이터를 씁니다."
+    },
+    {
+      "en": "We have one customer and two orders.",
+      "ko": "고객 한 명과 주문 두 건이 있습니다."
+    },
+    {
+      "en": "One order was delivered 12 days ago.",
+      "ko": "한 주문은 12일 전에 배송 완료됐습니다."
+    },
+    {
+      "en": "The other was delivered 45 days ago.",
+      "ko": "다른 하나는 45일 전에 배송 완료됐습니다."
+    },
+    {
+      "en": "That gives us one eligible refund case and one policy exception case.",
+      "ko": "그래서 환불 가능한 케이스 하나와 정책 예외 케이스 하나가 생깁니다."
+    },
+    {
+      "en": "Now let's build the customer lookup tool.",
+      "ko": "이제 고객 조회 툴을 만들어 봅시다."
+    },
+    {
+      "en": "This function returns a structured success response.",
+      "ko": "이 함수는 구조화된 성공 응답을 반환합니다."
+    },
+    {
+      "en": "If no customer is found we do not treat that as a system error.",
+      "ko": "고객을 찾지 못해도 그것을 시스템 오류로 취급하지 않습니다."
+    },
+    {
+      "en": "The tool worked. It simply found no matching customer.",
+      "ko": "툴은 정상 동작했습니다. 그저 일치하는 고객이 없었을 뿐입니다."
+    },
+    {
+      "en": "That distinction matters because Claude should not retry the same lookup as if the backend failed.",
+      "ko": "이 구분이 중요한 이유는, Claude 가 백엔드가 실패한 것처럼 같은 조회를 재시도하면 안 되기 때문입니다."
+    },
+    {
+      "en": "Next let's implement order lookup.",
+      "ko": "다음은 주문 조회를 구현합니다."
+    },
+    {
+      "en": "This tool shows three important backend cases.",
+      "ko": "이 툴은 중요한 백엔드 케이스 세 가지를 보여 줍니다."
+    },
+    {
+      "en": "If the order ID format is wrong that is a validation error.",
+      "ko": "주문 ID 형식이 잘못됐다면 그것은 validation error 입니다."
+    },
+    {
+      "en": "If the order does not exist that is an empty result, not a system error.",
+      "ko": "주문이 존재하지 않는다면 그것은 빈 결과이지 시스템 오류가 아닙니다."
+    },
+    {
+      "en": "If the order belongs to a different customer that is a permission error.",
+      "ko": "주문이 다른 고객의 것이라면 그것은 permission error 입니다."
+    },
+    {
+      "en": "Claude should handle each case differently.",
+      "ko": "Claude 는 각 케이스를 다르게 처리해야 합니다."
+    },
+    {
+      "en": "Now we can check refund eligibility.",
+      "ko": "이제 환불 자격을 확인할 수 있습니다."
+    },
+    {
+      "en": "This function does not process the refund.",
+      "ko": "이 함수는 환불을 처리하지 않습니다."
+    },
+    {
+      "en": "It only answers the policy question.",
+      "ko": "정책 질문에만 답합니다."
+    },
+    {
+      "en": "That separation is useful.",
+      "ko": "이 분리가 유용합니다."
+    },
+    {
+      "en": "The main support agent can check eligibility without having permission to move money.",
+      "ko": "메인 지원 에이전트는 돈을 움직일 권한 없이도 자격을 확인할 수 있습니다."
+    },
+    {
+      "en": "Now let's implement the actual refund action.",
+      "ko": "이제 실제 환불 행동을 구현해 봅시다."
+    },
+    {
+      "en": "In a real backend this function might call Stripe, Adyen, Shopify, Magento or an internal payment service.",
+      "ko": "실제 백엔드라면 이 함수는 Stripe, Adyen, Shopify, Magento 나 내부 결제 서비스를 호출할 것입니다."
+    },
+    {
+      "en": "In this mocked version we return a structured refund object.",
+      "ko": "이 목업 버전에서는 구조화된 환불 객체를 반환합니다."
+    },
+    {
+      "en": "The important point is that this tool should be more restricted than simple lookup tools.",
+      "ko": "중요한 점은 이 툴이 단순 조회 툴보다 더 제한되어야 한다는 것입니다."
+    },
+    {
+      "en": "Finally let's create the escalation tool.",
+      "ko": "마지막으로 에스컬레이션 툴을 만듭시다."
+    },
+    {
+      "en": "Escalation is important when automation should stop.",
+      "ko": "에스컬레이션은 자동화를 멈춰야 할 때 중요합니다."
+    },
+    {
+      "en": "For example we may escalate if there is a permission issue, a policy exception,",
+      "ko": "예를 들어 권한 문제, 정책 예외,"
+    },
+    {
+      "en": "a high value refund or conflicting customer information.",
+      "ko": "고액 환불, 고객 정보 충돌이 있으면 에스컬레이션할 수 있습니다."
+    },
+    {
+      "en": "Now let's walk through a successful refund path.",
+      "ko": "이제 성공적인 환불 경로를 따라가 봅시다."
+    },
+    {
+      "en": "This is the happy path. First we identify the customer.",
+      "ko": "이것이 happy path 입니다. 먼저 고객을 확인합니다."
+    },
+    {
+      "en": "Then we look up the order. Then we check eligibility.",
+      "ko": "그다음 주문을 조회합니다. 그다음 자격을 확인합니다."
+    },
+    {
+      "en": "Only after that do we process the refund.",
+      "ko": "그 이후에야 환불을 처리합니다."
+    },
+    {
+      "en": "The model should not jump directly from user message to refund execution.",
+      "ko": "모델이 사용자 메시지에서 곧바로 환불 실행으로 건너뛰어서는 안 됩니다."
+    },
+    {
+      "en": "The workflow should move through backend checks.",
+      "ko": "워크플로는 백엔드 확인 단계를 거쳐야 합니다."
+    },
+    {
+      "en": "Now let's look at a policy exception path.",
+      "ko": "이제 정책 예외 경로를 봅시다."
+    },
+    {
+      "en": "This order is outside the 30 day return window.",
+      "ko": "이 주문은 30일 반품 기간을 벗어났습니다."
+    },
+    {
+      "en": "So we do not process the refund automatically.",
+      "ko": "그래서 환불을 자동으로 처리하지 않습니다."
+    },
+    {
+      "en": "Instead we create a human escalation.",
+      "ko": "대신 사람에게 에스컬레이션을 만듭니다."
+    },
+    {
+      "en": "This is a good production pattern. Automation handles the standard path.",
+      "ko": "이것이 좋은 프로덕션 패턴입니다. 자동화는 표준 경로를 맡습니다."
+    },
+    {
+      "en": "Humans handle exceptions.",
+      "ko": "사람은 예외를 맡습니다."
+    },
+    {
+      "en": "Now let's connect this to MCP.",
+      "ko": "이제 이것을 MCP 와 연결해 봅시다."
+    },
+    {
+      "en": "The business logic stays almost the same.",
+      "ko": "비즈니스 로직은 거의 그대로입니다."
+    },
+    {
+      "en": "The difference is where the tool layer lives and how Claude gets access to it.",
+      "ko": "차이는 툴 계층이 어디에 있고 Claude 가 어떻게 접근하느냐입니다."
+    },
+    {
+      "en": "In the editor I would replace the previous plain Python functions with this MCP version.",
+      "ko": "에디터에서는 앞의 평범한 Python 함수들을 이 MCP 버전으로 바꿉니다."
+    },
+    {
+      "en": "Let's focus only on what changed. First we create an MCP server.",
+      "ko": "바뀐 것에만 집중합시다. 먼저 MCP server 를 만듭니다."
+    },
+    {
+      "en": "This server becomes the layer that exposes ShopAssist capabilities to an MCP compatible client.",
+      "ko": "이 서버가 ShopAssist 의 기능을 MCP 호환 client 에 노출하는 계층이 됩니다."
+    },
+    {
+      "en": "Next each function has @mcp.tool.",
+      "ko": "다음으로 각 함수에 @mcp.tool 을 붙입니다."
+    },
+    {
+      "en": "The function is still normal Python.",
+      "ko": "함수는 여전히 평범한 Python 입니다."
+    },
+    {
+      "en": "But now the MCP SDK can expose it as a tool.",
+      "ko": "하지만 이제 MCP SDK 가 그것을 툴로 노출할 수 있습니다."
+    },
+    {
+      "en": "The type hints define the inputs. For example email.",
+      "ko": "type hint 가 입력을 정의합니다. 예를 들어 email 은"
+    },
+    {
+      "en": "str means this tool expects a string email.",
+      "ko": "str 이므로 이 툴은 문자열 이메일을 기대한다는 뜻입니다."
+    },
+    {
+      "en": "For order lookup we require both order ID and customer ID.",
+      "ko": "주문 조회에는 order ID 와 customer ID 를 둘 다 요구합니다."
+    },
+    {
+      "en": "That boundary matters. The caller should first verify the customer.",
+      "ko": "이 경계가 중요합니다. 호출자는 먼저 고객을 확인해야 합니다."
+    },
+    {
+      "en": "Then use the verified customer ID to look up the order.",
+      "ko": "그다음 확인된 customer ID 로 주문을 조회해야 합니다."
+    },
+    {
+      "en": "The docstrings also matter.",
+      "ko": "docstring 도 중요합니다."
+    },
+    {
+      "en": "In this MCP version docstrings become part of the tool description.",
+      "ko": "이 MCP 버전에서 docstring 은 툴 설명의 일부가 됩니다."
+    },
+    {
+      "en": "So we use them to explain when the tool should be used,",
+      "ko": "그래서 docstring 으로 이 툴을 언제 써야 하는지,"
+    },
+    {
+      "en": "what it returns and what it should not do.",
+      "ko": "무엇을 반환하는지, 무엇을 하면 안 되는지를 설명합니다."
+    },
+    {
+      "en": "The structured responses stay the same.",
+      "ko": "구조화된 응답은 그대로입니다."
+    },
+    {
+      "en": "MCP changes how Claude discovers and calls the tool.",
+      "ko": "MCP 는 Claude 가 툴을 발견하고 호출하는 방식을 바꿉니다."
+    },
+    {
+      "en": "It does not remove the need for backend validation.",
+      "ko": "백엔드 검증의 필요를 없애지는 않습니다."
+    },
+    {
+      "en": "The backend still returns structured success results,",
+      "ko": "백엔드는 여전히 구조화된 성공 결과,"
+    },
+    {
+      "en": "validation errors, permission errors and business errors.",
+      "ko": "validation error, permission error, business error 를 반환합니다."
+    },
+    {
+      "en": "For this lesson the important point is the pattern.",
+      "ko": "이 강의에서 중요한 것은 패턴입니다."
+    },
+    {
+      "en": "FastMCP, @mcp.tool, typed parameters, docstrings with boundaries,",
+      "ko": "FastMCP, @mcp.tool, 타입이 붙은 파라미터, 경계를 담은 docstring,"
+    },
+    {
+      "en": "structured responses, backend validation.",
+      "ko": "구조화된 응답, 백엔드 검증."
+    },
+    {
+      "en": "Now let's test this MCP server with the MCP inspector.",
+      "ko": "이제 MCP inspector 로 이 MCP server 를 테스트해 봅시다."
+    },
+    {
+      "en": "The Python MCP SDK includes a browser-based inspector that lets us debug",
+      "ko": "Python MCP SDK 에는 브라우저 기반 inspector 가 들어 있어서,"
+    },
+    {
+      "en": "and test the server without wiring it into a full Claude application first.",
+      "ko": "완전한 Claude 애플리케이션에 붙이기 전에 서버를 디버그하고 테스트할 수 있습니다."
+    },
+    {
+      "en": "Here we have the shopassist_mcp_server.py script.",
+      "ko": "여기 shopassist_mcp_server.py 스크립트가 있습니다."
+    },
+    {
+      "en": "This file contains the same ShopAssist tools we already discussed.",
+      "ko": "이 파일에는 앞서 이야기한 것과 같은 ShopAssist 툴들이 들어 있습니다."
+    },
+    {
+      "en": "The difference is that now they are exposed through FastMCP using the @mcp.tool decorator.",
+      "ko": "차이는 이제 @mcp.tool 데코레이터를 써서 FastMCP 로 노출된다는 점입니다."
+    },
+    {
+      "en": "To start the inspector we can run the mcp dev command.",
+      "ko": "inspector 를 띄우려면 mcp dev 명령을 실행하면 됩니다."
+    },
+    {
+      "en": "The command prints a local browser URL with a session token.",
+      "ko": "이 명령은 세션 토큰이 붙은 로컬 브라우저 URL 을 출력합니다."
+    },
+    {
+      "en": "I'll open that URL in the browser.",
+      "ko": "그 URL 을 브라우저에서 엽니다."
+    },
+    {
+      "en": "In the inspector we click connect.",
+      "ko": "inspector 에서 connect 를 누릅니다."
+    },
+    {
+      "en": "Now the inspector connects to our MCP server.",
+      "ko": "이제 inspector 가 우리 MCP server 에 연결됩니다."
+    },
+    {
+      "en": "Then we go to the tools section and click list tools.",
+      "ko": "그다음 tools 섹션으로 가서 list tools 를 누릅니다."
+    },
+    {
+      "en": "And here we can see the tools exposed by the server.",
+      "ko": "그러면 서버가 노출한 툴들을 볼 수 있습니다."
+    },
+    {
+      "en": "This is the important architectural difference.",
+      "ko": "이것이 중요한 아키텍처 차이입니다."
+    },
+    {
+      "en": "Before MCP our application had to define tool schemas,",
+      "ko": "MCP 이전에는 우리 애플리케이션이 tool schema 를 정의하고,"
+    },
+    {
+      "en": "keep the tool implementations, execute tool calls and send results back to Claude.",
+      "ko": "툴 구현을 보유하고, 툴 호출을 실행하고, 결과를 Claude 에 돌려줘야 했습니다."
+    },
+    {
+      "en": "With MCP the tool implementation lives behind an MCP server.",
+      "ko": "MCP 에서는 툴 구현이 MCP server 뒤에 있습니다."
+    },
+    {
+      "en": "A Claude compatible client can connect to the server, discover the available tools,",
+      "ko": "Claude 호환 client 는 서버에 연결해 사용 가능한 툴을 발견하고,"
+    },
+    {
+      "en": "read the descriptions and input schemas and call them through the MCP protocol.",
+      "ko": "설명과 input schema 를 읽고, MCP 프로토콜로 호출할 수 있습니다."
+    },
+    {
+      "en": "So our main agent application does not need to manually hard code every backend tool inside its own tool loop.",
+      "ko": "그래서 메인 에이전트 애플리케이션이 모든 백엔드 툴을 자기 툴 루프 안에 일일이 하드코딩할 필요가 없습니다."
+    },
+    {
+      "en": "It can connect to this server through MCP configuration such as a project level .mcp.json file",
+      "ko": "프로젝트 수준 .mcp.json 파일 같은 MCP 설정을 통해 이 서버에 연결하면"
+    },
+    {
+      "en": "and the server provides the available tools.",
+      "ko": "서버가 사용 가능한 툴을 제공합니다."
+    },
+    {
+      "en": "Let's test one tool.",
+      "ko": "툴 하나를 테스트해 봅시다."
+    },
+    {
+      "en": "I'll select get customer by email.",
+      "ko": "get_customer_by_email 을 선택합니다."
+    },
+    {
+      "en": "For the email I'll enter alex@example.com.",
+      "ko": "이메일에는 alex@example.com 을 입력합니다."
+    },
+    {
+      "en": "Now I run the tool.",
+      "ko": "이제 툴을 실행합니다."
+    },
+    {
+      "en": "The inspector shows the structured result from our MCP server.",
+      "ko": "inspector 가 우리 MCP server 의 구조화된 결과를 보여 줍니다."
+    },
+    {
+      "en": "We get the customer ID, email, name and account status.",
+      "ko": "customer ID, email, name, account status 를 받습니다."
+    },
+    {
+      "en": "This confirms two things.",
+      "ko": "이것으로 두 가지가 확인됩니다."
+    },
+    {
+      "en": "First, the Python business logic works.",
+      "ko": "첫째, Python 비즈니스 로직이 동작한다."
+    },
+    {
+      "en": "Second, the MCP server exposes that logic correctly as tools.",
+      "ko": "둘째, MCP server 가 그 로직을 툴로 올바르게 노출한다."
+    },
+    {
+      "en": "In production the dictionaries in this demo would be replaced with real systems,",
+      "ko": "프로덕션에서는 이 데모의 딕셔너리가 실제 시스템으로 대체됩니다."
+    },
+    {
+      "en": "CRM, e-commerce backend, payment provider or ticketing system.",
+      "ko": "CRM, 이커머스 백엔드, 결제 사업자, 티켓 시스템 같은 것들이죠."
+    },
+    {
+      "en": "But the MCP interface stays the same.",
+      "ko": "하지만 MCP 인터페이스는 그대로입니다."
+    },
+    {
+      "en": "The client sees clear tool names, typed inputs, useful descriptions and structured results.",
+      "ko": "client 는 분명한 툴 이름, 타입이 붙은 입력, 쓸모 있는 설명, 구조화된 결과를 봅니다."
+    },
+    {
+      "en": "So the exam takeaway is MCP is not just a way to give Claude more tools.",
+      "ko": "그래서 시험에서 가져갈 점은, MCP 가 Claude 에게 툴을 더 주는 방법에 그치지 않는다는 것입니다."
+    },
+    {
+      "en": "It is a standard way to expose controlled backend capabilities through a reusable server layer.",
+      "ko": "재사용 가능한 서버 계층을 통해 통제된 백엔드 기능을 노출하는 표준 방식입니다."
+    },
+    {
+      "en": "Use local tools when the tools belong only to one application.",
+      "ko": "툴이 한 애플리케이션에만 속한다면 로컬 툴을 쓰세요."
+    },
+    {
+      "en": "Use MCP when you want those tools to be discoverable, reusable and configurable across",
+      "ko": "그 툴들이 Claude Code, Claude Desktop, 내부 에이전트, 다른 MCP 호환 워크플로에 걸쳐"
+    },
+    {
+      "en": "Claude Code, Claude Desktop, internal agents or other MCP compatible workflows.",
+      "ko": "발견 가능하고, 재사용 가능하고, 설정 가능하길 원한다면 MCP 를 쓰세요."
+    }
+  ],
+  "body": "### Five backend functions, not all for one agent\n- `get_customer_by_email` finds the customer, `lookup_order_by_id` retrieves order data, `check_refund_eligibility` applies policy, `process_refund` performs the action, `create_human_escalation` hands the case to people. // 다섯 함수의 역할.\n- The design choice: ==these are not all exposed to the same agent==. // 다섯을 한 에이전트에 다 주지 않는다.\n- Main support agent gets ==safe lookup and decision support tools==; `process_refund` is more sensitive and stays in a ==narrower refund workflow==. // 조회·판단은 지원, 실행은 좁은 워크플로.\n- Result: the support agent is ==helpful but not overpowered==. // 도움은 되되 힘은 과하지 않게.\n\n### Not-found is not an error\n- Customer lookup returns a ==structured success response==. If no customer is found, that is ==not a system error==. // 못 찾은 것은 시스템 오류가 아니다.\n- ((The tool worked; it simply found no matching customer.)) // 툴은 동작했고, 일치하는 고객이 없었을 뿐.\n- Why it matters: Claude should ==not retry the same lookup as if the backend failed==. // 실패로 착각하면 같은 조회를 재시도한다.\n\n### Three backend cases in order lookup\n- Wrong order ID format → ==validation error==. // 형식 오류.\n- Order does not exist → ==empty result, not a system error==. // 없음은 빈 결과.\n- Order belongs to a different customer → ==permission error==. // 남의 주문은 권한 오류.\n- ==Claude should handle each case differently==, which is only possible if the backend distinguishes them. // 백엔드가 구분해 줘야 다르게 처리할 수 있다.\n\n### Separating the policy question from the money\n- `check_refund_eligibility` ==only answers the policy question==; it does not process the refund. // 자격 확인은 정책 질문만.\n- So the main support agent can ==check eligibility without having permission to move money==. // 돈을 움직일 권한 없이 판단만.\n- `process_refund` (Stripe, Adyen, Shopify, Magento, or an internal payment service in production) must be ==more restricted than simple lookup tools==. // 실행 툴은 더 제한.\n- `create_human_escalation` is for ==when automation should stop==: permission issue, policy exception, high value refund, conflicting customer information. // 자동화를 멈춰야 할 네 가지.\n\n### Happy path vs policy exception\n- Happy path order: ((identify customer → look up order → check eligibility → process refund)). // 순서가 정해져 있다.\n- The model must ==not jump straight from the user message to refund execution==; the workflow moves through backend checks. // 곧바로 실행 금지.\n- Exception path: the order is ==outside the 30 day return window==, so no automatic refund — ==create a human escalation== instead. // 기간 밖이면 사람에게.\n- Production pattern: ==automation handles the standard path, humans handle exceptions==. // 표준은 자동화, 예외는 사람.\n\n### Turning the functions into an MCP server\n- The ==business logic stays almost the same==. What changes is ==where the tool layer lives and how Claude gets access==. // 로직이 아니라 위치와 접근이 바뀐다.\n- Pattern to remember: ==FastMCP server + `@mcp.tool` + typed parameters + docstrings with boundaries + structured responses + backend validation==. // 여섯 요소 패턴.\n- **Type hints define the inputs** (`email: str`). `lookup_order_by_id` requires ==both order ID and customer ID==, so the caller must ==verify the customer first==, then use the verified ID. // 타입이 입력 계약, 두 인자가 경계.\n- **Docstrings become part of the tool description**: explain ==when to use the tool, what it returns, and what it should not do==. // docstring 이 곧 설명.\n- MCP changes ==discovery and calling==; it ==does not remove backend validation==. Success, validation, permission, and business errors still come from the backend. // 검증은 여전히 백엔드 몫.\n\n### Testing with the MCP inspector\n- The Python MCP SDK ships a ==browser-based inspector== so you can debug the server ==before wiring it into a full Claude application==. // 앱에 붙이기 전에 테스트.\n- Flow: run `mcp dev`, open the printed local URL with its session token, click connect, go to tools, click ==list tools==, then run one tool. // 실행 순서.\n- Running `get_customer_by_email` with `alex@example.com` returns customer ID, email, name, account status — confirming ==the logic works== and ==the server exposes it correctly as tools==. // 두 가지가 동시에 확인된다.\n\n### Local tools vs MCP\n- Before MCP the application had to ==define tool schemas, hold the implementations, execute calls, and return results==. // 앱이 전부 떠안았다.\n- With MCP the implementation ==lives behind the server==; a client ==connects, discovers tools, reads descriptions and input schemas, and calls them through the protocol==, wired up by a ==project level `.mcp.json`==. // 구현은 서버 뒤로.\n- **Local tools** when the tools belong to ==only one application==. // 한 앱 전용이면 로컬.\n- **MCP** when you want them ==discoverable, reusable, and configurable== across Claude Code, Claude Desktop, internal agents, or other MCP compatible workflows. // 여러 곳에서 재사용하려면 MCP.\n- Exam line: MCP is ==not just more tools; it is a standard way to expose controlled backend capabilities through a reusable server layer==. // 툴 추가가 아니라 통제된 기능 노출의 표준.\n",
+  "keyPoints": [
+    "Five ShopAssist tools are split by risk: the support agent gets lookup and eligibility, while process_refund stays in a narrower, more restricted refund workflow. // 조회·자격은 지원 에이전트, 환불 실행은 좁은 워크플로.",
+    "No customer found is a structured success, not a system error, so Claude does not retry the lookup as if the backend failed. // 못 찾음은 성공 응답, 재시도 대상이 아니다.",
+    "Order lookup returns three distinct cases: bad ID format = validation error, missing order = empty result, someone else's order = permission error. // 형식·없음·권한을 구분해서 반환.",
+    "Eligibility checking is separated from refund execution so the agent can apply policy without permission to move money; exceptions go to create_human_escalation. // 정책 판단과 돈 이동을 분리, 예외는 사람에게.",
+    "The MCP pattern: FastMCP server, @mcp.tool, typed parameters, docstrings that state boundaries, structured responses, and backend validation that MCP does not replace. // MCP 패턴 여섯 요소, 검증은 여전히 백엔드.",
+    "Local tools when they belong to one application; MCP when they must be discoverable, reusable, and configurable across Claude Code, Claude Desktop, and other clients. // 한 앱이면 로컬, 여러 곳이면 MCP."
+  ],
+  "examTrends": {
+    "how": "Usually a build-style scenario asking which tools a given agent should hold, how a backend should report a particular outcome (not found, bad format, wrong owner), or what order the refund workflow must follow. Another common shape asks when to choose MCP over local tools, where the answer is about reuse across clients rather than about capability, and a definition-style twist asks what MCP does not remove, the answer being backend validation. // 보통 빌드형 시나리오다. 어떤 에이전트가 어떤 툴을 가져야 하는지, 백엔드가 특정 결과(못 찾음·형식 오류·남의 주문)를 어떻게 보고해야 하는지, 환불 워크플로 순서가 무엇인지 묻는다. MCP 를 로컬 툴 대신 언제 쓰는지도 자주 나오는데 답은 기능이 아니라 여러 client 에 걸친 재사용이며, MCP 가 없애주지 않는 것(백엔드 검증)을 묻는 정의형 변형도 있다.",
+    "answerLooks": [
+      "\"Give the support agent lookup and eligibility tools, and keep refund execution in a separate, more restricted workflow\" // 실행 툴은 분리해서 제한.",
+      "\"Return a structured result indicating no customer was found, not an error\" // 못 찾음은 구조화된 결과.",
+      "\"Distinguish validation errors, empty results, and permission errors so the model can respond differently\" // 세 가지를 구분해 반환.",
+      "\"Identify the customer, look up the order, check eligibility, then process the refund\" // 정해진 순서를 거친다.",
+      "\"Escalate to a human because the order falls outside the 30 day return window\" // 정책 예외는 사람에게.",
+      "\"Expose the tools through an MCP server so multiple clients can discover and reuse them\" // 여러 client 가 발견·재사용."
+    ],
+    "traps": [
+      "\"Give the support agent process_refund too, so it can finish the case in one turn\": refund execution is sensitive and belongs to a narrower workflow. // 실행 권한을 지원 에이전트에 주면 안 된다.",
+      "\"Return a system error when no customer matches\": the tool worked, so Claude would wrongly retry it. // 못 찾음을 오류로 만들면 잘못된 재시도.",
+      "\"Return the same generic error for bad format, missing order, and wrong owner\": the model then cannot respond differently to each. // 오류를 뭉뚱그리면 대응이 하나가 된다.",
+      "\"Process the refund directly from the customer's message to reduce latency\": the workflow must pass through backend checks first. // 확인 단계를 건너뛰면 안 된다.",
+      "\"Automatically refund the 45-day-old order as a goodwill exception\": policy exceptions go to human escalation, not automation. // 예외를 자동화가 처리하면 안 된다.",
+      "\"MCP removes the need for backend validation\": MCP changes discovery and calling only; validation, permission, and business errors still come from the backend. // MCP 는 검증을 대신하지 않는다.",
+      "\"Use MCP because it gives Claude more capability than local tools\": the reason is reuse and configurability across clients, not extra power. // 능력이 커지는 게 아니라 재사용이 되는 것."
+    ],
+    "memorize": "Split tools by risk, report not-found as success, distinguish validation / empty / permission, check before you refund, escalate exceptions, and expose it all through FastMCP with typed params and boundary docstrings. // 위험도로 툴을 나누고, 못 찾음은 성공으로, validation·빈 결과·permission 을 구분하고, 환불 전에 확인하고, 예외는 사람에게, 전부 FastMCP 로 노출하되 타입과 경계 docstring 을 붙인다."
+  },
+  "createdAt": "2026-09-09T14:00:00Z"
+}
