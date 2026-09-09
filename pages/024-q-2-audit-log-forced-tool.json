@@ -1,0 +1,57 @@
+{
+ "id": "q-024-2",
+ "kind": "question",
+ "order": 24.2,
+ "section": "Reliable Prompts & Structured Output",
+ "lecture": "24",
+ "title_en": "Schema-conformant audit logs with a forced tool",
+ "title": "강제 툴로 스키마에 맞는 감사 로그 만들기",
+ "domain": "툴·에이전트 루프",
+ "question_en": "A customer support resolution agent must create a database-ready audit record after every handled case. The record must always include customer_id, order_id, issue_category, resolution_action, and escalation_reason; some IDs may be absent and should be recorded as null, while issue_category and resolution_action must use approved enum values. During testing, prompt-only JSON logs sometimes contain extra keys, alternate field names, or prose around the JSON. What is the best approach to make the logging output consistently schema-conformant?",
+ "question_ko": "고객지원 해결 에이전트가 케이스를 처리할 때마다 ==DB 에 바로 넣을 수 있는 감사 레코드==를 만들어야 한다. 레코드에는 `customer_id`, `order_id`, `issue_category`, `resolution_action`, `escalation_reason` 이 ==항상== 있어야 하고, 일부 ID 는 없을 수 있으니 ==null== 로 기록해야 하며, `issue_category` 와 `resolution_action` 은 ==승인된 enum 값==만 써야 한다. 테스트에서 ==프롬프트만으로 만든 JSON 로그==에 여분 키, 다른 필드 이름, JSON 주변 산문이 섞여 나온다. 로깅 출력을 일관되게 스키마에 맞추는 가장 좋은 방법은?",
+ "options": [
+  {
+   "key": "A",
+   "en": "Store the agent's final answer as an unstructured transcript field and use keyword search later to identify refunds, escalations, missing order IDs, and billing disputes.",
+   "ko": "에이전트의 최종 답변을 비구조화 transcript 필드로 저장하고, 나중에 키워드 검색으로 환불·에스컬레이션·주문 ID 누락·청구 분쟁을 찾는다."
+  },
+  {
+   "key": "B",
+   "en": "Let the agent describe the outcome in its normal response, then run a downstream parser that maps synonyms like refundType, caseResult, and nextStep into the reporting database.",
+   "ko": "에이전트가 평소 응답으로 결과를 서술하게 두고, refundType, caseResult, nextStep 같은 동의어를 리포팅 DB 로 매핑하는 다운스트림 파서를 돌린다."
+  },
+  {
+   "key": "C",
+   "en": "Define a write_resolution_log tool with a JSON Schema for the required, nullable, and enum fields, then use tool_choice to require that tool call for each completed support interaction.",
+   "ko": "required·nullable·enum 필드를 가진 JSON Schema 로 `write_resolution_log` 툴을 정의하고, 완료된 상호작용마다 `tool_choice` 로 그 툴 호출을 강제한다."
+  },
+  {
+   "key": "D",
+   "en": "Add a system instruction that says the agent must return exactly one JSON object with the approved field names and no extra commentary whenever a case is resolved.",
+   "ko": "케이스가 해결될 때마다 승인된 필드 이름으로 JSON 객체 하나만, 추가 주석 없이 돌려주라는 시스템 지시를 추가한다."
+  }
+ ],
+ "answer": "C",
+ "explanation": "24강 그 자체다. 지문의 요구 하나하나가 스키마 기능 하나씩에 대응한다.\n\n| 지문 요구 | 스키마 기능 |\n|---|---|\n| 다섯 필드가 항상 있어야 함 | ==required== |\n| 일부 ID 는 없을 수 있고 null 로 기록 | ==nullable== (required but nullable) |\n| issue_category, resolution_action 은 승인 값만 | ==enum== |\n| 여분 키·다른 이름·산문이 섞임 | 툴 사용은 ==스키마를 따르는 구조화 호출==이라 산문이 끼지 않음 |\n| 케이스마다 반드시 기록 | ==tool_choice== 로 특정 툴 강제 |\n\n- 핵심은 ==생성 시점에 구조를 강제==한다는 것. \"JSON 만 줘\" 는 지시문에만 구조가 있어서 모델이 어기면 그만이지만, 툴 스키마는 출력이 만들어지는 순간에 모양을 잡는다.\n- tool_choice 가 없으면 모델이 \"그냥 텍스트로 답할까\" 를 선택할 수 있다. 로그처럼 매번 나와야 하는 출력은 강제해야 한다.",
+ "traps": [
+  {
+   "key": "A",
+   "why": "database-ready 와 schema-conformant 를 통째로 포기한다. 키워드 검색은 refund 라는 단어가 있다고 환불 처리인지 거절인지 구분 못 하고, enum 도 null 도 없다."
+  },
+  {
+   "key": "B",
+   "why": "문제(다른 필드 이름, 산문)를 고치는 게 아니라 뒤에서 치우는 방식. 동의어 목록은 끝이 없고 새 표현이 나올 때마다 파서가 깨진다. 구조는 생성 시점에 잡는 것이 정답 방향."
+  },
+  {
+   "key": "D",
+   "why": "지문이 이미 prompt-only JSON 이 실패한다고 했다. 지시를 더 세게 써도 같은 종류의 해결책이라 같은 실패가 난다. \"return only valid JSON\" 초보 접근 함정."
+  }
+ ],
+ "keyPoints": [
+  "Prompt-only JSON drifts (extra keys, renamed fields, prose): the fix is a tool with a JSON Schema, not a stricter instruction. // 프롬프트 JSON 이 흔들리면 스키마 툴.",
+  "Map requirements to schema features: always present = required, may be absent = nullable, approved values = enum. // required · nullable · enum 대응.",
+  "Output that must happen every time gets tool_choice forcing that specific tool. // 매번 나와야 하면 tool_choice 강제.",
+  "Post-hoc parsers and unstructured transcripts move the problem downstream instead of fixing it at generation time. // 뒤에서 파싱·비구조화 저장은 오답."
+ ],
+ "createdAt": "2026-09-09T08:20:00Z"
+}
