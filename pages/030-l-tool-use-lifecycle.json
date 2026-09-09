@@ -4,8 +4,8 @@
  "order": 30,
  "section": "Tools, MCP, and Agentic Loop",
  "lecture": "30",
- "title_en": "The Tool Use Loop",
- "title": "툴 사용 루프",
+ "title_en": "Understanding the Tool Use Lifecycle",
+ "title": "툴 사용 라이프사이클 이해하기",
  "domain": "툴·에이전트 루프",
  "summary": "Claude decides a tool should be used, your application executes it and returns a tool_result with the same tool_use_id, and the loop repeats while stop_reason is tool_use and ends on end_turn; the backend, not the model, enforces permissions and business rules. // Claude 가 툴 사용을 결정하면 애플리케이션이 실행하고 같은 tool_use_id 로 tool_result 를 돌려주며, stop_reason 이 tool_use 인 동안 반복하고 end_turn 에서 끝난다. 권한과 비즈니스 규칙은 모델이 아니라 백엔드가 강제한다.",
  "paragraphs": [
