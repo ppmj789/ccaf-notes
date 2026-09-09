@@ -1,0 +1,490 @@
+{
+ "id": "l-028",
+ "kind": "lesson",
+ "order": 28,
+ "section": "Reliable Prompts & Structured Output",
+ "lecture": "28",
+ "title_en": "Batch Processing and Multi-Pass Review Architectures",
+ "title": "배치 처리와 다중 검토 아키텍처",
+ "domain": "신뢰성",
+ "summary": "Use synchronous calls when someone is waiting and the Message Batches API for large latency-tolerant jobs (50% cheaper, up to 24 hours, custom_id to match results); for important reviews prefer an independent second Claude call and split big analyses into per-file passes followed by cross-file integration. // 기다리는 사람이 있으면 동기 호출, 크고 지연을 견디는 작업은 Message Batches API(비용 절반, 최대 24시간, custom_id 로 짝짓기). 중요한 검토는 독립된 두 번째 Claude 호출로 하고, 큰 분석은 파일별 pass 뒤에 파일 간 통합으로 나눈다.",
+ "paragraphs": [
+  {
+   "en": "In the previous lessons, we learned how to make structured extraction more reliable with validation,",
+   "ko": "지난 강의들에서는 validation,"
+  },
+  {
+   "en": "retry loops, confidence scores, and human review.",
+   "ko": "retry 루프, confidence 점수, 사람 검토로 구조화 추출을 더 신뢰할 수 있게 만드는 법을 배웠습니다."
+  },
+  {
+   "en": "Now we need to ask a bigger architecture question.",
+   "ko": "이제 더 큰 아키텍처 질문을 던져야 합니다."
+  },
+  {
+   "en": "What happens when we do not have one customer message or one document?",
+   "ko": "고객 메시지 하나, 문서 하나가 아니라면 어떻게 될까요?"
+  },
+  {
+   "en": "What if we have 10,000 support tickets?",
+   "ko": "지원 티켓이 만 개라면요?"
+  },
+  {
+   "en": "What if we want to audit all return requests from last night?",
+   "ko": "어젯밤의 반품 요청을 전부 감사하고 싶다면요?"
+  },
+  {
+   "en": "What if we want Claude to review many generated summaries, policies, or extracted records?",
+   "ko": "생성된 요약, 정책, 추출된 레코드를 Claude 가 대량으로 검토하게 하고 싶다면요?"
+  },
+  {
+   "en": "For this type of work, we may not want to call the Synchronous Messages API one request at a time.",
+   "ko": "이런 작업에는 동기식 Messages API 를 요청 하나씩 부르고 싶지 않을 수 있습니다."
+  },
+  {
+   "en": "Instead, we can use the Message Batches API.",
+   "ko": "대신 Message Batches API 를 쓸 수 있습니다."
+  },
+  {
+   "en": "The Message Batches API is designed for large, latency-tolerant workloads.",
+   "ko": "Message Batches API 는 크고, 지연을 견딜 수 있는 작업을 위해 설계되었습니다."
+  },
+  {
+   "en": "You submit many requests together.",
+   "ko": "많은 요청을 한꺼번에 제출합니다."
+  },
+  {
+   "en": "Claude processes them asynchronously.",
+   "ko": "Claude 가 비동기로 처리합니다."
+  },
+  {
+   "en": "And later, your application retrieves the results.",
+   "ko": "그리고 나중에 애플리케이션이 결과를 가져옵니다."
+  },
+  {
+   "en": "This has two important benefits.",
+   "ko": "여기에는 중요한 이점이 두 가지 있습니다."
+  },
+  {
+   "en": "First, batch processing can reduce cost by 50% compared with standard API calls.",
+   "ko": "첫째, 배치 처리는 표준 API 호출보다 비용을 50% 줄일 수 있습니다."
+  },
+  {
+   "en": "Second, it is useful when the work does not need an immediate answer.",
+   "ko": "둘째, 즉각적인 답이 필요 없는 작업에 유용합니다."
+  },
+  {
+   "en": "For example, ShopAssist should not use batch processing",
+   "ko": "예를 들어 ShopAssist 는 고객이 지원팀과 실시간으로 채팅 중일 때는"
+  },
+  {
+   "en": "when a customer is actively chatting with support.",
+   "ko": "배치 처리를 쓰면 안 됩니다."
+  },
+  {
+   "en": "If the customer asks, can I return this item?",
+   "ko": "고객이 \"이 상품 반품할 수 있나요?\" 라고 물으면"
+  },
+  {
+   "en": "They are waiting for a response now.",
+   "ko": "지금 답을 기다리고 있는 겁니다."
+  },
+  {
+   "en": "That should use a normal synchronous API call.",
+   "ko": "그건 일반 동기식 API 호출을 써야 합니다."
+  },
+  {
+   "en": "But if ShopAssist wants to audit all support tickets from last night,",
+   "ko": "하지만 ShopAssist 가 어젯밤의 지원 티켓을 전부 감사하고 싶다면"
+  },
+  {
+   "en": "batch processing is a much better fit.",
+   "ko": "배치 처리가 훨씬 잘 맞습니다."
+  },
+  {
+   "en": "The audit can run in the background.",
+   "ko": "감사는 백그라운드에서 돌 수 있습니다."
+  },
+  {
+   "en": "It can classify tickets, detect risky refunds, find policy exceptions,",
+   "ko": "티켓을 분류하고, 위험한 환불을 감지하고, 정책 예외를 찾고,"
+  },
+  {
+   "en": "and identify cases that should be reviewed by a human.",
+   "ko": "사람이 검토해야 할 케이스를 가려낼 수 있습니다."
+  },
+  {
+   "en": "The important trade-off is latency.",
+   "ko": "중요한 트레이드오프는 지연(latency)입니다."
+  },
+  {
+   "en": "Batch requests may take up to 24 hours to complete.",
+   "ko": "배치 요청은 완료까지 최대 24시간이 걸릴 수 있습니다."
+  },
+  {
+   "en": "And there is no guaranteed latency SLA.",
+   "ko": "그리고 보장된 지연 SLA 가 없습니다."
+  },
+  {
+   "en": "So, batch processing is great for offline workflows, but wrong for blocking workflows.",
+   "ko": "그래서 배치 처리는 오프라인 워크플로우에는 좋지만, 블로킹 워크플로우에는 맞지 않습니다."
+  },
+  {
+   "en": "For example, a pre-merge check in CI should usually not wait on a batch job.",
+   "ko": "예를 들어 CI 의 머지 전 검사는 보통 배치 작업을 기다리면 안 됩니다."
+  },
+  {
+   "en": "If a developer opens a pull request and needs a pass or fail result before merging,",
+   "ko": "개발자가 pull request 를 열고 머지 전에 pass/fail 결과가 필요하다면"
+  },
+  {
+   "en": "that review should use a normal API call or a faster workflow.",
+   "ko": "그 검토는 일반 API 호출이나 더 빠른 워크플로우를 써야 합니다."
+  },
+  {
+   "en": "Another important batch concept is custom ID.",
+   "ko": "배치의 또 다른 중요한 개념은 custom_id 입니다."
+  },
+  {
+   "en": "When you submit many requests in one batch,",
+   "ko": "한 배치에 많은 요청을 제출하면"
+  },
+  {
+   "en": "you need a way to match each response back to the original input.",
+   "ko": "각 응답을 원래 입력과 다시 짝지을 방법이 필요합니다."
+  },
+  {
+   "en": "That is what custom ID is for.",
+   "ko": "그게 custom_id 의 용도입니다."
+  },
+  {
+   "en": "For example, ShopAssist might submit ticket IDs like",
+   "ko": "예를 들어 ShopAssist 는 이런 티켓 ID 를 제출할 수 있습니다."
+  },
+  {
+   "en": "Ticket 1001, Ticket 1002, Ticket 1003.",
+   "ko": "Ticket 1001, Ticket 1002, Ticket 1003."
+  },
+  {
+   "en": "When results come back, the system can use those IDs to update the correct audit record.",
+   "ko": "결과가 돌아오면 시스템은 그 ID 로 올바른 감사 레코드를 갱신할 수 있습니다."
+  },
+  {
+   "en": "This is critical because batch results may not be returned in the same order",
+   "ko": "이게 중요한 이유는 배치 결과가 원래 요청과 같은 순서로"
+  },
+  {
+   "en": "as the original requests.",
+   "ko": "돌아오지 않을 수 있기 때문입니다."
+  },
+  {
+   "en": "Now, let's talk about tools.",
+   "ko": "이제 툴 이야기를 해 봅시다."
+  },
+  {
+   "en": "Batch processing is not the same as a live agentic loop.",
+   "ko": "배치 처리는 실시간 에이전트 루프와 같지 않습니다."
+  },
+  {
+   "en": "In a normal tool-use workflow, Claude can request a tool,",
+   "ko": "일반 툴 사용 워크플로우에서는 Claude 가 툴을 요청하고,"
+  },
+  {
+   "en": "your application executes it, and then you send the tool result back to Claude.",
+   "ko": "애플리케이션이 실행한 뒤, 툴 결과를 Claude 에 다시 보냅니다."
+  },
+  {
+   "en": "But in a single batch request, there is no mid-request tool execution loop.",
+   "ko": "하지만 배치 요청 하나 안에는 요청 도중의 툴 실행 루프가 없습니다."
+  },
+  {
+   "en": "So, if your task requires multiple live tool calls during reasoning,",
+   "ko": "그래서 작업이 추론 중에 여러 번의 실시간 툴 호출을 필요로 한다면"
+  },
+  {
+   "en": "you need a different architecture.",
+   "ko": "다른 아키텍처가 필요합니다."
+  },
+  {
+   "en": "For batch jobs, you usually prepare the needed context before submitting the request.",
+   "ko": "배치 작업에서는 보통 요청을 제출하기 전에 필요한 컨텍스트를 준비합니다."
+  },
+  {
+   "en": "For example, before auditing a support ticket, ShopAssist might gather the ticket text,",
+   "ko": "예를 들어 지원 티켓을 감사하기 전에 ShopAssist 는 티켓 본문,"
+  },
+  {
+   "en": "customer tier, order status, refund history, and policy version.",
+   "ko": "고객 등급, 주문 상태, 환불 이력, 정책 버전을 모을 수 있습니다."
+  },
+  {
+   "en": "Then it sends all of that information as part of the batch request.",
+   "ko": "그다음 그 정보를 전부 배치 요청의 일부로 보냅니다."
+  },
+  {
+   "en": "Another best practice is to refine your prompt before running a large batch.",
+   "ko": "또 다른 모범 사례는 큰 배치를 돌리기 전에 프롬프트를 다듬는 것입니다."
+  },
+  {
+   "en": "Do not start with 10,000 documents.",
+   "ko": "문서 만 개로 시작하지 마세요."
+  },
+  {
+   "en": "Start with a small sample.",
+   "ko": "작은 샘플로 시작하세요."
+  },
+  {
+   "en": "Review the outputs.",
+   "ko": "출력을 검토하세요."
+  },
+  {
+   "en": "Find common mistakes.",
+   "ko": "흔한 실수를 찾으세요."
+  },
+  {
+   "en": "Improve the prompt, schema, and validation rules.",
+   "ko": "프롬프트, schema, validation 규칙을 개선하세요."
+  },
+  {
+   "en": "Then run the larger batch.",
+   "ko": "그다음 더 큰 배치를 돌리세요."
+  },
+  {
+   "en": "This avoids wasting cost on a flawed prompt.",
+   "ko": "이렇게 하면 결함 있는 프롬프트에 비용을 낭비하지 않습니다."
+  },
+  {
+   "en": "If some requests fail, you usually do not need to resubmit the entire batch.",
+   "ko": "일부 요청이 실패해도 보통 배치 전체를 다시 제출할 필요는 없습니다."
+  },
+  {
+   "en": "Instead, your application should identify the failed documents and resubmit only those.",
+   "ko": "대신 애플리케이션이 실패한 문서를 찾아 그것만 다시 제출해야 합니다."
+  },
+  {
+   "en": "This is another reason why stable IDs are important.",
+   "ko": "이것이 안정적인 ID 가 중요한 또 하나의 이유입니다."
+  },
+  {
+   "en": "Now, let's move from batch processing to review architecture.",
+   "ko": "이제 배치 처리에서 검토 아키텍처로 넘어갑시다."
+  },
+  {
+   "en": "A common mistake is to ask Claude to generate something,",
+   "ko": "흔한 실수는 Claude 에게 무언가를 생성하게 한 뒤,"
+  },
+  {
+   "en": "and then ask the same Claude response to review itself.",
+   "ko": "같은 Claude 응답에게 스스로를 검토하라고 하는 것입니다."
+  },
+  {
+   "en": "Self-review can be useful, but it has limits.",
+   "ko": "자기 검토도 유용할 수 있지만 한계가 있습니다."
+  },
+  {
+   "en": "The model may miss the same assumptions or mistakes that appeared in the original answer.",
+   "ko": "모델은 원래 답에 있던 것과 같은 가정이나 실수를 똑같이 놓칠 수 있습니다."
+  },
+  {
+   "en": "For higher reliability, use independent review instances.",
+   "ko": "더 높은 신뢰성을 위해서는 독립적인 검토 인스턴스를 쓰세요."
+  },
+  {
+   "en": "That means one Claude call generates the output,",
+   "ko": "즉 한 Claude 호출이 출력을 생성하고,"
+  },
+  {
+   "en": "and a separate Claude call reviews it with a different prompt,",
+   "ko": "별도의 Claude 호출이 다른 프롬프트,"
+  },
+  {
+   "en": "different role, or more focused criteria.",
+   "ko": "다른 역할, 또는 더 집중된 기준으로 그것을 검토합니다."
+  },
+  {
+   "en": "For example, ShopAssist might use one request to draft a refund resolution policy.",
+   "ko": "예를 들어 ShopAssist 는 한 요청으로 환불 처리 정책 초안을 만들 수 있습니다."
+  },
+  {
+   "en": "Then a separate review request checks.",
+   "ko": "그다음 별도의 검토 요청이 확인합니다."
+  },
+  {
+   "en": "Does this policy follow the refund rules?",
+   "ko": "이 정책이 환불 규칙을 따르는가?"
+  },
+  {
+   "en": "Does it create legal or compliance risk?",
+   "ko": "법적·컴플라이언스 리스크를 만드는가?"
+  },
+  {
+   "en": "Does it require human approval?",
+   "ko": "사람의 승인이 필요한가?"
+  },
+  {
+   "en": "Does it contradict any existing policy?",
+   "ko": "기존 정책과 모순되는가?"
+  },
+  {
+   "en": "This is called a multi-pass review.",
+   "ko": "이것을 multi-pass review 라고 합니다."
+  },
+  {
+   "en": "The first pass produces or analyzes something.",
+   "ko": "첫 번째 pass 는 무언가를 만들거나 분석합니다."
+  },
+  {
+   "en": "The second pass reviews it.",
+   "ko": "두 번째 pass 는 그것을 검토합니다."
+  },
+  {
+   "en": "A third pass may integrate the findings or route the case to a human.",
+   "ko": "세 번째 pass 는 발견 사항을 통합하거나 케이스를 사람에게 보낼 수 있습니다."
+  },
+  {
+   "en": "This pattern is especially useful for code review,",
+   "ko": "이 패턴은 코드 리뷰,"
+  },
+  {
+   "en": "policy review, support summaries, and document analysis.",
+   "ko": "정책 검토, 지원 요약, 문서 분석에 특히 유용합니다."
+  },
+  {
+   "en": "There is also an important architecture pattern for large code bases or large document sets.",
+   "ko": "큰 코드베이스나 큰 문서 집합을 위한 중요한 아키텍처 패턴도 있습니다."
+  },
+  {
+   "en": "Per-file local analysis followed by cross-file integration analysis.",
+   "ko": "파일별 로컬 분석 뒤에 파일 간 통합 분석입니다."
+  },
+  {
+   "en": "In the first pass, Claude reviews each file or document separately.",
+   "ko": "첫 번째 pass 에서 Claude 는 각 파일이나 문서를 따로 검토합니다."
+  },
+  {
+   "en": "Each result is small, structured, and focused.",
+   "ko": "각 결과는 작고, 구조화되어 있고, 초점이 분명합니다."
+  },
+  {
+   "en": "Then a second pass looks across those per-file findings and asks,",
+   "ko": "그다음 두 번째 pass 가 파일별 발견 사항을 가로질러 보며 묻습니다."
+  },
+  {
+   "en": "Are there conflicts?",
+   "ko": "충돌이 있는가?"
+  },
+  {
+   "en": "Are there repeated issues?",
+   "ko": "반복되는 문제가 있는가?"
+  },
+  {
+   "en": "Does one file change break assumptions in another file?",
+   "ko": "한 파일의 변경이 다른 파일의 가정을 깨뜨리는가?"
+  },
+  {
+   "en": "What are the highest priority findings?",
+   "ko": "가장 우선순위가 높은 발견 사항은 무엇인가?"
+  },
+  {
+   "en": "This is better than trying to put an entire large project into one prompt.",
+   "ko": "큰 프로젝트 전체를 프롬프트 하나에 넣으려는 것보다 낫습니다."
+  },
+  {
+   "en": "It also gives the system better traceability.",
+   "ko": "시스템의 추적 가능성도 좋아집니다."
+  },
+  {
+   "en": "You know which file produced which finding.",
+   "ko": "어느 파일에서 어느 발견이 나왔는지 알 수 있습니다."
+  },
+  {
+   "en": "You can filter low confidence results.",
+   "ko": "낮은 confidence 결과를 걸러낼 수 있습니다."
+  },
+  {
+   "en": "And you can run integration analysis only after the local analysis is complete.",
+   "ko": "그리고 로컬 분석이 끝난 뒤에만 통합 분석을 돌릴 수 있습니다."
+  },
+  {
+   "en": "So the key idea of this lesson is simple.",
+   "ko": "이 강의의 핵심은 단순합니다."
+  },
+  {
+   "en": "Use synchronous calls when the user is waiting.",
+   "ko": "사용자가 기다리고 있으면 동기 호출을 쓴다."
+  },
+  {
+   "en": "Use batch processing when the work is large and latency-tolerant.",
+   "ko": "작업이 크고 지연을 견딜 수 있으면 배치 처리를 쓴다."
+  },
+  {
+   "en": "Use custom ID to correlate results.",
+   "ko": "custom_id 로 결과를 짝짓는다."
+  },
+  {
+   "en": "Prepare tool context before the batch request.",
+   "ko": "배치 요청 전에 툴 컨텍스트를 준비한다."
+  },
+  {
+   "en": "Test prompts on a sample before scaling.",
+   "ko": "확장하기 전에 샘플로 프롬프트를 테스트한다."
+  },
+  {
+   "en": "Resubmit only failed documents.",
+   "ko": "실패한 문서만 다시 제출한다."
+  },
+  {
+   "en": "And for important review workflows, prefer independent multi-pass review over simple self-review.",
+   "ko": "그리고 중요한 검토 워크플로우에서는 단순 자기 검토보다 독립적인 multi-pass review 를 택한다."
+  },
+  {
+   "en": "For ShopAssist, this means live customer conversations stay synchronous.",
+   "ko": "ShopAssist 에서는 실시간 고객 대화는 동기식으로 유지합니다."
+  },
+  {
+   "en": "Nightly support ticket audits use batch processing.",
+   "ko": "야간 지원 티켓 감사는 배치 처리를 씁니다."
+  },
+  {
+   "en": "Generated summaries and policies can go through independent review.",
+   "ko": "생성된 요약과 정책은 독립적인 검토를 거칠 수 있습니다."
+  },
+  {
+   "en": "And large analysis jobs can be split into local passes first,",
+   "ko": "그리고 큰 분석 작업은 먼저 로컬 pass 로 나누고,"
+  },
+  {
+   "en": "followed by cross-file or cross-ticket integration.",
+   "ko": "그다음 파일 간·티켓 간 통합을 합니다."
+  },
+  {
+   "en": "That is the architecture pattern the exam wants you to recognize.",
+   "ko": "그것이 시험이 여러분에게 알아보라고 요구하는 아키텍처 패턴입니다."
+  }
+ ],
+ "body": "### When one request at a time is the wrong shape\n- 10,000 support tickets, last night's return requests, many generated summaries to review: calling the synchronous Messages API one request at a time does not fit. // 대량 작업에 동기 호출 하나씩은 맞지 않는다.\n- The **Message Batches API** is built for ==large, latency-tolerant workloads==: submit many requests together, Claude processes them asynchronously, your app retrieves results later. // 많이 제출, 비동기 처리, 나중에 수거.\n- Two benefits: ==50% lower cost== than standard calls, and a good fit when nobody is waiting for an immediate answer. // 비용 절반, 즉답이 필요 없을 때.\n\n### Synchronous vs batch: who is waiting?\n- Customer chatting live (\"Can I return this item?\") is waiting now: ==synchronous== call. // 실시간 대화는 동기.\n- Nightly audit of all tickets (classify, detect risky refunds, find policy exceptions, flag for human review) runs in the background: ==batch==. // 야간 감사는 배치.\n- Trade-off is latency: batches may take ==up to 24 hours== and have __no guaranteed latency SLA__. Great for offline workflows, wrong for blocking ones. // 최대 24시간, SLA 없음.\n- A pre-merge check in CI that needs pass/fail before merging should not wait on a batch job. // CI 머지 검사는 배치가 아니다.\n\n### custom_id: matching results back\n- Each request in a batch carries a ==custom_id== (Ticket 1001, 1002, 1003) so each response can be matched to its input and the right audit record updated. // 응답을 원래 입력과 짝짓는 열쇠.\n- Critical because ==results may not come back in the original order==. // 순서 보장 없음.\n- Stable IDs also let you ==resubmit only the failed documents== instead of the whole batch. // 실패한 것만 재제출.\n\n### Tools inside a batch\n- Batch processing is ==not a live agentic loop==: inside a single batch request there is no mid-request tool execution loop. // 배치 안에는 툴 실행 루프가 없다.\n- Tasks that need several live tool calls during reasoning need a different architecture. // 실시간 툴 호출이 필요하면 다른 구조.\n- For batch jobs, ==prepare the context before submitting==: ticket text, customer tier, order status, refund history, policy version all go into the request. // 컨텍스트를 미리 모아 요청에 담는다.\n\n### Refine on a sample before scaling\n- Do not start with 10,000 documents. ((Small sample)) → review outputs → find common mistakes → improve prompt, schema, validation rules → then the large batch. // 샘플로 다듬고 나서 확장.\n- Avoids wasting cost on a flawed prompt. // 결함 프롬프트에 비용 낭비 방지.\n\n### Independent multi-pass review, not self-review\n- Asking the same Claude response to review itself has limits: it may ==miss the same assumptions or mistakes== it made the first time. // 자기 검토는 같은 실수를 놓친다.\n- Use ==independent review instances==: one call generates, a separate call reviews with a different prompt, role, or more focused criteria. // 별도 호출, 다른 프롬프트·역할·기준.\n- ShopAssist: one request drafts a refund policy; a separate review request asks whether it follows refund rules, creates legal or compliance risk, needs human approval, contradicts existing policy. // 정책 초안과 검토를 분리.\n- **Multi-pass review**: pass 1 produces or analyzes, pass 2 reviews, pass 3 integrates findings or routes to a human. Good for code review, policy review, support summaries, document analysis. // 생성 → 검토 → 통합·라우팅.\n\n### Per-file local analysis, then cross-file integration\n- For large code bases or document sets: first pass reviews ==each file separately== (small, structured, focused results); second pass looks across findings for conflicts, repeated issues, cross-file breakage, top priorities. // 파일별 로컬 분석 뒤 통합 분석.\n- Better than one giant prompt, and gives ==traceability==: which file produced which finding, filter low-confidence results, run integration only after local analysis is done. // 추적 가능성과 순서.\n\n### ShopAssist mapping\n| Work // 작업 | Pattern // 패턴 |\n|---|---|\n| Live customer conversation // 실시간 고객 대화 | Synchronous // 동기 |\n| Nightly ticket audit // 야간 티켓 감사 | Batch with custom_id // custom_id 배치 |\n| Generated summaries and policies // 생성된 요약·정책 | Independent multi-pass review // 독립 다중 검토 |\n| Large analysis jobs // 큰 분석 작업 | Local passes, then cross-file or cross-ticket integration // 로컬 후 통합 |",
+ "keyPoints": [
+  "Synchronous when the user is waiting; Message Batches API when the work is large and latency-tolerant: 50% cheaper, up to 24 hours, no latency SLA. // 기다리면 동기, 대량·지연 허용이면 배치.",
+  "custom_id matches each result to its input because batch results may return out of order; stable IDs let you resubmit only failures. // custom_id 로 짝짓고 실패분만 재제출.",
+  "No mid-request tool loop inside a batch: gather the context (ticket, tier, order status, refund history, policy version) before submitting. // 배치는 툴 루프 없음, 컨텍스트 선준비.",
+  "Refine the prompt, schema, and validation on a small sample before running the big batch. // 샘플로 다듬은 뒤 확장.",
+  "Independent multi-pass review beats self-review; large sets get per-file local analysis first, then cross-file integration. // 독립 검토, 로컬 후 통합."
+ ],
+ "examTrends": {
+  "how": "Architecture-choice scenarios: a nightly audit of thousands of tickets, a live chat, a CI pre-merge gate, or a policy draft that must be checked. You pick between synchronous and batch by asking who is waiting, and between self-review and independent review by asking how reliable it must be. // 아키텍처 선택 시나리오. 야간 티켓 감사, 실시간 채팅, CI 머지 게이트, 검토가 필요한 정책 초안. 누가 기다리는지로 동기·배치를, 얼마나 믿어야 하는지로 자기 검토·독립 검토를 고른다.",
+  "answerLooks": [
+   "Message Batches API for large, latency-tolerant, background work with custom_id to correlate results and resubmit only failures. // 대량·지연 허용·백그라운드 = 배치 + custom_id.",
+   "Keep live customer conversations and blocking CI checks on synchronous calls. // 실시간·블로킹은 동기.",
+   "Prepare all needed context before the batch request; test on a small sample first. // 컨텍스트 선준비, 샘플 테스트.",
+   "A separate Claude call with a different prompt or role reviews the first call's output; per-file passes then cross-file integration. // 독립 검토 호출, 로컬 후 통합."
+  ],
+  "traps": [
+   "\"Use batch processing for the live support chat to save 50%\" makes a waiting customer wait up to 24 hours. // 실시간 채팅에 배치는 오답.",
+   "\"Have the batch request call lookup tools mid-way\" ignores that a batch request has no tool execution loop. // 배치 안에서 툴 루프를 기대하는 보기는 오답.",
+   "\"Ask the same response to double-check itself\" for high-stakes policy review repeats the same blind spots. // 자기 검토로 충분하다는 보기는 오답.",
+   "\"Put the whole code base in one prompt\" or \"resubmit the entire batch when a few fail\" loses traceability and wastes cost. // 통째로 한 프롬프트, 전체 재제출은 오답."
+  ],
+  "memorize": "Waiting = sync. Big and patient = batch + custom_id. Important review = a different Claude call. Big project = local passes, then integration. // 기다리면 동기, 크고 느긋하면 배치, 중요 검토는 다른 호출, 큰 프로젝트는 로컬 후 통합."
+ },
+ "createdAt": "2026-09-09T06:30:00Z"
+}

@@ -15,6 +15,10 @@
         {
           "no": "27",
           "title": "Validation, Retry Loops, Confidence, and Human Review"
+        },
+        {
+          "no": "28",
+          "title": "Batch Processing and Multi-Pass Review Architectures"
         }
       ]
     }
