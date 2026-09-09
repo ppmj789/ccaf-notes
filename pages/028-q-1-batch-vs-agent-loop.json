@@ -1,0 +1,57 @@
+{
+ "id": "q-028-1",
+ "kind": "question",
+ "order": 28.1,
+ "section": "Reliable Prompts & Structured Output",
+ "lecture": "28",
+ "title_en": "Batch API for 60,000 cases that need tool loops?",
+ "title": "툴 루프가 필요한 6만 건에 Batch API?",
+ "domain": "신뢰성",
+ "question_en": "A support team wants to reduce costs by using the Anthropic Batch API for a nightly backlog of 60,000 ambiguous cases. Their proposed bulk_resolve_cases job would submit one batch item per case and expect Claude to fetch the customer profile, look up orders, decide whether to refund, possibly call process_refund, and then escalate unresolved cases. Which constraint should most strongly shape the architecture?",
+ "question_ko": "지원팀이 ==비용을 줄이려고== 야간 백로그 ==6만 건==의 애매한 케이스에 Batch API 를 쓰려 한다. 제안된 `bulk_resolve_cases` 작업은 케이스당 배치 항목 하나를 제출하고, Claude 가 ==고객 프로필을 가져오고, 주문을 조회하고, 환불 여부를 결정하고, 필요하면 `process_refund` 를 부르고, 미해결 건은 에스컬레이션==하기를 기대한다. 아키텍처를 가장 강하게 좌우해야 할 제약은?",
+ "options": [
+  {
+   "key": "A",
+   "en": "Use the Batch API for deferred, independent work such as categorizing or summarizing closed tickets, and run any refund-resolution flow that needs repeated MCP tool calls through an external real-time agent loop.",
+   "ko": "Batch API 는 닫힌 티켓 분류·요약처럼 미뤄도 되는 독립 작업에 쓰고, MCP 툴을 반복 호출해야 하는 환불 해결 흐름은 외부의 실시간 에이전트 루프로 돌린다."
+  },
+  {
+   "key": "B",
+   "en": "Avoid the Batch API for the ticket audit because support records are stored as JSON objects, and batch requests are only suitable for unstructured plain-text prompts.",
+   "ko": "지원 레코드가 JSON 객체로 저장되어 있고 배치 요청은 비구조화 평문 프롬프트에만 적합하므로 티켓 감사에 Batch API 를 피한다."
+  },
+  {
+   "key": "C",
+   "en": "Move both live chats and overnight ticket audits to the Batch API because batching is primarily intended to improve response time compared with synchronous calls.",
+   "ko": "배치는 동기 호출보다 응답 시간을 줄이려는 것이므로 실시간 채팅과 야간 티켓 감사를 둘 다 Batch API 로 옮긴다."
+  },
+  {
+   "key": "D",
+   "en": "Submit one batch item per unresolved case and let that item run the same get_customer, lookup_order, process_refund, and escalate_to_human loop that the live agent runs.",
+   "ko": "미해결 케이스당 배치 항목 하나를 제출하고, 그 항목이 라이브 에이전트와 같은 get_customer, lookup_order, process_refund, escalate_to_human 루프를 돌리게 한다."
+  }
+ ],
+ "answer": "A",
+ "explanation": "지문의 함정은 \"6만 건, 야간, 비용 절감\" 이라는 배치의 장점만 보여 주고, 작업 내용이 ==툴 왕복이 필요한 에이전트 루프==라는 점을 흘려 놓은 것이다.\n\n- 28강: \"배치 요청 하나 안에는 요청 도중의 툴 실행 루프가 없다.\" 배치 항목은 ==일회성 모델 요청==이다. Claude 가 get_customer 를 요청해도 그 결과를 실행해서 돌려줄 주체가 배치 안에는 없다.\n- 지문의 작업은 프로필 조회 → 주문 조회 → 판단 → 환불 실행 → 에스컬레이션, 즉 ==여러 번의 실시간 툴 호출과 결과에 따른 분기==다. \"추론 중에 여러 번의 실시간 툴 호출이 필요하면 다른 아키텍처가 필요하다.\"\n\n| 작업 | 어디서 |\n|---|---|\n| 닫힌 티켓 분류·요약·추출 (입력 고정, 결과 독립) | Batch API |\n| 환불 해결 (툴 루프, 결과에 따른 분기) | 실시간 에이전트 루프 (동기 API) |\n\n- 비용을 줄이고 싶다면 배치용 컨텍스트를 미리 모아서(고객 등급, 주문 상태, 환불 이력) ==분류만 배치==로 시키고, 실제 환불은 루프에서 한다.",
+ "traps": [
+  {
+   "key": "B",
+   "why": "사실이 아니다. 배치 항목은 일반 Messages 요청과 같은 형식이라 구조화 입력, 툴 정의, 구조화 출력을 다 넣을 수 있다. 제약을 엉뚱한 곳에서 찾은 보기."
+  },
+  {
+   "key": "C",
+   "why": "정반대. 배치는 최대 24시간, 지연 SLA 없음. 응답 시간이 아니라 비용과 처리량을 위한 것이고, 기다리는 고객이 있는 실시간 채팅에는 쓰지 않는다."
+  },
+  {
+   "key": "D",
+   "why": "지문이 제안한 설계를 그대로 승인한 보기. 바로 그게 안 되는 이유가 이 문제의 핵심이다. 배치 항목 안에서는 그 루프가 돌 수 없다."
+  }
+ ],
+ "keyPoints": [
+  "A batch item is a one-shot request with no mid-request tool execution loop. // 배치 항목 = 툴 루프 없는 일회성 요청.",
+  "Independent work (classify, summarize, extract with pre-gathered context) fits batch; multi-step tool-using resolution runs in a real-time agent loop. // 독립 작업은 배치, 툴 루프는 실시간.",
+  "Batch is for cost and throughput, not response time: up to 24 hours, no latency SLA, never for live chat. // 배치는 비용·처리량용, 응답 시간용이 아니다.",
+  "\"Reduce costs\" plus \"60,000 cases\" is bait; read what the job actually does before choosing batch. // 비용 미끼에 넘어가지 말고 작업 내용을 보라."
+ ],
+ "createdAt": "2026-09-09T09:00:00Z"
+}
