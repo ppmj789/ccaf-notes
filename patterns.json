@@ -133,5 +133,22 @@
     "answerShape": "명시적 기준 + 대조 예시 + 출력 형식 유지.",
     "distractorShape": "스키마 조이기, 자기 추론을 가드레일로, 주관적 형용사(중요한·관련 있는).",
     "memorize": "모양 문제는 스키마, 뜻 문제는 규칙 + 대조 예시."
+  },
+  {
+    "id": "subagent-failure-mode",
+    "name": "멀티에이전트 실패 모드 예측",
+    "domain": "멀티에이전트",
+    "official": "D1",
+    "formula": "제안 설계에서 누가 위임 권한(Task)과 툴과 최종 판단권을 갖는지 본다. 전문 에이전트가 Task + 전체 툴 + 독립 결정권을 가지면 실패 모드는 재귀 fan-out·중복 조회·상충 권고·지연. 처방은 위임은 coordinator 소유(또는 명시적 위임) + fan-out·깊이 제한 + 역할별 최소 툴 + task 별 context + 구조화된 findings 를 coordinator 로 반환.",
+    "clueWords": [
+      "also gives each specialist the Task tool",
+      "all MCP tools",
+      "resolve or escalate independently",
+      "what failure mode should you predict",
+      "spawn ... subagents"
+    ],
+    "answerShape": "실패 모드를 정확히 지명 + 위임 권한 제한·fan-out 제한·최소 툴·구조화 반환으로 고침.",
+    "distractorShape": "진단을 거꾸로(정보 부족·과도한 제한), 전체 대화 통째 전달, 마지막 subagent 응답을 최종 답으로, 프롬프트 문구로 통제.",
+    "memorize": "Task 를 전원에게 주면 재귀 fan-out. 위임은 coordinator 가, 툴은 역할별 최소, 결과는 구조화해서 coordinator 로."
   }
 ]

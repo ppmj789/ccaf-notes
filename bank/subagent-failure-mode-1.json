@@ -1,0 +1,79 @@
+{
+  "id": "b-subagent-failure-mode-1",
+  "order": 37.11,
+  "section": "Multi-Agent Systems",
+  "lecture": "37",
+  "patternId": "subagent-failure-mode",
+  "generated": true,
+  "reviewed": false,
+  "source": "q-037-1 변형",
+  "title_en": "Release review agents that can all delegate",
+  "title": "전원이 위임할 수 있는 릴리스 리뷰 에이전트",
+  "domain": "멀티에이전트",
+  "question_en": "A release-review coordinator receives a pull request that touches ==authentication, a database migration, and the billing service==. The plan is for the coordinator to spawn ==SecurityReview, MigrationCheck, and BillingImpact subagents==, and to give ==each of them the Task tool==, the ==full toolset including Edit and Bash==, and ==authority to approve or block the release on its own==. ==What should you expect to go wrong==, and what is the best correction?",
+  "question_ko": "릴리스 리뷰 coordinator 가 ==인증 · DB 마이그레이션 · 청구 서비스==를 건드리는 pull request 를 받는다. 계획은 coordinator 가 ==SecurityReview, MigrationCheck, BillingImpact subagent== 를 띄우고, ==각각에게 Task 툴==과 ==Edit·Bash 를 포함한 전체 툴셋==, 그리고 ==스스로 릴리스를 승인하거나 막을 권한==까지 주는 것이다. ==무엇이 잘못될 것으로 예상==해야 하며, 가장 좋은 수정은?",
+  "options": [
+    {
+      "key": "A",
+      "en": "Expect ==reviews that are too shallow==; keep Task on every reviewer and add a ==system-prompt reminder== to delegate further ==only when a diff looks unusually risky==.",
+      "ko": "==리뷰가 너무 얕아질 것==으로 예상한다. Task 는 모든 리뷰어에 그대로 두고, ==diff 가 유난히 위험해 보일 때만== 더 위임하라는 ==시스템 프롬프트 문구==를 추가한다."
+    },
+    {
+      "key": "B",
+      "en": "Expect ==reviewers to lack repository context==; ==forward the entire PR discussion and full file tree to each one==, let each ==spawn more reviewers as needed==, and take the ==last returned review as the verdict==.",
+      "ko": "==리뷰어가 저장소 context 가 부족할 것==으로 예상한다. ==전체 PR 논의와 파일 트리를 각자에게 통째로 전달==하고, 각자 ==필요한 만큼 리뷰어를 더 띄우게== 하고, ==마지막으로 돌아온 리뷰를 판정으로== 쓴다."
+    },
+    {
+      "key": "C",
+      "en": "Expect ==nested reviewer spawning==, ==duplicated scans of the same files==, ==contradictory approve and block verdicts==, and ==write access being used during a read-only review==; keep spawning ==with the coordinator==, cap ==fan-out and depth==, give each reviewer ==only read tools for its area==, and require ==structured findings returned to the coordinator==, which issues the single verdict.",
+      "ko": "==리뷰어의 중첩 생성==, ==같은 파일 중복 스캔==, ==승인과 차단 판정 충돌==, ==읽기 전용 리뷰에서 쓰기 권한 사용==을 예상한다. 생성 권한은 ==coordinator 에 두고==, ==fan-out 과 깊이를 제한==하고, 각 리뷰어에게는 ==자기 영역의 읽기 툴만== 주고, ==구조화된 findings 를 coordinator 로 반환==해 coordinator 가 단일 판정을 내리게 한다."
+    },
+    {
+      "key": "D",
+      "en": "Expect ==slow reviews==; remove the coordinator entirely so the three reviewers ==negotiate directly with each other== and publish whichever verdict ==two of them agree on==.",
+      "ko": "==리뷰가 느려질 것==으로 예상한다. coordinator 를 아예 없애서 세 리뷰어가 ==서로 직접 협의==하고 ==둘이 합의한 판정==을 게시하게 한다."
+    }
+  ],
+  "answer": "C",
+  "explanation": "위험 신호가 원본 문제와 똑같이 셋이다.\n- ==each of them the Task tool== → 리뷰어가 리뷰어를 띄우는 ==중첩 생성==. 깊이 제한이 없으면 통제 불가.\n- ==full toolset including Edit and Bash== → 읽기만 하면 되는 리뷰에 ==쓰기 권한==. 최소 툴 위반이고, 같은 파일을 셋이 각자 스캔해 ==중복 작업== 이 생긴다.\n- ==authority to approve or block on its own== → ==판정 충돌==. SecurityReview 는 차단, BillingImpact 는 승인을 낼 수 있다.\n\n정답 C 는 진단 네 가지를 지명하고 처방도 네 가지다 — 생성은 coordinator, fan-out·깊이 제한, 영역별 ==읽기 툴만==, 구조화된 findings 반환 후 ==단일 판정==.\n\n| 보기 | 문제 |\n|---|---|\n| A | 구조 문제를 프롬프트 문구로 막으려 함, Task 는 그대로 |\n| B | 통째 전달 + 계속 fan-out + 마지막 응답을 판정으로 |\n| D | coordinator 제거 = 통합 지점 상실, 서로 직접 통신 |",
+  "traps": [
+    {
+      "key": "A",
+      "why": "진단이 반대다. 문제는 얕은 분석이 아니라 권한 과다이고, Task 를 남겨 두면 재귀 위임은 기술적으로 여전히 가능하다. \"유난히 위험해 보이면\" 은 모델 판단에 맡기는 모호한 기준."
+    },
+    {
+      "key": "B",
+      "why": "전체 논의·파일 트리 통째 전달은 명시적 context 전달이 아니라 context 낭비다. 추가 생성 허용은 fan-after 문제를 그대로 두고, 마지막 리뷰를 판정으로 쓰는 것은 coordinator 의 통합 책임을 버리는 것."
+    },
+    {
+      "key": "D",
+      "why": "coordinator 는 병목이 아니라 통합·최종 판정 지점이다. 없애면 통신이 난장판이 되고 다수결은 근거 없는 판정 규칙이다."
+    }
+  ],
+  "keyPoints": [
+    "Task 를 리뷰어 전원에게 주면 중첩 생성이 실패 모드. 생성 권한은 coordinator 가 갖고 fan-out·깊이를 제한한다.",
+    "읽기만 필요한 역할에 Edit·Bash 를 주지 않는다. 역할별 최소 툴.",
+    "최종 판정은 하나여야 한다. 구조화된 findings 를 모아 coordinator 가 단일 결론을 낸다."
+  ],
+  "pattern": {
+    "type": "멀티에이전트 실패 모드 예측",
+    "asks": "제안된 리뷰 오케스트레이션에서 먼저 망가지는 것과 그 처방.",
+    "clues": [
+      {
+        "text": "each of them the Task tool",
+        "means": "중첩 생성 → 깊이 제한 필요"
+      },
+      {
+        "text": "full toolset including Edit and Bash",
+        "means": "읽기 리뷰에 쓰기 권한 = 최소 툴 위반"
+      },
+      {
+        "text": "approve or block on its own",
+        "means": "판정 충돌 → 단일 판정 필요"
+      }
+    ],
+    "answerShape": "중첩 생성·중복 스캔·판정 충돌·과잉 권한을 지명 + 생성은 coordinator, fan-out 제한, 읽기 툴만, 구조화 반환 후 단일 판정.",
+    "distractorShape": "프롬프트 문구로 통제, 통째 전달·계속 fan-out·마지막 응답 채택, coordinator 제거·다수결."
+  },
+  "createdAt": "2026-09-10T17:00:00Z"
+}

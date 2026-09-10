@@ -1,0 +1,82 @@
+{
+  "id": "q-037-1",
+  "kind": "question",
+  "order": 37.1,
+  "section": "Multi-Agent Systems",
+  "lecture": "37",
+  "title_en": "Every specialist got the Task tool",
+  "title": "전문 에이전트 전원에게 Task 툴을 준 설계",
+  "domain": "멀티에이전트",
+  "question_en": "A support coordinator handles a customer message that combines a ==duplicate charge, a missing item, and a refund request==. The proposed design lets the coordinator spawn ==BillingReview, ShipmentTrace, and PolicyCheck subagents==, but ==also gives each specialist the Task tool==, ==all MCP tools==, and ==permission to resolve or escalate independently==. ==What failure mode should you predict==, and which design change best addresses it?",
+  "question_ko": "고객지원 coordinator 가 ==중복 결제 · 상품 미도착 · 환불 요청==이 섞인 고객 메시지를 처리한다. 제안된 설계는 coordinator 가 ==BillingReview, ShipmentTrace, PolicyCheck subagent== 를 띄우게 하는데, ==각 전문 에이전트에게도 Task 툴==과 ==모든 MCP 툴==, 그리고 ==독립적으로 해결하거나 에스컬레이션할 권한==까지 준다. 어떤 ==실패 모드를 예측==해야 하고, 어떤 설계 변경이 그것을 가장 잘 해결하는가?",
+  "options": [
+    {
+      "key": "A",
+      "en": "The likely failure is ==recursive specialist fan-out==, ==repeated backend lookups==, ==conflicting refund or escalation recommendations==, and ==added latency==; keep subagent spawning ==coordinator-owned or explicitly delegated==, set ==fan-out/depth limits==, ==pass task-specific context==, and require ==structured findings back to the coordinator==.",
+      "ko": "예상되는 실패는 ==전문 에이전트의 재귀적 fan-out==, ==중복된 백엔드 조회==, ==환불·에스컬레이션 권고 충돌==, ==지연 증가== 다. subagent 생성 권한은 ==coordinator 가 갖거나 명시적으로만 위임==하고, ==fan-out·깊이 제한==을 두고, ==task 별 context 를 전달==하고, ==구조화된 findings 를 coordinator 로 반환==하게 한다."
+    },
+    {
+      "key": "B",
+      "en": "The likely failure is ==specialists being unable to discover enough information==; give every specialist ==Task plus all MCP tools== so each can ==recursively involve any other agent== and complete the support case ==without coordinator bottlenecks==.",
+      "ko": "예상되는 실패는 ==전문 에이전트가 정보를 충분히 찾지 못하는 것== 이다. 모든 전문 에이전트에게 ==Task 와 모든 MCP 툴==을 줘서 각자 ==다른 에이전트를 재귀적으로 끌어들이고== ==coordinator 병목 없이== 케이스를 끝내게 한다."
+    },
+    {
+      "key": "C",
+      "en": "The likely failure is ==incomplete context inside the specialists==; ==send the entire conversation to every spawned agent==, allow each one to ==spawn additional agents as needed==, and use the ==last returned subagent message as the final resolution==.",
+      "ko": "예상되는 실패는 ==전문 에이전트 안의 context 부족== 이다. ==전체 대화를 띄우는 모든 에이전트에 보내고==, 각자 ==필요한 만큼 추가 에이전트를 띄우게== 하고, ==마지막으로 돌아온 subagent 메시지를 최종 해결로== 쓴다."
+    },
+    {
+      "key": "D",
+      "en": "The likely failure is ==excessive tool restriction causing shallow analysis==; ==leave Task available to all specialists==, but add ==strong system-prompt language== saying not to over-delegate ==unless the customer issue appears unusually complex==.",
+      "ko": "예상되는 실패는 ==과도한 툴 제한으로 인한 얕은 분석== 이다. ==Task 는 모든 전문 에이전트에 그대로 두고==, ==강한 시스템 프롬프트 문구==로 \"고객 문제가 유난히 복잡해 보이지 않으면 과도하게 위임하지 마라\" 를 넣는다."
+    }
+  ],
+  "answer": "A",
+  "explanation": "제안 설계에서 위험한 대목은 **셋** 이다.\n- ==each specialist the Task tool== — 위임 권한을 전원에게 줬다. Task 는 subagent 를 띄우는 메커니즘이므로, BillingReview 가 또 PolicyCheck 를 띄우고 그게 또 다른 것을 띄울 수 있다. 이것이 ==재귀적 fan-out== 이다.\n- ==all MCP tools== — 역할별 최소 툴 원칙이 깨졌다. 세 에이전트가 같은 주문·결제 조회를 각자 돌려 ==중복 백엔드 조회== 가 생긴다.\n- ==resolve or escalate independently== — 최종 판단권이 셋으로 흩어졌다. BillingReview 는 환불, PolicyCheck 는 거절, ShipmentTrace 는 재배송을 권할 수 있다. ==상충하는 권고== 다. 게다가 고객은 서로 다른 답을 받을 수 있다.\n\n정답 A 는 실패 모드를 정확히 지명하고(재귀 fan-out · 중복 조회 · 상충 권고 · 지연), 고칠 점을 네 가지로 짚는다.\n\n| 고칠 점 | 왜 |\n|---|---|\n| 생성 권한은 coordinator 소유 | 재귀 fan-out 차단 |\n| fan-out·깊이 제한 | 통제되지 않는 중첩 워크플로 방지 |\n| task 별 context 전달 | 격리된 context 를 필요한 만큼만 채움 |\n| 구조화된 findings 를 coordinator 로 | 통합·최종 응답은 한 곳에서 |\n\n37강의 문장 그대로다 — ==모든 통신은 coordinator 를 거치고==, ==각 에이전트는 자기에게 필요한 툴만 받는다==.",
+  "traps": [
+    {
+      "key": "B",
+      "why": "실패 모드를 거꾸로 진단했다. 문제는 정보 부족이 아니라 권한 과다다. 모두에게 위임 권한과 무제한 MCP 접근을 주면 통제되지 않는 중첩 워크플로·중복 행동·일관성 없는 결정이 생긴다. \"coordinator 병목 없이\" 라는 말도 함정 — coordinator 는 병목이 아니라 통합 지점이다."
+    },
+    {
+      "key": "C",
+      "why": "두 군데가 틀렸다. 전체 대화를 전부 보내는 것은 명시적 context 전달이 아니라 context 낭비이고(필요한 사실만 골라 넘긴다), 각자 추가 에이전트를 띄우게 두면 fan-out 문제가 그대로다. 무엇보다 ==마지막 subagent 메시지를 최종 해결로 쓰는 것== 은 coordinator 의 통합 책임을 버리는 것이다."
+    },
+    {
+      "key": "D",
+      "why": "구조적 문제를 프롬프트 문구로 막으려 한다. Task 를 전원에게 남겨 두면 재귀 위임은 기술적으로 여전히 가능하고, \"유난히 복잡해 보이면\" 은 모델 판단에 맡기는 모호한 기준이다. 항상 지켜져야 하는 것은 프롬프트가 아니라 툴 권한·제한으로 강제한다."
+    }
+  ],
+  "keyPoints": [
+    "Task 툴을 전문 에이전트 전원에게 주면 재귀적 fan-out 이 실패 모드다. 위임 권한은 coordinator 가 갖거나 명시적으로만 내려 준다.",
+    "역할별 최소 툴이 원칙. 전원에게 모든 MCP 툴을 주면 중복 조회와 일관성 없는 결정이 따라온다.",
+    "독립적으로 해결·에스컬레이션할 권한을 여러 에이전트에 주면 권고가 충돌한다. 최종 통합과 고객 응답은 coordinator 하나가 소유한다.",
+    "구조적 제약은 프롬프트 문구가 아니라 툴 권한·fan-out 제한으로 강제한다."
+  ],
+  "pattern": {
+    "type": "멀티에이전트 실패 모드 예측",
+    "asks": "제안된 멀티에이전트 설계에서 무엇이 먼저 망가지는지, 그리고 그것을 무엇으로 막는지.",
+    "clues": [
+      {
+        "text": "also gives each specialist the Task tool",
+        "means": "위임 권한 과다 → 재귀 fan-out"
+      },
+      {
+        "text": "all MCP tools",
+        "means": "최소 툴 위반 → 중복 조회·위험 행동"
+      },
+      {
+        "text": "resolve or escalate independently",
+        "means": "판단권 분산 → 권고 충돌"
+      },
+      {
+        "text": "What failure mode should you predict",
+        "means": "진단 + 처방을 한 보기 안에서 둘 다 맞아야 함"
+      }
+    ],
+    "answerShape": "실패 모드를 정확히 지명(재귀 fan-out·중복 작업·상충 권고·지연) + 위임 권한 제한 · fan-out/깊이 제한 · task 별 context · 구조화된 findings 반환.",
+    "distractorShape": "진단을 거꾸로(정보 부족·과도한 제한), 전체 대화 통째 전달, 마지막 subagent 응답을 최종 답으로, 프롬프트 문구로 통제, \"coordinator 병목 제거\"."
+  },
+  "patternId": "subagent-failure-mode",
+  "createdAt": "2026-09-10T17:00:00Z"
+}
