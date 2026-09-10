@@ -60,6 +60,10 @@
         {
           "no": "36",
           "title": "Single Agent vs Multi-Agent Systems"
+        },
+        {
+          "no": "37",
+          "title": "Coordinator, Subagents, Task Tool, and Explicit Context Passing"
         }
       ]
     }

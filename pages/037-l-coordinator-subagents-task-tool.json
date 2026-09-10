@@ -1,0 +1,361 @@
+{
+  "id": "l-037",
+  "kind": "lesson",
+  "order": 37,
+  "section": "Multi-Agent Systems",
+  "lecture": "37",
+  "title_en": "Coordinator, Subagents, Task Tool, and Explicit Context Passing",
+  "title": "coordinator, sub-agent, task 툴, 그리고 명시적 context 전달",
+  "domain": "멀티에이전트",
+  "summary": "In a hub and spoke coordinator-subagent architecture the coordinator receives the request, splits it, spawns specialized sub-agents through the task tool (which must be in its allowed tools), and owns routing, aggregation, and the final unified response, while each sub-agent is defined by name, description, system prompt, and only the tools it needs. Because sub-agents have isolated context and never inherit the parent conversation, the coordinator must pass the customer, order ID, original message, verified facts, and other agents' prior findings explicitly, emitting multiple task calls in one response when the issues are independent, and decomposing only along meaningful business boundaries. // hub and spoke 형태의 coordinator-subagent 아키텍처에서 coordinator 는 요청을 받아 나누고, allowed tools 에 있어야 하는 task 툴로 전문 sub-agent 를 띄우며, 라우팅·집계·하나의 최종 응답을 소유하고, 각 sub-agent 는 name·description·system prompt 와 꼭 필요한 툴만으로 정의된다. sub-agent 는 격리된 context 를 갖고 부모 대화를 물려받지 않으므로 coordinator 가 고객·주문 ID·원문·확인된 사실·다른 에이전트의 앞선 결과를 명시적으로 넘겨야 하고, 문제가 독립적이면 한 응답에 task 호출을 여러 개 내보내며, 분해는 의미 있는 업무 경계에서만 한다.",
+  "paragraphs": [
+    {
+      "en": "In the previous lesson, ShopAssist already had backend tools and MCP integration.",
+      "ko": "앞 강의에서 ShopAssist 는 이미 백엔드 툴과 MCP 연동을 갖췄습니다."
+    },
+    {
+      "en": "Now we move one level higher.",
+      "ko": "이제 한 단계 위로 올라갑니다."
+    },
+    {
+      "en": "Instead of one agent trying to solve every part of a complex customer request by itself,",
+      "ko": "복잡한 고객 요청의 모든 부분을 한 에이전트가 혼자 해결하려 하는 대신,"
+    },
+    {
+      "en": "we can use a coordinator-subagent architecture.",
+      "ko": "coordinator-subagent 아키텍처를 쓸 수 있습니다."
+    },
+    {
+      "en": "The pattern is simple.",
+      "ko": "패턴은 단순합니다."
+    },
+    {
+      "en": "The coordinator stays in the center.",
+      "ko": "coordinator 가 가운데에 있습니다."
+    },
+    {
+      "en": "It receives the user request, decides how to split the work,",
+      "ko": "사용자 요청을 받고, 일을 어떻게 나눌지 결정하고,"
+    },
+    {
+      "en": "sends tasks to specialized sub-agents, receives their findings, and produces one final answer.",
+      "ko": "전문 sub-agent 들에게 task 를 보내고, 그 결과를 받아, 하나의 최종 답변을 만듭니다."
+    },
+    {
+      "en": "This is a hub and spoke architecture.",
+      "ko": "이것이 hub and spoke(바퀴통과 바퀴살) 아키텍처입니다."
+    },
+    {
+      "en": "The coordinator is the hub. The sub-agents are the spokes.",
+      "ko": "coordinator 가 hub 이고, sub-agent 들이 spoke 입니다."
+    },
+    {
+      "en": "For ShopAssist, this becomes useful when one customer message contains several different problems.",
+      "ko": "ShopAssist 에서는 고객 메시지 하나에 서로 다른 문제가 여러 개 담겼을 때 유용해집니다."
+    },
+    {
+      "en": "For example, Hi, I think I was charged twice for order A-1042.",
+      "ko": "예를 들어 \"안녕하세요, 주문 A-1042 가 두 번 결제된 것 같아요."
+    },
+    {
+      "en": "Also, the headphones arrived damaged,",
+      "ko": "그리고 헤드폰이 파손돼서 왔고요,"
+    },
+    {
+      "en": "and I want to know if I can still return the charger from my previous order.",
+      "ko": "또 지난 주문의 충전기를 아직 반품할 수 있는지 알고 싶어요.\""
+    },
+    {
+      "en": "This is not one issue.",
+      "ko": "이건 하나의 문제가 아닙니다."
+    },
+    {
+      "en": "It is a billing issue, an order investigation issue, and a policy review issue.",
+      "ko": "청구 문제, 주문 조사 문제, 정책 검토 문제입니다."
+    },
+    {
+      "en": "A weak design would ask one agent to handle everything in one long context.",
+      "ko": "빈약한 설계는 하나의 긴 context 안에서 한 에이전트에게 전부 처리하라고 합니다."
+    },
+    {
+      "en": "A better design is to let the coordinator delegate.",
+      "ko": "더 나은 설계는 coordinator 가 위임하게 하는 것입니다."
+    },
+    {
+      "en": "On screen, we define our agents.",
+      "ko": "화면에서 에이전트들을 정의합니다."
+    },
+    {
+      "en": "The important detail here is allowed tools.",
+      "ko": "여기서 중요한 세부 사항은 ==allowed tools== 입니다."
+    },
+    {
+      "en": "If the coordinator is expected to spawn sub-agents,",
+      "ko": "coordinator 가 sub-agent 를 띄워야 한다면,"
+    },
+    {
+      "en": "it must be allowed to use the task tool.",
+      "ko": "task 툴을 쓸 수 있게 허용돼야 합니다."
+    },
+    {
+      "en": "Without task, the coordinator may still reason about delegation,",
+      "ko": "task 가 없으면 coordinator 는 위임을 머릿속으로 따질 수는 있어도,"
+    },
+    {
+      "en": "but it cannot actually invoke sub-agents.",
+      "ko": "실제로 sub-agent 를 호출할 수는 없습니다."
+    },
+    {
+      "en": "Now, let's define the sub-agents.",
+      "ko": "이제 sub-agent 들을 정의해 봅시다."
+    },
+    {
+      "en": "Notice the tool restrictions.",
+      "ko": "툴 제한을 보세요."
+    },
+    {
+      "en": "The billing agent can inspect payment events, but it cannot process a refund.",
+      "ko": "billing agent 는 결제 이벤트를 들여다볼 수 있지만 환불을 실행할 수는 없습니다."
+    },
+    {
+      "en": "The order agent can inspect shipment data, but it cannot make policy decisions.",
+      "ko": "order agent 는 배송 데이터를 볼 수 있지만 정책 판단을 내릴 수는 없습니다."
+    },
+    {
+      "en": "The policy agent can read policy, but it cannot change an order.",
+      "ko": "policy agent 는 정책을 읽을 수 있지만 주문을 바꿀 수는 없습니다."
+    },
+    {
+      "en": "This is one of the main practical benefits of sub-agents.",
+      "ko": "이것이 sub-agent 의 주된 실질적 이점 중 하나입니다."
+    },
+    {
+      "en": "Each agent receives only the tools it needs.",
+      "ko": "각 에이전트는 자기에게 필요한 툴만 받습니다."
+    },
+    {
+      "en": "Now, we send the customer message to the coordinator.",
+      "ko": "이제 고객 메시지를 coordinator 에게 보냅니다."
+    },
+    {
+      "en": "The coordinator should not assume sub-agents automatically know the full conversation.",
+      "ko": "coordinator 는 sub-agent 가 전체 대화를 자동으로 안다고 가정하면 안 됩니다."
+    },
+    {
+      "en": "Sub-agents have isolated context.",
+      "ko": "sub-agent 는 격리된 context 를 갖습니다."
+    },
+    {
+      "en": "They do not automatically inherit the parent conversation history,",
+      "ko": "부모 대화 이력을 자동으로 물려받지 않으므로,"
+    },
+    {
+      "en": "so the coordinator must pass context explicitly.",
+      "ko": "coordinator 가 context 를 명시적으로 넘겨줘야 합니다."
+    },
+    {
+      "en": "A bad sub-agent task would look like this.",
+      "ko": "나쁜 sub-agent task 는 이런 모양입니다."
+    },
+    {
+      "en": "This is too vague.",
+      "ko": "너무 모호합니다."
+    },
+    {
+      "en": "The sub-agent does not know the customer, the order ID, the original message, or what has already been verified.",
+      "ko": "sub-agent 는 고객이 누구인지, 주문 ID 가 무엇인지, 원래 메시지가 무엇인지, 무엇이 이미 확인됐는지 모릅니다."
+    },
+    {
+      "en": "A better task passes complete context.",
+      "ko": "더 나은 task 는 완전한 context 를 넘깁니다."
+    },
+    {
+      "en": "This is explicit context passing.",
+      "ko": "이것이 explicit context passing(명시적 context 전달)입니다."
+    },
+    {
+      "en": "We are not relying on hidden memory.",
+      "ko": "숨겨진 기억에 의존하지 않습니다."
+    },
+    {
+      "en": "We are giving the sub-agent the exact facts it needs.",
+      "ko": "sub-agent 에게 필요한 사실을 정확히 줍니다."
+    },
+    {
+      "en": "For larger workflows, it is useful to separate content from metadata.",
+      "ko": "더 큰 워크플로에서는 content 와 metadata 를 분리하는 것이 유용합니다."
+    },
+    {
+      "en": "This structure helps prevent the sub-agent from mixing source text, system facts, and prior findings.",
+      "ko": "이 구조는 sub-agent 가 원문·시스템 사실·앞선 결과를 뒤섞는 것을 막아 줍니다."
+    },
+    {
+      "en": "It also makes the final synthesis easier.",
+      "ko": "최종 종합도 더 쉬워집니다."
+    },
+    {
+      "en": "Now, if the issues are independent, the coordinator can run sub-agents in parallel",
+      "ko": "이제 문제들이 서로 독립적이라면, coordinator 는 sub-agent 를 병렬로 돌릴 수 있습니다."
+    },
+    {
+      "en": "by emitting multiple task tool calls in one response.",
+      "ko": "한 응답 안에서 task 툴 호출을 여러 개 내보내는 방식으로요."
+    },
+    {
+      "en": "Conceptually, the coordinator emits this.",
+      "ko": "개념적으로 coordinator 는 이런 것을 내보냅니다."
+    },
+    {
+      "en": "The key idea is that the coordinator is not waiting for billing before it starts order investigation,",
+      "ko": "핵심 생각은 coordinator 가 주문 조사를 시작하기 전에 청구 조사를 기다리지 않는다는 것입니다."
+    },
+    {
+      "en": "because these tasks do not depend on each other.",
+      "ko": "이 task 들이 서로 의존하지 않기 때문입니다."
+    },
+    {
+      "en": "But parallel execution should not mean chaotic communication.",
+      "ko": "하지만 병렬 실행이 통신의 난장판을 뜻해서는 안 됩니다."
+    },
+    {
+      "en": "All communication still routes through the coordinator.",
+      "ko": "모든 통신은 여전히 coordinator 를 거쳐 갑니다."
+    },
+    {
+      "en": "Sub-agents return findings to the coordinator.",
+      "ko": "sub-agent 는 결과를 coordinator 에게 돌려줍니다."
+    },
+    {
+      "en": "The coordinator decides what to tell the customer.",
+      "ko": "고객에게 무엇을 말할지는 coordinator 가 결정합니다."
+    },
+    {
+      "en": "For example, the results may look like this.",
+      "ko": "예를 들어 결과는 이런 모양일 수 있습니다."
+    },
+    {
+      "en": "Then the coordinator synthesizes one unified response.",
+      "ko": "그다음 coordinator 가 하나의 통합된 응답으로 종합합니다."
+    },
+    {
+      "en": "This is what the coordinator owns.",
+      "ko": "이것이 coordinator 가 소유하는 것입니다."
+    },
+    {
+      "en": "Routing, aggregation, and final response quality.",
+      "ko": "라우팅, 집계, 그리고 최종 응답 품질."
+    },
+    {
+      "en": "One important design warning.",
+      "ko": "중요한 설계 경고가 하나 있습니다."
+    },
+    {
+      "en": "Do not decompose too narrowly.",
+      "ko": "너무 좁게 쪼개지 마세요."
+    },
+    {
+      "en": "You do not need a separate sub-agent for every tiny field, every sentence, or every database lookup.",
+      "ko": "필드 하나하나, 문장 하나하나, DB 조회 하나하나마다 별도 sub-agent 가 필요한 것은 아닙니다."
+    },
+    {
+      "en": "That creates overhead and can make the system harder to reason about.",
+      "ko": "그건 오버헤드를 만들고 시스템을 이해하기 더 어렵게 만듭니다."
+    },
+    {
+      "en": "Good decomposition follows meaningful business boundaries.",
+      "ko": "좋은 분해는 의미 있는 업무 경계를 따릅니다."
+    },
+    {
+      "en": "In ShopAssist, billing, order investigation, policy review, and escalation are meaningful boundaries.",
+      "ko": "ShopAssist 에서 청구·주문 조사·정책 검토·에스컬레이션은 의미 있는 경계입니다."
+    },
+    {
+      "en": "Check customer name and check order date are probably too narrow unless they are part of a larger specialized workflow.",
+      "ko": "\"고객 이름 확인\", \"주문 날짜 확인\" 은 더 큰 전문 워크플로의 일부가 아니라면 아마 너무 좁습니다."
+    },
+    {
+      "en": "For the exam, remember the core mechanics.",
+      "ko": "시험을 위해 핵심 메커니즘을 기억하세요."
+    },
+    {
+      "en": "The coordinator is the central routing and aggregation point.",
+      "ko": "coordinator 는 중앙의 라우팅·집계 지점입니다."
+    },
+    {
+      "en": "Sub-agents have isolated context. They do not automatically inherit the parent conversation.",
+      "ko": "sub-agent 는 격리된 context 를 가지며, 부모 대화를 자동으로 물려받지 않습니다."
+    },
+    {
+      "en": "The task tool is the mechanism for spawning sub-agents.",
+      "ko": "task 툴이 sub-agent 를 띄우는 메커니즘입니다."
+    },
+    {
+      "en": "The coordinator must have task in allowed tools.",
+      "ko": "coordinator 의 allowed tools 에 task 가 있어야 합니다."
+    },
+    {
+      "en": "Each sub-agent is configured with an agent definition style setup.",
+      "ko": "각 sub-agent 는 agent definition 형태의 설정으로 구성됩니다."
+    },
+    {
+      "en": "Name, description, system prompt, and allowed tools.",
+      "ko": "name, description, system prompt, allowed tools."
+    },
+    {
+      "en": "Context must be passed explicitly, including relevant prior findings from other agents.",
+      "ko": "context 는 명시적으로 넘겨야 하며, 다른 에이전트의 관련된 앞선 결과도 포함합니다."
+    },
+    {
+      "en": "And when tasks are independent, the coordinator can request multiple task calls in one response for parallel execution.",
+      "ko": "그리고 task 들이 독립적이면 coordinator 는 병렬 실행을 위해 한 응답에서 여러 task 호출을 요청할 수 있습니다."
+    },
+    {
+      "en": "In production, this architecture keeps complex support workflows more modular, safer, and easier to debug.",
+      "ko": "프로덕션에서 이 아키텍처는 복잡한 지원 워크플로를 더 모듈화되고, 더 안전하고, 디버깅하기 쉽게 유지합니다."
+    },
+    {
+      "en": "Instead of one large agent with every tool and every responsibility,",
+      "ko": "모든 툴과 모든 책임을 가진 하나의 거대한 에이전트 대신,"
+    },
+    {
+      "en": "ShopAssist becomes a coordinated system of smaller specialists.",
+      "ko": "ShopAssist 는 더 작은 전문가들이 조율되는 시스템이 됩니다."
+    },
+    {
+      "en": "With one coordinator responsible for the final customer experience.",
+      "ko": "최종 고객 경험을 책임지는 coordinator 하나와 함께요."
+    }
+  ],
+  "body": "### Hub and spoke: what the coordinator does\n- The coordinator ==stays in the center==: it receives the user request, decides how to split the work, sends tasks to specialized sub-agents, receives their findings, and produces ==one final answer==. // 받고 · 나누고 · 보내고 · 받고 · 하나로 답한다.\n- This is a ==hub and spoke architecture==: the coordinator is the hub, the sub-agents are the spokes. // coordinator = hub, sub-agent = spoke.\n- What the coordinator owns: ((routing, aggregation, and final response quality)). // 라우팅 · 집계 · 최종 응답 품질.\n- ShopAssist trigger: one customer message with ==several different problems== — charged twice for A-1042 (billing), headphones arrived damaged (order investigation), can I still return the charger (policy review). // 메시지 하나에 문제 셋.\n- Weak design = one agent handles everything ==in one long context==. Better design = the coordinator ==delegates==. // 긴 context 하나에 몰아넣지 않는다.\n\n### The task tool is the mechanism\n- Sub-agents are spawned with the ==task tool==, so if the coordinator is expected to spawn them, ==task must be in its allowed tools==. // task 툴이 sub-agent 를 띄운다.\n- Without `task`, the coordinator ==may still reason about delegation but cannot actually invoke sub-agents==. // 생각만 하고 실제 호출은 못 한다.\n- Each sub-agent is configured ==agent-definition style==: `name`, `description`, `system prompt`, `allowed tools`. // 이름·설명·시스템 프롬프트·허용 툴.\n\n### Tool restrictions per sub-agent\n- billing agent: ==can inspect payment events==, __cannot process a refund__. // 결제 조회는 되고 환불 실행은 안 됨.\n- order agent: ==can inspect shipment data==, __cannot make policy decisions__. // 배송 조회는 되고 정책 판단은 안 됨.\n- policy agent: ==can read policy==, __cannot change an order__. // 정책 읽기는 되고 주문 변경은 안 됨.\n- This is a ==main practical benefit== of sub-agents: each agent receives ==only the tools it needs==. // 필요한 툴만 받는다.\n\n### Explicit context passing\n- Sub-agents have ==isolated context==. They ==do not automatically inherit the parent conversation history==. // 격리된 context, 부모 대화 상속 없음.\n- So the coordinator ==must pass context explicitly==, and must not assume the sub-agent knows the full conversation. // 명시적으로 넘겨야 한다.\n- A ==bad task is too vague==: the sub-agent does not know the customer, the order ID, the original message, or ==what has already been verified==. // 고객·주문 ID·원문·기존 확인 내용을 모른다.\n- A better task ==passes complete context==: not relying on ==hidden memory==, but giving the sub-agent ==the exact facts it needs==, including ==relevant prior findings from other agents==. // 숨은 기억 대신 정확한 사실, 다른 에이전트 결과까지.\n- For larger workflows, ==separate content from metadata==, so the sub-agent does not mix ==source text, system facts, and prior findings==, and the final synthesis is easier. // content 와 metadata 분리.\n\n### Parallel execution, single channel\n- If the issues are ==independent==, the coordinator runs sub-agents in parallel by ==emitting multiple task tool calls in one response==. // 한 응답에 task 호출 여러 개.\n- Key idea: the coordinator ==does not wait for billing before starting order investigation==, because those tasks do not depend on each other. // 서로 의존하지 않으니 기다리지 않는다.\n- But parallel execution ==must not mean chaotic communication==: ==all communication still routes through the coordinator==. // 병렬이어도 통신은 coordinator 를 거친다.\n- Sub-agents return findings to the coordinator, the coordinator decides ==what to tell the customer==, then ==synthesizes one unified response==. // 결과는 위로, 고객 응답은 coordinator 가 하나로.\n\n### Design warning: do not decompose too narrowly\n- ==Do not decompose too narrowly.== You do not need a separate sub-agent for ==every tiny field, every sentence, or every database lookup==. // 필드·문장·조회마다 나누지 않는다.\n- Over-decomposition ==creates overhead and makes the system harder to reason about==. // 오버헤드와 이해 난이도.\n- Good decomposition follows ==meaningful business boundaries==: billing, order investigation, policy review, escalation. // 의미 있는 업무 경계.\n- Too narrow: ==check customer name==, ==check order date== — unless they are part of a larger specialized workflow. // 더 큰 전문 워크플로의 일부가 아니면 너무 좁다.\n- Production payoff: ==more modular, safer, easier to debug== than one large agent holding every tool and every responsibility. // 모듈화·안전·디버깅.\n\n### Exam mechanics checklist\n- Coordinator = ==central routing and aggregation point==. // 중앙 라우팅·집계 지점.\n- Sub-agents = ==isolated context, no automatic inheritance== of the parent conversation. // 격리, 자동 상속 없음.\n- ==task tool== = the spawning mechanism; ==task must be in the coordinator's allowed tools==. // task 툴, allowed tools 에 필수.\n- Sub-agent config = ==name, description, system prompt, allowed tools==. // 네 가지 설정.\n- Context = ==passed explicitly, including prior findings==. Independent tasks = ==multiple task calls in one response==. // 명시적 전달, 독립이면 한 응답에 여러 호출.",
+  "keyPoints": [
+    "Coordinator-subagent is hub and spoke: the coordinator receives the request, splits the work, sends tasks, collects findings, and owns routing, aggregation, and final response quality. // coordinator 가 hub, 라우팅·집계·최종 응답을 소유한다.",
+    "The task tool is the mechanism for spawning sub-agents, so task must be in the coordinator's allowed tools; without it the coordinator can reason about delegation but cannot invoke anyone. // task 툴이 없으면 위임을 생각만 하고 호출은 못 한다.",
+    "Each sub-agent is defined with name, description, system prompt, and allowed tools, and gets only the tools it needs: billing inspects payments but cannot refund, order inspects shipments but cannot decide policy. // 정의 네 가지 + 필요한 툴만.",
+    "Sub-agents have isolated context and do not inherit the parent conversation, so the coordinator must pass the customer, the order ID, the original message, what is already verified, and other agents' prior findings. // 격리된 context, 명시적으로 다 넘겨야 한다.",
+    "Independent issues run in parallel by emitting multiple task calls in one response, but all communication still routes through the coordinator, which synthesizes one unified response. // 병렬은 한 응답 여러 호출, 통신은 전부 coordinator 경유.",
+    "Do not decompose too narrowly: split on meaningful business boundaries (billing, order investigation, policy review, escalation), not on every field, sentence, or database lookup. // 업무 경계로 나누고 필드 단위로 쪼개지 않는다."
+  ],
+  "examTrends": {
+    "how": "Definition-and-mechanics questions dominate here, because the lecture ends with an explicit exam checklist. Expect a scenario where a coordinator reasons about delegation but never spawns anything (answer: task is missing from allowed tools), a sub-agent that asks who the customer is or repeats verified work (answer: isolated context, the coordinator did not pass context explicitly), and a design question asking how to split ShopAssist (answer: business boundaries, not per-field agents). Parallelism shows up as how the coordinator requests it, where the answer is multiple task calls in one response. // 강의가 시험 체크리스트로 끝나므로 정의·메커니즘 문제가 주력이다. coordinator 가 위임을 판단만 하고 아무것도 띄우지 못하는 시나리오(답: allowed tools 에 task 없음), sub-agent 가 고객이 누구냐고 되묻거나 확인된 일을 다시 하는 시나리오(답: 격리된 context, 명시적 전달 누락), ShopAssist 를 어떻게 나눌지 묻는 설계 문제(답: 필드 단위가 아니라 업무 경계)가 나온다. 병렬은 coordinator 가 그것을 어떻게 요청하는지로 나오는데 답은 한 응답에 여러 task 호출이다.",
+    "answerLooks": [
+      "\"Add task to the coordinator's allowed tools so it can actually spawn sub-agents\" // allowed tools 에 task 를 넣는다.",
+      "\"Sub-agents have isolated context and do not inherit the parent conversation, so the coordinator must pass the facts explicitly\" // 격리 + 명시적 전달.",
+      "\"Include the customer, the order ID, the original message, and what has already been verified in the task\" // task 안에 사실을 다 담는다.",
+      "\"Emit multiple task tool calls in one response because the issues are independent\" // 한 응답에 여러 task 호출.",
+      "\"Give the billing agent payment inspection tools but not refund execution\" // 조회만, 실행은 제외.",
+      "\"Split by billing, order investigation, policy review, and escalation\" // 의미 있는 업무 경계로 분해.",
+      "\"All findings return to the coordinator, which synthesizes one unified response for the customer\" // 결과는 coordinator 로, 응답은 하나."
+    ],
+    "traps": [
+      "\"Sub-agents automatically inherit the coordinator's conversation history\": they have isolated context, which is exactly why explicit passing exists. // 자동 상속은 없다.",
+      "\"Improve the coordinator's system prompt so it stops failing to delegate\": if task is not in allowed tools, no prompt can invoke a sub-agent. // 프롬프트로는 못 고친다, 툴 권한 문제.",
+      "\"Give every sub-agent the full tool set so no task is blocked\": each agent should receive only the tools it needs, and refund execution stays out of the billing investigator. // 전체 툴을 주면 최소 권한이 깨진다.",
+      "\"Create one sub-agent per database lookup so each step is isolated\": that is decomposing too narrowly, adding overhead without a business boundary. // 조회마다 나누면 오버헤드만 늘어난다.",
+      "\"Let sub-agents message each other directly to share findings faster\": all communication routes through the coordinator. // 서로 직접 통신하지 않는다.",
+      "\"Let each sub-agent reply to the customer with its own result\": the coordinator owns the final unified response. // 최종 응답은 coordinator 하나가 만든다.",
+      "\"Run the sub-agents sequentially so context can accumulate\": independent issues do not depend on each other, so waiting only adds latency. // 독립 문제를 줄줄이 돌릴 이유가 없다."
+    ],
+    "memorize": "Coordinator is the hub that routes, aggregates, and owns the final answer; task in allowed tools is what actually spawns sub-agents; isolated context means you pass the customer, order ID, message, verified facts, and prior findings by hand; independent issues = multiple task calls in one response; split on business boundaries, never per field. // coordinator 가 hub 로 라우팅·집계·최종 답을 소유하고, allowed tools 의 task 가 실제로 sub-agent 를 띄우고, 격리된 context 라서 고객·주문 ID·원문·확인된 사실·앞선 결과를 손으로 넘기고, 독립 문제는 한 응답에 여러 task 호출, 분해는 업무 경계로만."
+  },
+  "createdAt": "2026-09-10T15:30:00Z"
+}
