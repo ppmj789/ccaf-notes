@@ -1,0 +1,367 @@
+{
+  "id": "l-036",
+  "kind": "lesson",
+  "order": 36,
+  "section": "Multi-Agent Systems",
+  "lecture": "36",
+  "title_en": "Single Agent vs Multi-Agent Systems",
+  "title": "단일 에이전트 vs 멀티에이전트 시스템",
+  "domain": "멀티에이전트",
+  "summary": "A single agent takes a goal, the available context, and tools, and makes decisions until the task is done, which is enough whenever one agent can handle it clearly and reliably; multiple agents are worth it only when the request contains different types of work, independent problems, or specialized systems. Then a coordinator owns the overall goal, picks specialized agents, and combines their structured findings, running steps sequentially when each depends on the previous result and in parallel when they do not, while every extra agent adds context passing, merging, and chances to lose information. // single agent 는 목표·context·툴을 받아 작업이 끝날 때까지 스스로 판단하며, 한 에이전트가 명확하고 안정적으로 처리할 수 있으면 그것으로 충분하고, 여러 에이전트는 성격이 다른 일·독립된 문제·전문 시스템이 있을 때만 값을 한다. 그때 coordinator 가 전체 목표를 갖고 전문 에이전트를 골라 구조화된 결과를 합치는데, 앞 단계 결과가 필요하면 순차로 아니면 병렬로 돌리고, 에이전트가 하나 늘 때마다 전달·병합·정보 유실의 비용도 늘어난다.",
+  "paragraphs": [
+    {
+      "en": "A single agent is one AI agent responsible for handling a task from beginning to end",
+      "ko": "single agent 은 하나의 AI 에이전트가 한 작업을 처음부터 끝까지 책임지는 것입니다."
+    },
+    {
+      "en": "It receives a goal, it uses the available context, it may use tools",
+      "ko": "목표를 받고, 주어진 context 를 쓰고, 툴을 쓸 수도 있습니다."
+    },
+    {
+      "en": "and it makes decisions until the task is complete",
+      "ko": "그리고 작업이 끝날 때까지 스스로 판단합니다."
+    },
+    {
+      "en": "For many tasks, this is enough",
+      "ko": "많은 작업에는 이것으로 충분합니다."
+    },
+    {
+      "en": "Imagine ShopAssist receives a request",
+      "ko": "ShopAssist 가 요청을 하나 받았다고 해 봅시다."
+    },
+    {
+      "en": "Where is my order?",
+      "ko": "\"내 주문 어디 있어요?\""
+    },
+    {
+      "en": "One agent can identify the customer, look up the order, read the status and answer the customer",
+      "ko": "한 에이전트가 고객을 확인하고, 주문을 조회하고, 상태를 읽고, 고객에게 답할 수 있습니다."
+    },
+    {
+      "en": "There is no need to involve multiple agents if one agent can handle the task clearly and reliably",
+      "ko": "한 에이전트가 명확하고 안정적으로 처리할 수 있다면 여러 에이전트를 끌어들일 필요가 없습니다."
+    },
+    {
+      "en": "But some tasks are more complex",
+      "ko": "하지만 어떤 작업은 더 복잡합니다."
+    },
+    {
+      "en": "They may involve different types of work, several independent problems or specialized systems",
+      "ko": "성격이 다른 여러 종류의 일, 서로 독립적인 여러 문제, 또는 전문화된 시스템이 얽힐 수 있습니다."
+    },
+    {
+      "en": "In those cases, it can be useful to divide responsibilities between multiple agents",
+      "ko": "그런 경우에는 책임을 여러 에이전트로 나누는 것이 유용할 수 있습니다."
+    },
+    {
+      "en": "For example, ShopAssist may have",
+      "ko": "예를 들어 ShopAssist 에는"
+    },
+    {
+      "en": "a customer agent, an order agent, a refund agent and an escalation agent",
+      "ko": "customer agent, order agent, refund agent, escalation agent 가 있을 수 있습니다."
+    },
+    {
+      "en": "Each agent can focus on a specific responsibility",
+      "ko": "각 에이전트는 특정한 책임 하나에 집중할 수 있습니다."
+    },
+    {
+      "en": "The customer agent may work with customer information",
+      "ko": "customer agent 는 고객 정보를 다루고,"
+    },
+    {
+      "en": "The order agent may work with order data",
+      "ko": "order agent 는 주문 데이터를 다루고,"
+    },
+    {
+      "en": "The refund agent may handle refund rules",
+      "ko": "refund agent 는 환불 규칙을 처리하고,"
+    },
+    {
+      "en": "And the escalation agent may prepare cases for human support",
+      "ko": "escalation agent 는 사람 상담원에게 넘길 케이스를 준비합니다."
+    },
+    {
+      "en": "When several agents work on the same request, the system usually needs a coordinator",
+      "ko": "여러 에이전트가 같은 요청을 다루면 보통 coordinator 가 필요합니다."
+    },
+    {
+      "en": "The coordinator understands the overall goal",
+      "ko": "coordinator 는 전체 목표를 이해합니다."
+    },
+    {
+      "en": "It decides which specialized agents should help",
+      "ko": "어떤 전문 에이전트가 도와야 하는지 결정합니다."
+    },
+    {
+      "en": "The specialized agents perform their tasks and return their findings",
+      "ko": "전문 에이전트들은 각자 맡은 일을 하고 알아낸 것을 돌려줍니다."
+    },
+    {
+      "en": "Then the coordinator combines those findings and decides what should happen next",
+      "ko": "그러면 coordinator 가 그 결과들을 합쳐서 다음에 무엇을 할지 결정합니다."
+    },
+    {
+      "en": "This is often called a coordinator-worker architecture",
+      "ko": "이것을 흔히 coordinator-worker 아키텍처라고 부릅니다."
+    },
+    {
+      "en": "Another important concept is the difference between sequential and parallel work",
+      "ko": "또 하나 중요한 개념은 sequential(순차) 작업과 parallel(병렬) 작업의 차이입니다."
+    },
+    {
+      "en": "Sequential work happens one step after another",
+      "ko": "순차 작업은 한 단계가 끝나면 다음 단계가 이어집니다."
+    },
+    {
+      "en": "For example, first identify the customer",
+      "ko": "예를 들어 먼저 고객을 확인하고,"
+    },
+    {
+      "en": "Then retrieve the order",
+      "ko": "그다음 주문을 가져오고,"
+    },
+    {
+      "en": "Then evaluate the refund",
+      "ko": "그다음 환불을 판단합니다."
+    },
+    {
+      "en": "Each step depends on the result of the previous one",
+      "ko": "각 단계가 앞 단계의 결과에 의존합니다."
+    },
+    {
+      "en": "Parallel work is different",
+      "ko": "병렬 작업은 다릅니다."
+    },
+    {
+      "en": "Imagine a customer reports both a damaged product and a duplicate payment",
+      "ko": "고객이 파손된 상품과 중복 결제를 함께 신고했다고 해 봅시다."
+    },
+    {
+      "en": "The order issue and the billing issue may be investigated independently",
+      "ko": "주문 문제와 결제 문제는 서로 독립적으로 조사할 수 있습니다."
+    },
+    {
+      "en": "One agent can investigate the order while another investigates the payment",
+      "ko": "한 에이전트가 주문을 조사하는 동안 다른 에이전트가 결제를 조사할 수 있습니다."
+    },
+    {
+      "en": "The coordinator can then combine both results",
+      "ko": "그다음 coordinator 가 두 결과를 합칩니다."
+    },
+    {
+      "en": "Parallel work can make a workflow faster",
+      "ko": "병렬 작업은 워크플로를 더 빠르게 만들 수 있습니다."
+    },
+    {
+      "en": "But only when the tasks do not depend on each other",
+      "ko": "단, 작업들이 서로 의존하지 않을 때만 그렇습니다."
+    },
+    {
+      "en": "Multi-agent systems also create a context challenge",
+      "ko": "멀티에이전트 시스템은 context 문제도 만들어 냅니다."
+    },
+    {
+      "en": "Specialized agents do not automatically know everything the coordinator knows",
+      "ko": "전문 에이전트는 coordinator 가 아는 것을 자동으로 알지 못합니다."
+    },
+    {
+      "en": "The coordinator must pass the information each agent needs",
+      "ko": "coordinator 가 각 에이전트에게 필요한 정보를 넘겨줘야 합니다."
+    },
+    {
+      "en": "For example, if the customer says",
+      "ko": "예를 들어 고객이 이렇게 말했다면"
+    },
+    {
+      "en": "My package arrived damaged, but I do not want a replacement",
+      "ko": "\"물건이 파손돼서 왔는데, 교환은 원하지 않아요\""
+    },
+    {
+      "en": "The refund agent needs to know that preference",
+      "ko": "refund agent 는 그 선호를 알아야 합니다."
+    },
+    {
+      "en": "If that information is not passed correctly, the agent may recommend the wrong action",
+      "ko": "그 정보가 제대로 전달되지 않으면 에이전트는 엉뚱한 조치를 추천할 수 있습니다."
+    },
+    {
+      "en": "The same applies when agents return their findings",
+      "ko": "에이전트가 결과를 돌려줄 때도 마찬가지입니다."
+    },
+    {
+      "en": "Clear structured results are easier for the coordinator to use",
+      "ko": "명확하고 구조화된 결과가 coordinator 가 쓰기에 더 쉽습니다."
+    },
+    {
+      "en": "For example, an order agent may return Order ID, Order status, Problem found,",
+      "ko": "예를 들어 order agent 는 Order ID, 주문 상태, 발견한 문제,"
+    },
+    {
+      "en": "Relevant evidence,",
+      "ko": "관련 근거,"
+    },
+    {
+      "en": "Recommended next step",
+      "ko": "권장하는 다음 조치를 돌려줄 수 있습니다."
+    },
+    {
+      "en": "This is more useful than a vague response such as",
+      "ko": "이것이 이런 모호한 응답보다 훨씬 유용합니다."
+    },
+    {
+      "en": "The order looks mostly okay",
+      "ko": "\"주문은 대체로 괜찮아 보입니다\""
+    },
+    {
+      "en": "There is also an important architectural trade-off",
+      "ko": "그리고 중요한 아키텍처 트레이드오프가 있습니다."
+    },
+    {
+      "en": "More agents do not automatically make the system better",
+      "ko": "에이전트가 많아진다고 시스템이 저절로 좋아지지는 않습니다."
+    },
+    {
+      "en": "Every additional agent creates more coordination",
+      "ko": "에이전트를 하나 더할 때마다 조율할 일이 늘어납니다."
+    },
+    {
+      "en": "More context has to be passed",
+      "ko": "넘겨야 할 context 가 늘어나고,"
+    },
+    {
+      "en": "More results have to be combined",
+      "ko": "합쳐야 할 결과가 늘어나고,"
+    },
+    {
+      "en": "And there are more opportunities for information to be lost or misunderstood",
+      "ko": "정보가 유실되거나 잘못 이해될 기회도 늘어납니다."
+    },
+    {
+      "en": "So the goal is not to create as many agents as possible",
+      "ko": "그래서 목표는 에이전트를 최대한 많이 만드는 것이 아닙니다."
+    },
+    {
+      "en": "The goal is to divide work only when the task benefits from specialization or independent execution",
+      "ko": "목표는 전문화나 독립 실행에서 실제로 이득이 있을 때만 일을 나누는 것입니다."
+    },
+    {
+      "en": "Let's look at one complete ShopAssist example. A customer says",
+      "ko": "완전한 ShopAssist 예시를 하나 보겠습니다. 고객이 이렇게 말합니다."
+    },
+    {
+      "en": "My package arrived damaged, I think I was charged twice and I want a refund",
+      "ko": "\"물건이 파손돼서 왔고, 두 번 결제된 것 같고, 환불을 받고 싶어요\""
+    },
+    {
+      "en": "The coordinator identifies two independent problems",
+      "ko": "coordinator 는 독립적인 두 문제를 식별합니다."
+    },
+    {
+      "en": "The order issue goes to an order agent",
+      "ko": "주문 문제는 order agent 로 갑니다."
+    },
+    {
+      "en": "The payment issue goes to a billing agent",
+      "ko": "결제 문제는 billing agent 로 갑니다."
+    },
+    {
+      "en": "Those investigations can happen in parallel",
+      "ko": "이 두 조사는 병렬로 진행할 수 있습니다."
+    },
+    {
+      "en": "The order agent confirms that the damaged item is eligible for a refund",
+      "ko": "order agent 는 파손 상품이 환불 대상임을 확인합니다."
+    },
+    {
+      "en": "The billing agent confirms the duplicate charge",
+      "ko": "billing agent 는 중복 결제를 확인합니다."
+    },
+    {
+      "en": "The coordinator receives both results",
+      "ko": "coordinator 는 두 결과를 모두 받습니다."
+    },
+    {
+      "en": "It can then decide whether the refund can be processed automatically",
+      "ko": "그다음 환불을 자동으로 처리할 수 있는지,"
+    },
+    {
+      "en": "Or whether the case should be escalated",
+      "ko": "아니면 케이스를 사람에게 넘겨야 하는지 결정합니다."
+    },
+    {
+      "en": "From the customer's perspective, this can still feel like one conversation",
+      "ko": "고객 입장에서는 여전히 하나의 대화처럼 느껴질 수 있습니다."
+    },
+    {
+      "en": "The multi-agent architecture works behind the scenes",
+      "ko": "멀티에이전트 아키텍처는 뒤에서 동작합니다."
+    },
+    {
+      "en": "The main idea is simple",
+      "ko": "핵심 생각은 단순합니다."
+    },
+    {
+      "en": "A single agent handles the whole task itself",
+      "ko": "single agent 는 작업 전체를 스스로 처리합니다."
+    },
+    {
+      "en": "A multi-agent system divides complex work between specialized agents",
+      "ko": "멀티에이전트 시스템은 복잡한 일을 전문 에이전트들에게 나눕니다."
+    },
+    {
+      "en": "A coordinator manages the overall goal",
+      "ko": "coordinator 가 전체 목표를 관리합니다."
+    },
+    {
+      "en": "Some work can happen sequentially",
+      "ko": "어떤 일은 순차로 진행되고,"
+    },
+    {
+      "en": "Some work can happen in parallel",
+      "ko": "어떤 일은 병렬로 진행됩니다."
+    },
+    {
+      "en": "And context must be passed clearly between agents",
+      "ko": "그리고 context 는 에이전트 사이에서 명확하게 전달돼야 합니다."
+    },
+    {
+      "en": "Use multiple agents when specialization or parallel work provides a real benefit",
+      "ko": "전문화나 병렬 작업이 실제 이득을 줄 때 여러 에이전트를 쓰세요."
+    },
+    {
+      "en": "Otherwise, a simpler single agent architecture is often the better choice",
+      "ko": "그렇지 않다면 더 단순한 single agent 아키텍처가 보통 더 나은 선택입니다."
+    }
+  ],
+  "body": "### Single agent\n- **Single agent** = ==one agent handles the task from beginning to end==: it receives a goal, uses the available context, may use tools, and makes decisions until the task is complete. // 목표·context·툴·판단을 한 에이전트가 끝까지.\n- ShopAssist example: ==Where is my order?== One agent identifies the customer, looks up the order, reads the status, and answers. // 주문 조회 하나면 에이전트 하나로 끝난다.\n- Rule: if one agent can handle the task ==clearly and reliably==, there is __no need__ to involve multiple agents. // 명확·안정적으로 되면 나눌 이유가 없다.\n\n### When to divide the work\n- Divide only when the task involves ==different types of work==, ==several independent problems==, or ==specialized systems==. // 성격이 다른 일 · 독립된 문제 · 전문 시스템.\n- ShopAssist split: customer agent (customer information), order agent (order data), refund agent (refund rules), escalation agent (prepares cases for human support). // 네 에이전트, 책임 하나씩.\n- Each agent focuses on ==a specific responsibility==, not on the whole conversation. // 각자 자기 책임 하나에 집중.\n\n### Coordinator-worker architecture\n- When several agents work on the same request, the system needs a **coordinator**. // 여러 에이전트가 한 요청을 다루면 coordinator 가 필요.\n- Coordinator loop: ((understands the overall goal → decides which specialized agents help → agents perform and return findings → coordinator combines findings and decides what happens next)). // 목표 이해 → 배분 → 결과 수집 → 합쳐서 결정.\n- This shape is called the ==coordinator-worker architecture==. The coordinator does not do the specialized work itself; it owns the goal. // coordinator 는 목표를 갖고, 실무는 worker 가 한다.\n\n### Sequential vs parallel\n- **Sequential** = one step after another, because ==each step depends on the previous result==: identify the customer → retrieve the order → evaluate the refund. // 앞 결과가 있어야 다음이 된다.\n- **Parallel** = independent problems investigated at the same time: damaged product (order agent) and duplicate payment (billing agent), then the coordinator combines both results. // 서로 무관한 두 문제는 동시에.\n- Parallel work can make a workflow ==faster, but only when the tasks do not depend on each other==. // 의존이 없을 때만 빨라진다.\n\n### The context challenge\n- Specialized agents ==do not automatically know everything the coordinator knows==. The coordinator must pass the information each agent needs. // 넘겨주지 않으면 모른다.\n- Example: the customer says ==I do not want a replacement==. If that preference never reaches the refund agent, the agent may recommend __the wrong action__. // 선호가 전달 안 되면 엉뚱한 조치.\n- Returning findings works the same way: ==clear structured results== are easier for the coordinator to use. // 돌려줄 때도 구조화가 답.\n- Good return: `order ID`, `order status`, `problem found`, `relevant evidence`, `recommended next step`. Bad return: ==The order looks mostly okay==. // 다섯 항목 vs 모호한 한 줄.\n\n### The trade-off: more agents is not better\n- ==More agents do not automatically make the system better.== Every additional agent creates more coordination. // 많다고 좋아지지 않는다.\n- Costs that grow with each agent: ==more context to pass==, ==more results to combine==, and ==more opportunities for information to be lost or misunderstood==. // 전달·병합·유실 비용이 커진다.\n- So the goal is not as many agents as possible; it is to divide work ==only when the task benefits from specialization or independent execution==. // 이득이 있을 때만 나눈다.\n- Otherwise a ==simpler single agent architecture is often the better choice==. // 아니면 단순한 쪽이 낫다.\n\n### Full ShopAssist walkthrough\n- Customer: ==damaged package + charged twice + wants a refund==. The coordinator identifies ==two independent problems==. // 독립된 두 문제로 분해.\n- Order issue → order agent; payment issue → billing agent; both ==in parallel==. // 주문은 order, 결제는 billing, 병렬.\n- Order agent confirms the damaged item is ==eligible for a refund==; billing agent confirms the ==duplicate charge==. // 각자 확인.\n- The coordinator receives both results and decides: ==process the refund automatically, or escalate the case==. // 자동 처리 or 에스컬레이션.\n- From the customer's perspective it still feels like ==one conversation==; the architecture works behind the scenes. // 고객에게는 대화 하나.",
+  "keyPoints": [
+    "Single agent = one agent takes the goal, the context, the tools, and the decisions from beginning to end; if it handles the task clearly and reliably, do not add agents. // 하나로 명확·안정적이면 나누지 않는다.",
+    "Divide into multiple agents only for different types of work, several independent problems, or specialized systems, giving each agent one responsibility. // 성격이 다른 일·독립된 문제·전문 시스템일 때만 나눈다.",
+    "Coordinator-worker: the coordinator owns the overall goal, picks the specialized agents, then combines their findings and decides the next step. // coordinator 가 목표를 갖고, 배분하고, 합쳐서 결정한다.",
+    "Sequential when each step depends on the previous result (identify customer → order → refund); parallel only when the problems are independent (order issue vs billing issue). // 의존하면 순차, 독립이면 병렬.",
+    "Context must be passed explicitly both ways: down to the agent (the customer does not want a replacement) and back up as structured findings, not a vague \"looks mostly okay\". // 아래로도 위로도 명확하게 넘긴다.",
+    "More agents means more coordination, more context passing, more merging, and more chances to lose information, so the simpler single agent is often the better choice. // 많아지면 조율 비용이 커진다, 단순한 쪽이 보통 낫다."
+  ],
+  "examTrends": {
+    "how": "Mostly scenario questions that hand you a ShopAssist-style request and ask whether one agent is enough or the work should be split, and if split, what the coordinator does. A second shape gives two or three tasks and asks whether they run sequentially or in parallel, where the answer turns on whether one step needs the previous result. A third shape describes an agent that recommended the wrong action or returned a vague finding, and the answer is a context-passing failure, not a model or prompt problem. // 대부분 시나리오형이다. ShopAssist 같은 요청을 주고 에이전트 하나로 충분한지, 나눠야 한다면 coordinator 가 무엇을 하는지 묻는다. 두 번째 유형은 작업 두세 개를 주고 순차냐 병렬이냐를 묻는데, 답은 앞 결과가 필요한지로 갈린다. 세 번째 유형은 에이전트가 엉뚱한 조치를 추천하거나 모호한 결과를 돌려준 상황을 주는데, 답은 모델·프롬프트가 아니라 context 전달 실패다.",
+    "answerLooks": [
+      "\"Use a single agent because one agent can complete this task clearly and reliably\" // 하나로 되면 하나.",
+      "\"Split the request into two independent investigations and let the coordinator combine the results\" // 독립 문제 두 개 → 병렬 후 병합.",
+      "\"Run them in parallel because neither task depends on the other's result\" // 의존이 없으니 병렬.",
+      "\"Run them sequentially because the refund decision needs the order lookup result\" // 앞 결과가 필요하니 순차.",
+      "\"The coordinator must pass the customer's stated preference to the refund agent\" // coordinator 가 선호를 넘겨야 한다.",
+      "\"Have each agent return a structured result with status, evidence, and a recommended next step\" // 상태·근거·다음 조치를 구조화해 반환."
+    ],
+    "traps": [
+      "\"Add a separate agent for each tool so every responsibility is isolated\": each extra agent adds coordination, context passing, and merging cost with no benefit. // 툴마다 에이전트를 만들면 조율 비용만 늘어난다.",
+      "\"Use a multi-agent system because it is a more advanced architecture\": architecture is chosen for specialization or independent execution, not for sophistication. // 고급이라서 쓰는 게 아니다.",
+      "\"Run the customer lookup, order lookup, and refund evaluation in parallel to reduce latency\": those steps depend on each other, so they must stay sequential. // 서로 의존하는 단계는 병렬로 돌릴 수 없다.",
+      "\"Give the refund agent a longer prompt so it stops recommending replacements\": the missing piece is the customer's preference that the coordinator never passed. // 프롬프트 길이가 아니라 전달되지 않은 정보 문제.",
+      "\"Let each specialized agent talk to the customer directly so no context is lost\": the coordinator owns the goal and the customer should still experience one conversation. // 고객에게는 대화 하나로 보여야 한다.",
+      "\"Have agents return short natural-language summaries so the coordinator reads less\": vague findings like \"looks mostly okay\" are exactly what the coordinator cannot act on. // 모호한 요약은 coordinator 가 쓸 수 없다."
+    ],
+    "memorize": "One agent unless the work is genuinely specialized or independent; a coordinator owns the goal and merges structured findings; sequential when a step needs the previous result, parallel when it does not; every extra agent is extra context to pass and lose. // 진짜 전문화·독립일 때만 나눈다, coordinator 가 목표를 갖고 구조화된 결과를 합친다, 앞 결과가 필요하면 순차 아니면 병렬, 에이전트 하나마다 넘기고 잃을 context 가 늘어난다."
+  },
+  "createdAt": "2026-09-10T09:00:00Z"
+}

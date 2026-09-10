@@ -52,6 +52,16 @@
           "title": "BUILD: ShopAssist Backend Tools and MCP Integration"
         }
       ]
+    },
+    {
+      "no": 5,
+      "title": "Multi-Agent Systems",
+      "lectures": [
+        {
+          "no": "36",
+          "title": "Single Agent vs Multi-Agent Systems"
+        }
+      ]
     }
   ]
 }
