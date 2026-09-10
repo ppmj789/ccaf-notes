@@ -1,0 +1,497 @@
+{
+  "id": "l-047",
+  "kind": "lesson",
+  "order": 47,
+  "section": "Production Reliability & Exam Synthesis",
+  "lecture": "47",
+  "title_en": "Production AI Systems: Reliability, Safety, and Human Oversight",
+  "title": "프로덕션 AI 시스템: 신뢰성, 안전, 사람의 감독",
+  "domain": "신뢰성",
+  "summary": "A prototype only proves an idea with limited impact, but in production real users, real data, and real business actions mean mistakes have real consequences, so the central rule is that a model response must never automatically become a business action: the model judges, and the application decides whether the action is allowed through deterministic rules, validation of the output, and permissions scoped to what the agent actually needs. Reliability then comes from the surrounding architecture — logging and monitoring that leave enough evidence for people, human in the loop for unusual, high-value, uncertain, or out-of-policy cases, escalation triggers, refusing to guess when information is missing or conflicting, and deliberate recovery from failure — because production AI reliability is an application architecture problem, not a prompting problem. // 프로토타입은 영향이 제한된 상태에서 아이디어를 증명할 뿐이지만, 프로덕션에서는 실제 사용자·실제 데이터·실제 업무 행동이 걸려 실수가 실제 결과를 낳으므로, 핵심 규칙은 모델의 응답이 자동으로 업무 행동이 되어서는 안 된다는 것이다. 모델은 판단하고, 애플리케이션은 결정론적 규칙·출력 검증·꼭 필요한 범위의 권한으로 그 행동이 허용되는지 결정한다. 신뢰성은 그 주변 아키텍처에서 나온다 — 사람이 이해할 근거를 남기는 로깅·모니터링, 비정상·고액·불확실·정책 밖 케이스를 위한 human in the loop, 에스컬레이션 방아쇠, 정보가 빠지거나 모순될 때 추측하지 않기, 실패의 의도적 복구. 프로덕션 AI 신뢰성은 프롬프팅 문제가 아니라 애플리케이션 아키텍처 문제다.",
+  "paragraphs": [
+    {
+      "en": "A prototype and a production system are not the same thing.",
+      "ko": "프로토타입과 프로덕션 시스템은 같은 것이 아닙니다."
+    },
+    {
+      "en": "A prototype is mainly used to prove that an idea can work.",
+      "ko": "프로토타입은 주로 아이디어가 동작할 수 있음을 증명하는 데 씁니다."
+    },
+    {
+      "en": "It may have only a few users.",
+      "ko": "사용자가 몇 명뿐일 수 있고,"
+    },
+    {
+      "en": "It may be tested in a controlled environment.",
+      "ko": "통제된 환경에서 시험될 수 있고,"
+    },
+    {
+      "en": "And if something goes wrong, the impact is usually limited.",
+      "ko": "무엇이 잘못돼도 영향이 보통 제한적입니다."
+    },
+    {
+      "en": "A production system is different.",
+      "ko": "프로덕션 시스템은 다릅니다."
+    },
+    {
+      "en": "Real users depend on it.",
+      "ko": "실제 사용자가 그것에 의존합니다."
+    },
+    {
+      "en": "It may connect to real customer data.",
+      "ko": "실제 고객 데이터에 연결될 수 있고,"
+    },
+    {
+      "en": "It may trigger real business actions.",
+      "ko": "실제 업무 행동을 일으킬 수 있고,"
+    },
+    {
+      "en": "And mistakes can have real consequences.",
+      "ko": "실수가 ==실제 결과== 를 낳을 수 있습니다."
+    },
+    {
+      "en": "This changes how we should design the system.",
+      "ko": "이것이 시스템 설계 방식을 바꿉니다."
+    },
+    {
+      "en": "One of the most important principles is that a model response should not automatically become a business action.",
+      "ko": "가장 중요한 원칙 하나는 ==모델의 응답이 자동으로 업무 행동이 되어서는 안 된다== 는 것입니다."
+    },
+    {
+      "en": "For example, imagine ShopAssist generates this response.",
+      "ko": "예를 들어 ShopAssist 가 이런 응답을 냈다고 해 봅시다."
+    },
+    {
+      "en": "The customer should receive a $500 refund.",
+      "ko": "\"이 고객은 500달러를 환불받아야 합니다.\""
+    },
+    {
+      "en": "That does not mean the application should immediately send $500.",
+      "ko": "그렇다고 애플리케이션이 ==곧바로 500달러를 보내야 한다는 뜻은 아닙니다.=="
+    },
+    {
+      "en": "The model is making a judgment.",
+      "ko": "모델은 ==판단== 을 하고 있는 것이고,"
+    },
+    {
+      "en": "The application still needs to decide whether that action is allowed.",
+      "ko": "애플리케이션은 여전히 ==그 행동이 허용되는지 결정== 해야 합니다."
+    },
+    {
+      "en": "This is where deterministic rules become important.",
+      "ko": "여기서 ==결정론적 규칙(deterministic rules)== 이 중요해집니다."
+    },
+    {
+      "en": "A deterministic rule always behaves in a predictable way.",
+      "ko": "결정론적 규칙은 ==항상 예측 가능하게 동작== 합니다."
+    },
+    {
+      "en": "For example, refunds above $200 require human approval.",
+      "ko": "예를 들어 \"200달러 초과 환불은 사람 승인 필요\" 처럼요."
+    },
+    {
+      "en": "That rule should not depend on how Claude interprets the situation.",
+      "ko": "그 규칙은 ==Claude 가 상황을 어떻게 해석하는지에 달려 있으면 안 됩니다.=="
+    },
+    {
+      "en": "The application can enforce it directly.",
+      "ko": "애플리케이션이 직접 강제할 수 있습니다."
+    },
+    {
+      "en": "This gives us an important separation.",
+      "ko": "여기서 중요한 분리가 나옵니다."
+    },
+    {
+      "en": "Claude can be used for tasks that require language understanding or judgment.",
+      "ko": "==Claude 는 언어 이해나 판단이 필요한 일에,=="
+    },
+    {
+      "en": "Application logic should enforce rules that must always be followed.",
+      "ko": "==애플리케이션 로직은 항상 지켜져야 하는 규칙을 강제하는 데== 씁니다."
+    },
+    {
+      "en": "Validation is another important part of production reliability.",
+      "ko": "검증(validation)도 프로덕션 신뢰성의 중요한 부분입니다."
+    },
+    {
+      "en": "Before using model output, the application can check whether the output is valid.",
+      "ko": "모델 출력을 쓰기 전에 애플리케이션이 그 출력이 유효한지 확인할 수 있습니다."
+    },
+    {
+      "en": "For example, is the order ID present?",
+      "ko": "예를 들어 주문 ID 가 있는가?"
+    },
+    {
+      "en": "Is the refund amount a valid number?",
+      "ko": "환불 금액이 유효한 숫자인가?"
+    },
+    {
+      "en": "Is the requested action allowed?",
+      "ko": "요청된 행동이 허용되는가?"
+    },
+    {
+      "en": "Does the customer record actually exist?",
+      "ko": "고객 레코드가 실제로 존재하는가?"
+    },
+    {
+      "en": "Validation helps prevent bad or incomplete model output from becoming a real action.",
+      "ko": "검증은 ==잘못되거나 불완전한 모델 출력이 실제 행동이 되는 것== 을 막아 줍니다."
+    },
+    {
+      "en": "Permissions are also critical.",
+      "ko": "권한(permissions)도 결정적입니다."
+    },
+    {
+      "en": "An AI system should only have access to the capabilities it actually needs.",
+      "ko": "AI 시스템은 ==실제로 필요한 기능에만 접근== 해야 합니다."
+    },
+    {
+      "en": "For example, an agent may be allowed to read order information,",
+      "ko": "예를 들어 한 에이전트는 주문 정보를 읽는 것은 허용되지만"
+    },
+    {
+      "en": "but it may not be allowed to issue large refunds.",
+      "ko": "큰 금액 환불은 허용되지 않을 수 있습니다."
+    },
+    {
+      "en": "Another agent may be allowed to create a support case but not modify payment information.",
+      "ko": "다른 에이전트는 지원 케이스 생성은 되지만 결제 정보 수정은 안 될 수 있습니다."
+    },
+    {
+      "en": "Permissions limit the impact of mistakes.",
+      "ko": "==권한은 실수의 영향 범위를 제한== 합니다."
+    },
+    {
+      "en": "Production systems also need visibility into what is happening.",
+      "ko": "프로덕션 시스템은 ==무슨 일이 일어나는지 볼 수 있어야== 합니다."
+    },
+    {
+      "en": "This is where logging and monitoring come in.",
+      "ko": "여기서 로깅과 모니터링이 등장합니다."
+    },
+    {
+      "en": "Logging means recording important events.",
+      "ko": "로깅은 중요한 사건을 기록하는 것입니다."
+    },
+    {
+      "en": "For example, which tool was requested?",
+      "ko": "예를 들어 어떤 툴이 요청됐는가?"
+    },
+    {
+      "en": "Which action was executed?",
+      "ko": "어떤 행동이 실행됐는가?"
+    },
+    {
+      "en": "Whether it succeeded or failed?",
+      "ko": "성공했는가 실패했는가?"
+    },
+    {
+      "en": "And whether the case was escalated?",
+      "ko": "그리고 케이스가 에스컬레이션됐는가?"
+    },
+    {
+      "en": "Monitoring means watching the system for patterns and problems.",
+      "ko": "모니터링은 시스템의 ==패턴과 문제를 지켜보는== 것입니다."
+    },
+    {
+      "en": "For example, are tool failures increasing?",
+      "ko": "예를 들어 툴 실패가 늘고 있는가?"
+    },
+    {
+      "en": "Are too many cases being escalated?",
+      "ko": "에스컬레이션되는 케이스가 너무 많은가?"
+    },
+    {
+      "en": "Are customers receiving incorrect responses?",
+      "ko": "고객이 잘못된 응답을 받고 있는가?"
+    },
+    {
+      "en": "Are certain workflows failing more often than others?",
+      "ko": "특정 워크플로가 유난히 자주 실패하는가?"
+    },
+    {
+      "en": "You do not need to think of logging and monitoring as a complicated infrastructure.",
+      "ko": "로깅과 모니터링을 복잡한 인프라로 생각할 필요는 없습니다."
+    },
+    {
+      "en": "The simple idea is a production system should leave enough evidence for people to understand what happened.",
+      "ko": "단순한 생각은 ==프로덕션 시스템은 사람이 무슨 일이 있었는지 이해할 만큼의 근거를 남겨야 한다== 는 것입니다."
+    },
+    {
+      "en": "Human oversight is another important reliability pattern.",
+      "ko": "사람의 감독(human oversight)도 중요한 신뢰성 패턴입니다."
+    },
+    {
+      "en": "Some decisions should involve a person.",
+      "ko": "어떤 결정에는 사람이 관여해야 합니다."
+    },
+    {
+      "en": "This is often called human in the loop.",
+      "ko": "이것을 흔히 ==human in the loop== 라고 부릅니다."
+    },
+    {
+      "en": "For example, ShopAssist may handle normal refunds automatically.",
+      "ko": "예를 들어 ShopAssist 는 평범한 환불은 자동으로 처리하지만,"
+    },
+    {
+      "en": "But unusual or high-value refunds may require human approval.",
+      "ko": "==비정상적이거나 금액이 큰 환불은 사람 승인== 을 요구할 수 있습니다."
+    },
+    {
+      "en": "A human may also review cases when the model is uncertain",
+      "ko": "모델이 확신하지 못할 때,"
+    },
+    {
+      "en": "or when the situation falls outside normal company policy.",
+      "ko": "또는 상황이 회사 정책 밖에 있을 때도 사람이 검토할 수 있습니다."
+    },
+    {
+      "en": "This leads to escalation.",
+      "ko": "여기서 에스컬레이션으로 이어집니다."
+    },
+    {
+      "en": "Escalation means handing the task to a person or another system when the AI should not continue on its own.",
+      "ko": "에스컬레이션은 ==AI 가 혼자 계속하면 안 될 때 사람이나 다른 시스템에 일을 넘기는== 것입니다."
+    },
+    {
+      "en": "For example, ShopAssist may escalate when the customer asks for a human.",
+      "ko": "예를 들어 ShopAssist 는 고객이 사람을 요구할 때,"
+    },
+    {
+      "en": "The customer identity cannot be verified.",
+      "ko": "고객 신원을 확인할 수 없을 때,"
+    },
+    {
+      "en": "The refund policy does not clearly cover the situation.",
+      "ko": "환불 정책이 그 상황을 명확히 다루지 않을 때,"
+    },
+    {
+      "en": "The system cannot make meaningful progress.",
+      "ko": "시스템이 의미 있는 진전을 만들 수 없을 때,"
+    },
+    {
+      "en": "Or the requested action is outside the agent's permission level.",
+      "ko": "또는 요청된 행동이 에이전트의 권한 범위 밖일 때 에스컬레이션합니다."
+    },
+    {
+      "en": "Good production systems also need to handle uncertainty.",
+      "ko": "좋은 프로덕션 시스템은 ==불확실성== 도 다뤄야 합니다."
+    },
+    {
+      "en": "An AI system should not pretend to know something when the required information is missing.",
+      "ko": "AI 시스템은 ==필요한 정보가 없을 때 아는 척해서는 안 됩니다.=="
+    },
+    {
+      "en": "Imagine ShopAssist finds two customer accounts with the same name.",
+      "ko": "ShopAssist 가 같은 이름의 고객 계정을 두 개 찾았다고 해 봅시다."
+    },
+    {
+      "en": "It should not simply guess which account is correct.",
+      "ko": "==어느 계정이 맞는지 그냥 추측해서는 안 됩니다.=="
+    },
+    {
+      "en": "It should ask for clarification or route the case for review.",
+      "ko": "==명확히 해 달라고 묻거나 검토로 보내야== 합니다."
+    },
+    {
+      "en": "The same principle applies when information is missing or conflicting.",
+      "ko": "정보가 빠졌거나 서로 모순될 때도 같은 원칙이 적용됩니다."
+    },
+    {
+      "en": "Reliable systems recognize uncertainty and respond safely.",
+      "ko": "==믿을 만한 시스템은 불확실성을 알아보고 안전하게 대응== 합니다."
+    },
+    {
+      "en": "Failures are also unavoidable.",
+      "ko": "실패도 피할 수 없습니다."
+    },
+    {
+      "en": "A database may be temporarily unavailable.",
+      "ko": "데이터베이스가 일시적으로 죽을 수 있고,"
+    },
+    {
+      "en": "A tool may return an error.",
+      "ko": "툴이 오류를 돌려줄 수 있고,"
+    },
+    {
+      "en": "A remote service may fail.",
+      "ko": "원격 서비스가 실패할 수 있고,"
+    },
+    {
+      "en": "A request may contain invalid information.",
+      "ko": "요청에 무효한 정보가 담길 수 있습니다."
+    },
+    {
+      "en": "Production systems need a recovery strategy.",
+      "ko": "프로덕션 시스템에는 ==복구 전략== 이 필요합니다."
+    },
+    {
+      "en": "For example, the application may retry a temporary failure.",
+      "ko": "예를 들어 일시적 실패는 재시도하고,"
+    },
+    {
+      "en": "It may ask the user for missing information.",
+      "ko": "빠진 정보는 사용자에게 물어보고,"
+    },
+    {
+      "en": "It may use an alternative source.",
+      "ko": "대체 출처를 쓰고,"
+    },
+    {
+      "en": "Or it may escalate the case if recovery is not possible.",
+      "ko": "복구가 불가능하면 케이스를 에스컬레이션합니다."
+    },
+    {
+      "en": "The important point is that failure should be handled deliberately.",
+      "ko": "==실패는 의도적으로 다뤄져야 한다== 는 것이 핵심입니다."
+    },
+    {
+      "en": "The system should not simply continue as if everything succeeded.",
+      "ko": "==모든 것이 성공한 것처럼 그냥 계속하면 안 됩니다.=="
+    },
+    {
+      "en": "Let's look at a ShopAssist example.",
+      "ko": "ShopAssist 예시를 봅시다."
+    },
+    {
+      "en": "A customer says, I want a refund for my last order.",
+      "ko": "고객이 \"지난 주문 환불받고 싶어요\" 라고 말합니다."
+    },
+    {
+      "en": "Claude may understand the request correctly.",
+      "ko": "Claude 는 요청을 제대로 이해할 수 있습니다."
+    },
+    {
+      "en": "But that is only the beginning.",
+      "ko": "하지만 그건 시작일 뿐입니다."
+    },
+    {
+      "en": "The application may first require customer verification.",
+      "ko": "애플리케이션은 먼저 고객 확인을 요구하고,"
+    },
+    {
+      "en": "Then it may retrieve the actual order.",
+      "ko": "그다음 실제 주문을 가져오고,"
+    },
+    {
+      "en": "The refund amount may be validated.",
+      "ko": "환불 금액을 검증하고,"
+    },
+    {
+      "en": "The system may check whether the refund is within the automatic approval limit.",
+      "ko": "그 환불이 자동 승인 한도 안인지 확인합니다."
+    },
+    {
+      "en": "If all required conditions are satisfied, the application can allow the action.",
+      "ko": "필요한 조건이 모두 만족되면 애플리케이션이 그 행동을 허용할 수 있습니다."
+    },
+    {
+      "en": "If the refund is too large or the customer cannot be verified, the case can be sent to a human.",
+      "ko": "환불이 너무 크거나 고객을 확인할 수 없으면 케이스를 사람에게 보냅니다."
+    },
+    {
+      "en": "Notice what is happening here.",
+      "ko": "여기서 무슨 일이 일어나는지 보세요."
+    },
+    {
+      "en": "The reliability does not come from one perfect prompt.",
+      "ko": "==신뢰성은 완벽한 프롬프트 하나에서 나오지 않습니다.=="
+    },
+    {
+      "en": "It comes from the architecture around the model.",
+      "ko": "==모델을 둘러싼 아키텍처에서 나옵니다.=="
+    },
+    {
+      "en": "Claude contributes language understanding and judgment.",
+      "ko": "Claude 는 언어 이해와 판단을 기여하고,"
+    },
+    {
+      "en": "Validation checks the data.",
+      "ko": "검증은 데이터를 확인하고,"
+    },
+    {
+      "en": "Permissions limit actions.",
+      "ko": "권한은 행동을 제한하고,"
+    },
+    {
+      "en": "Deterministic rules enforce important policies.",
+      "ko": "결정론적 규칙은 중요한 정책을 강제하고,"
+    },
+    {
+      "en": "Logging and monitoring provide visibility.",
+      "ko": "로깅·모니터링은 가시성을 주고,"
+    },
+    {
+      "en": "And human oversight handles cases that should not be fully automated.",
+      "ko": "사람의 감독은 완전 자동화하면 안 되는 케이스를 다룹니다."
+    },
+    {
+      "en": "That is the main idea.",
+      "ko": "그것이 핵심 생각입니다."
+    },
+    {
+      "en": "Production AI reliability is not only a prompting problem.",
+      "ko": "==프로덕션 AI 신뢰성은 프롬프팅 문제만이 아닙니다.=="
+    },
+    {
+      "en": "It is an application architecture problem.",
+      "ko": "==애플리케이션 아키텍처 문제== 입니다."
+    },
+    {
+      "en": "A strong prompt is useful.",
+      "ko": "강한 프롬프트는 유용하지만,"
+    },
+    {
+      "en": "But reliable systems also need control, validation, permissions, monitoring, recovery,",
+      "ko": "믿을 만한 시스템에는 통제·검증·권한·모니터링·복구,"
+    },
+    {
+      "en": "and human escalation.",
+      "ko": "그리고 사람 에스컬레이션도 필요합니다."
+    },
+    {
+      "en": "The model is one part of the system.",
+      "ko": "==모델은 시스템의 한 부분== 이고,"
+    },
+    {
+      "en": "The application is responsible for making sure the overall workflow remains safe and predictable.",
+      "ko": "==전체 워크플로가 안전하고 예측 가능하게 유지되도록 책임지는 것은 애플리케이션== 입니다."
+    }
+  ],
+  "body": "### Prototype vs production\n| | |\n|---|---|\n| **Prototype** | proves ==an idea can work== · ==a few users== · ==controlled environment== · ==limited impact when something goes wrong== |\n| **Production** | ==real users depend on it== · ==real customer data== · ==real business actions== · ==mistakes have real consequences== |\n\n- That difference ==changes how we design the system==. // 설계 방식이 달라진다.\n\n### The core principle\n- ==A model response should not automatically become a business action.== // 응답이 곧 행동이 되면 안 된다.\n- ShopAssist says ==the customer should receive a $500 refund== — that ==does not mean the application should immediately send $500==. ==The model is making a judgment; the application decides whether the action is allowed.== // 판단은 모델, 허용 결정은 앱.\n- **Deterministic rule** = ==always behaves in a predictable way==, e.g. ==refunds above $200 require human approval==. It ==must not depend on how Claude interprets the situation== — ==the application enforces it directly==. // 해석에 좌우되지 않고 앱이 강제.\n- ((Claude for language understanding and judgment · application logic for rules that must always be followed.)) // 역할 분리 한 줄.\n\n### Validation\n- Before using model output, ==check whether the output is valid==: ==is the order ID present?== ==is the refund amount a valid number?== ==is the requested action allowed?== ==does the customer record actually exist?== // 네 가지 확인.\n- Validation ==prevents bad or incomplete model output from becoming a real action==. // 불완전한 출력이 행동이 되지 않게.\n\n### Permissions\n- An AI system should ==only have access to the capabilities it actually needs==. // 필요한 것만.\n- Example: an agent may ==read order information but not issue large refunds==; another may ==create a support case but not modify payment information==. // 읽기는 되고 큰 환불은 안 됨.\n- ==Permissions limit the impact of mistakes.== // 실수의 영향 범위를 좁힌다.\n\n### Logging and monitoring\n- **Logging** = recording important events: ==which tool was requested==, ==which action was executed==, ==whether it succeeded or failed==, ==whether the case was escalated==. // 네 가지를 기록.\n- **Monitoring** = watching for ==patterns and problems==: ==are tool failures increasing?== ==are too many cases being escalated?== ==are customers receiving incorrect responses?== ==are certain workflows failing more often?== // 네 가지를 지켜본다.\n- Not complicated infrastructure — the simple idea: ==a production system should leave enough evidence for people to understand what happened==. // 사람이 이해할 근거를 남긴다.\n\n### Human oversight and escalation\n- **Human in the loop**: ==normal refunds handled automatically==, but ==unusual or high-value refunds require human approval==; a human also reviews when ==the model is uncertain== or the situation ==falls outside normal company policy==. // 평범한 건 자동, 예외는 사람.\n- **Escalation** = ==handing the task to a person or another system when the AI should not continue on its own==. // 혼자 계속하면 안 될 때 넘긴다.\n- ShopAssist escalation triggers: ==the customer asks for a human== · ==identity cannot be verified== · ==policy does not clearly cover the situation== · ==the system cannot make meaningful progress== · ==the requested action is outside the agent's permission level==. // 다섯 방아쇠.\n\n### Uncertainty\n- ==An AI system should not pretend to know something when the required information is missing.== // 없는 것을 아는 척하지 않는다.\n- Two customer accounts with the same name → ==do not guess which account is correct==; ==ask for clarification or route the case for review==. // 추측 금지, 확인 또는 검토.\n- Same when information is ==missing or conflicting==: ==reliable systems recognize uncertainty and respond safely==. // 불확실성을 알아보고 안전하게.\n\n### Failure and recovery\n- Failures are ==unavoidable==: ==a database temporarily unavailable==, ==a tool returning an error==, ==a remote service failing==, ==a request containing invalid information==. // 네 가지 실패 형태.\n- Recovery strategy options: ==retry a temporary failure== · ==ask the user for missing information== · ==use an alternative source== · ==escalate if recovery is not possible==. // 네 가지 복구 수단.\n- ==Failure should be handled deliberately. The system should not simply continue as if everything succeeded.== // 성공한 척 계속하면 안 된다.\n\n### The ShopAssist walkthrough\n- \"I want a refund for my last order\" → Claude ==may understand the request correctly, but that is only the beginning==. // 이해는 시작일 뿐.\n- The application: ==require customer verification → retrieve the actual order → validate the refund amount → check the automatic approval limit==. All conditions satisfied → ==allow the action==. Too large or unverifiable → ==send the case to a human==. // 앱이 밟는 네 단계.\n- ==The reliability does not come from one perfect prompt. It comes from the architecture around the model.== // 프롬프트가 아니라 주변 아키텍처.\n- Division of labor: ==Claude — language understanding and judgment== · ==validation — checks the data== · ==permissions — limit actions== · ==deterministic rules — enforce policies== · ==logging and monitoring — provide visibility== · ==human oversight — cases that should not be fully automated==. // 여섯 역할.\n- ==Production AI reliability is not only a prompting problem. It is an application architecture problem.== ==The model is one part of the system; the application keeps the overall workflow safe and predictable.== // 마지막 한 줄.",
+  "keyPoints": [
+    "A model response must not automatically become a business action: the model makes a judgment, the application decides whether the action is allowed. // 응답은 판단, 허용은 앱의 결정.",
+    "Deterministic rules (refunds above $200 need human approval) always behave predictably and must not depend on how Claude interprets the situation — the application enforces them. // 결정론적 규칙은 앱이 강제한다.",
+    "Validate before acting: order ID present, refund amount a valid number, action allowed, customer record actually exists — so bad or incomplete output never becomes a real action. // 행동 전에 네 가지를 검증.",
+    "Give the system only the capabilities it needs (read orders but not issue large refunds; create a case but not modify payment info) because permissions limit the impact of mistakes. // 최소 권한이 피해를 제한한다.",
+    "Log which tool was requested, which action ran, success or failure, and whether it escalated; monitor rising tool failures, too many escalations, wrong responses, and workflows failing more often — leave enough evidence for people. // 기록과 감시로 근거를 남긴다.",
+    "Human in the loop for unusual or high-value cases, model uncertainty, and situations outside policy; escalate when the customer asks for a human, identity cannot be verified, policy is unclear, no meaningful progress is possible, or the action exceeds the agent's permissions. // 에스컬레이션 다섯 방아쇠.",
+    "Never guess under uncertainty (two accounts with the same name) — ask for clarification or route for review; and handle failure deliberately with retry, asking for missing info, an alternative source, or escalation rather than continuing as if it succeeded. // 추측 금지, 실패는 의도적으로 처리.",
+    "Reliability comes from the architecture around the model, not one perfect prompt: Claude judges, validation checks, permissions limit, deterministic rules enforce, logging gives visibility, humans handle what should not be automated. // 신뢰성은 프롬프트가 아니라 아키텍처."
+  ],
+  "examTrends": {
+    "how": "Synthesis scenarios that reward the same instinct every time: the model produced a plausible action and you are asked what the system should do before executing it. The answer is always some layer of the surrounding architecture — verification, validation, a deterministic threshold, a permission limit, or escalation — never a better prompt or trusting the model's judgment. A second shape lists an uncertainty (two matching accounts, missing or conflicting data) and asks the safe response, answered by asking for clarification or routing for review instead of guessing. A third gives a failure (database down, tool error, invalid request) and asks the recovery strategy, answered by deliberate retry, asking for the missing information, an alternative source, or escalation. A fourth asks which cases need human approval or what should be logged and monitored. // 종합 시나리오인데 매번 같은 직관을 요구한다. 모델이 그럴듯한 행동을 냈고, 실행 전에 시스템이 무엇을 해야 하는지 묻는다. 답은 언제나 주변 아키텍처의 어떤 계층이다 — 확인·검증·결정론적 한도·권한 제한·에스컬레이션 — 더 나은 프롬프트나 모델 판단 신뢰가 아니다. 두 번째 형태는 불확실성(같은 이름 계정 둘, 빠지거나 모순된 데이터)을 주고 안전한 대응을 묻는데, 답은 추측이 아니라 명확화 요청이나 검토 회부다. 세 번째는 실패(DB 다운, 툴 오류, 무효 요청)를 주고 복구 전략을 묻는데, 답은 의도적 재시도·빠진 정보 요청·대체 출처·에스컬레이션이다. 네 번째는 어떤 케이스에 사람 승인이 필요한지, 무엇을 기록·감시해야 하는지 묻는다.",
+    "answerLooks": [
+      "\"Treat the model's recommendation as a judgment and let the application decide whether the action is allowed\" // 권고와 허용을 분리.",
+      "\"Enforce the approval threshold in application logic so it does not depend on the model's interpretation\" // 한도는 코드가 강제.",
+      "\"Validate that the order ID exists, the amount is a valid number, and the action is permitted before executing\" // 실행 전 검증.",
+      "\"Grant read access to order data but not the ability to issue large refunds\" // 최소 권한.",
+      "\"Log the requested tool, the executed action, success or failure, and any escalation\" // 로깅 네 항목.",
+      "\"Require human approval for unusual or high-value refunds and when the model is uncertain\" // human in the loop.",
+      "\"Ask for clarification or route the case for review rather than guessing which account is correct\" // 불확실성은 확인으로.",
+      "\"Retry the transient failure, or escalate if recovery is not possible, instead of continuing as if it succeeded\" // 의도적 복구."
+    ],
+    "traps": [
+      "\"Process the refund because the model stated the customer should receive $500\": a model response is not authorization. // 모델의 말이 승인이 아니다.",
+      "\"Put the $200 approval rule in the system prompt so Claude always applies it\": the rule must not depend on the model's interpretation. // 정책을 프롬프트에 두면 보장되지 않는다.",
+      "\"Give the agent full access so it can resolve any case without escalation\": permissions exist to limit the impact of mistakes. // 전권은 피해를 키운다.",
+      "\"Pick the more recently active account when two customers share a name\": that is guessing; ask or route for review. // 추측으로 고르면 안 된다.",
+      "\"Continue the workflow when the order lookup fails so the customer is not kept waiting\": failure must be handled deliberately, not ignored. // 실패를 무시하고 진행하면 안 된다.",
+      "\"Skip logging for successful actions to reduce noise\": the system must leave enough evidence to understand what happened. // 성공도 기록해야 근거가 남는다.",
+      "\"Escalate every case to a human to be safe\": normal cases are handled automatically; escalation is for the defined triggers. // 전부 사람에게 넘기는 것도 설계 실패.",
+      "\"Improve reliability by writing a stronger, longer system prompt\": production reliability is an application architecture problem. // 프롬프트 강화로 해결되지 않는다."
+    ],
+    "memorize": "A model response is a judgment, never an authorization: validate the data, limit what the agent may do, enforce thresholds in code, log and monitor so people can see what happened, ask or escalate under uncertainty, recover from failure deliberately, and remember reliability comes from the architecture around the model, not one perfect prompt. // 모델의 응답은 판단이지 승인이 아니다 — 데이터를 검증하고, 할 수 있는 일을 제한하고, 한도는 코드로 강제하고, 사람이 볼 수 있게 기록·감시하고, 불확실하면 묻거나 넘기고, 실패는 의도적으로 복구하며, 신뢰성은 완벽한 프롬프트가 아니라 모델을 둘러싼 아키텍처에서 나온다."
+  },
+  "createdAt": "2026-09-10T20:40:00Z"
+}

@@ -104,6 +104,16 @@
           "title": "Claude Code in CI/CD and Independent Review"
         }
       ]
+    },
+    {
+      "no": 7,
+      "title": "Production Reliability & Exam Synthesis",
+      "lectures": [
+        {
+          "no": "47",
+          "title": "Production AI Systems: Reliability, Safety, and Human Oversight"
+        }
+      ]
     }
   ]
 }
