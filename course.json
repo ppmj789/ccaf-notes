@@ -86,6 +86,10 @@
         {
           "no": "41",
           "title": "Git, GitHub, Repositories, and Pull Requests for Non-Developers"
+        },
+        {
+          "no": "42",
+          "title": "Claude Code Project Configuration: CLAUDE.md, Rules, and Memory"
         }
       ]
     }

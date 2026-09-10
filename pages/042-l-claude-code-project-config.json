@@ -1,0 +1,492 @@
+{
+  "id": "l-042",
+  "kind": "lesson",
+  "order": 42,
+  "section": "Claude Code",
+  "lecture": "42",
+  "title_en": "Claude Code Project Configuration: CLAUDE.md, Rules, and Memory",
+  "title": "Claude Code 프로젝트 설정: CLAUDE.md, 규칙, 메모리",
+  "domain": "Claude Code",
+  "summary": "With the SDK you build the agentic layer yourself, while Claude Code ships it and your job is to configure it, because it does not automatically know your team conventions, architecture, testing style, or domain rules; CLAUDE.md is the project memory file that says how to work in the repository, drafted by /init and then edited by hand. User-level memory holds personal cross-project preferences and is not shared, project-level CLAUDE.md holds shared instructions under version control, subdirectory files cover folders whose files share rules while path-specific rules with YAML front matter cover files scattered across folders, imports keep the main file short, # saves a note mid-session, and /memory shows what Claude Code actually loaded. // SDK 에서는 에이전트 계층을 직접 만들지만 Claude Code 는 그것을 이미 갖고 있어서 우리 일은 설정하는 것인데, Claude Code 가 팀 관례·아키텍처·테스트 방식·도메인 규칙을 자동으로 알지 못하기 때문이다. `CLAUDE.md` 는 이 저장소에서 어떻게 일할지 알려 주는 프로젝트 메모리 파일로, `/init` 이 초안을 만들고 사람이 고친다. 사용자 계층 메모리는 프로젝트를 넘나드는 개인 선호를 담고 공유되지 않으며, 프로젝트 계층 `CLAUDE.md` 는 버전 관리에 들어가는 공유 지시를 담고, 하위 디렉터리 파일은 규칙을 공유하는 폴더를 맡고 YAML front matter 를 쓰는 경로별 규칙은 여러 폴더에 흩어진 파일을 맡으며, import 로 메인을 짧게 유지하고, `#` 은 세션 중 즉석 저장, `/memory` 는 실제로 로드된 것을 보여 준다.",
+  "paragraphs": [
+    {
+      "en": "In this lesson, we'll configure Claude Code for a real project.",
+      "ko": "이 강의에서는 실제 프로젝트에 맞게 Claude Code 를 설정합니다."
+    },
+    {
+      "en": "Claude Code is an agentic coding assistant that runs in your terminal.",
+      "ko": "Claude Code 는 터미널에서 돌아가는 에이전트형 코딩 도우미입니다."
+    },
+    {
+      "en": "It can read files, edit code, run commands, inspect tests,",
+      "ko": "파일을 읽고, 코드를 고치고, 명령을 실행하고, 테스트를 살펴보고,"
+    },
+    {
+      "en": "and help with multi-step development tasks.",
+      "ko": "여러 단계짜리 개발 작업을 도울 수 있습니다."
+    },
+    {
+      "en": "It is important to distinguish Claude Code from using Claude through the SDK.",
+      "ko": "Claude Code 와 SDK 로 Claude 를 쓰는 것을 구분하는 게 중요합니다."
+    },
+    {
+      "en": "When we use the SDK, we build the application layer ourselves.",
+      "ko": "SDK 를 쓸 때는 애플리케이션 계층을 우리가 직접 만듭니다."
+    },
+    {
+      "en": "We define the tools.",
+      "ko": "툴을 정의합니다."
+    },
+    {
+      "en": "We decide how to store and resend conversation history.",
+      "ko": "대화 이력을 어떻게 저장하고 다시 보낼지 정합니다."
+    },
+    {
+      "en": "We decide how to read files, fetch external context,",
+      "ko": "파일을 어떻게 읽고, 외부 context 를 가져오고,"
+    },
+    {
+      "en": "validate tool inputs, and connect Claude to backend systems.",
+      "ko": "툴 입력을 검증하고, Claude 를 백엔드 시스템에 연결할지 정합니다."
+    },
+    {
+      "en": "Claude Code already includes many of these agentic capabilities as part of the product.",
+      "ko": "Claude Code 는 이런 에이전트 기능 상당수를 ==제품에 이미 포함==하고 있습니다."
+    },
+    {
+      "en": "It can work across a project, inspect files, run terminal commands,",
+      "ko": "프로젝트 전체에서 일하고, 파일을 살펴보고, 터미널 명령을 실행하고,"
+    },
+    {
+      "en": "keep session context, and use built-in or connected tools.",
+      "ko": "세션 context 를 유지하고, 내장 툴이나 연결된 툴을 쓸 수 있습니다."
+    },
+    {
+      "en": "So, in the SDK lessons, we were building the agentic workflow ourselves.",
+      "ko": "그래서 SDK 강의에서는 에이전트 워크플로를 ==우리가 만들고== 있었고,"
+    },
+    {
+      "en": "In Claude Code, we are configuring and guiding an existing agentic coding environment.",
+      "ko": "Claude Code 에서는 ==이미 있는 에이전트 코딩 환경을 설정하고 안내==하는 것입니다."
+    },
+    {
+      "en": "But Claude Code does not automatically know your team conventions,",
+      "ko": "하지만 Claude Code 는 팀의 관례,"
+    },
+    {
+      "en": "your architecture, your testing style, or your domain rules.",
+      "ko": "아키텍처, 테스트 방식, 도메인 규칙을 자동으로 알지 못합니다."
+    },
+    {
+      "en": "That is why project configuration matters.",
+      "ko": "그래서 프로젝트 설정이 중요합니다."
+    },
+    {
+      "en": "Before we configure project memory, let's quickly make sure Claude Code is installed.",
+      "ko": "프로젝트 메모리를 설정하기 전에 Claude Code 가 설치돼 있는지 확인합시다."
+    },
+    {
+      "en": "Claude Code runs from the terminal, and the setup is simple.",
+      "ko": "Claude Code 는 터미널에서 돌고, 설치는 간단합니다."
+    },
+    {
+      "en": "First, install Node.js, if you do not already have it.",
+      "ko": "먼저 Node.js 가 없으면 설치합니다."
+    },
+    {
+      "en": "You can check whether npm is available by running npm help.",
+      "ko": "`npm help` 를 실행해 npm 이 있는지 확인할 수 있습니다."
+    },
+    {
+      "en": "Then, install Claude Code.",
+      "ko": "그다음 Claude Code 를 설치합니다."
+    },
+    {
+      "en": "After installation, go to your project folder and run the claude command.",
+      "ko": "설치 후 프로젝트 폴더로 가서 `claude` 명령을 실행합니다."
+    },
+    {
+      "en": "The first time you run this command, Claude Code will ask you to log in.",
+      "ko": "이 명령을 처음 실행하면 Claude Code 가 로그인을 요청합니다."
+    },
+    {
+      "en": "Once authentication is complete, Claude is available directly inside your terminal.",
+      "ko": "인증이 끝나면 Claude 를 터미널 안에서 바로 쓸 수 있습니다."
+    },
+    {
+      "en": "Now, we can move into the project setup.",
+      "ko": "이제 프로젝트 설정으로 넘어갑니다."
+    },
+    {
+      "en": "For Claude Code, the most important project memory file is the CLAUDE.md file.",
+      "ko": "Claude Code 에서 가장 중요한 ==프로젝트 메모리 파일은 `CLAUDE.md`== 입니다."
+    },
+    {
+      "en": "This file tells Claude Code how to work inside your repository.",
+      "ko": "이 파일이 Claude Code 에게 ==이 저장소 안에서 어떻게 일할지== 알려 줍니다."
+    },
+    {
+      "en": "For ShopAssist, we want Claude Code to understand four things.",
+      "ko": "ShopAssist 에서는 Claude Code 가 네 가지를 이해하기를 원합니다."
+    },
+    {
+      "en": "Coding standards, testing conventions, Claude API patterns, support domain rules.",
+      "ko": "코딩 표준, 테스트 관례, Claude API 패턴, 고객지원 도메인 규칙."
+    },
+    {
+      "en": "The easiest way to start is with the init command.",
+      "ko": "시작하는 가장 쉬운 방법은 `/init` 명령입니다."
+    },
+    {
+      "en": "Inside the ShopAssist repository, we can run the init command.",
+      "ko": "ShopAssist 저장소 안에서 `/init` 을 실행할 수 있습니다."
+    },
+    {
+      "en": "Claude Code scans the project and creates an initial CLAUDE.md file.",
+      "ko": "Claude Code 가 프로젝트를 훑어서 초기 `CLAUDE.md` 를 만듭니다."
+    },
+    {
+      "en": "That generated file usually includes project structure,",
+      "ko": "생성된 파일에는 보통 프로젝트 구조,"
+    },
+    {
+      "en": "common commands, dependencies, and development patterns.",
+      "ko": "자주 쓰는 명령, 의존성, 개발 패턴이 들어갑니다."
+    },
+    {
+      "en": "But init is only the starting point.",
+      "ko": "하지만 ==`/init` 은 출발점일 뿐== 입니다."
+    },
+    {
+      "en": "After that, we should edit the CLAUDE.md file manually and make it useful for the team.",
+      "ko": "그다음 `CLAUDE.md` 를 직접 고쳐서 팀에 쓸모 있게 만들어야 합니다."
+    },
+    {
+      "en": "For example, our ShopAssist CLAUDE.md file could look like this.",
+      "ko": "예를 들어 ShopAssist 의 `CLAUDE.md` 는 이런 모양일 수 있습니다."
+    },
+    {
+      "en": "Now, Claude Code has much better context.",
+      "ko": "이제 Claude Code 는 훨씬 나은 context 를 갖습니다."
+    },
+    {
+      "en": "If we ask it to add a validation rule, it knows we use Pydantic.",
+      "ko": "검증 규칙을 추가하라고 하면 우리가 Pydantic 을 쓴다는 걸 압니다."
+    },
+    {
+      "en": "If we ask it to update extraction logic, it knows model output still needs validation.",
+      "ko": "추출 로직을 고치라고 하면 모델 출력에 여전히 검증이 필요하다는 걸 압니다."
+    },
+    {
+      "en": "If we ask it to add tests, it knows we use pytest.",
+      "ko": "테스트를 추가하라고 하면 우리가 pytest 를 쓴다는 걸 압니다."
+    },
+    {
+      "en": "This is the main value of project memory.",
+      "ko": "이것이 프로젝트 메모리의 핵심 가치입니다."
+    },
+    {
+      "en": "We do not have to repeat the same instructions in every prompt.",
+      "ko": "==같은 지시를 프롬프트마다 반복할 필요가 없습니다.=="
+    },
+    {
+      "en": "Claude Code supports different memory levels.",
+      "ko": "Claude Code 는 여러 메모리 계층을 지원합니다."
+    },
+    {
+      "en": "First, there is user-level memory.",
+      "ko": "첫째, 사용자 계층 메모리가 있습니다."
+    },
+    {
+      "en": "This is personal.",
+      "ko": "이것은 개인용입니다."
+    },
+    {
+      "en": "It can contain your own preferences across projects.",
+      "ko": "프로젝트를 넘나드는 자신의 선호를 담을 수 있습니다."
+    },
+    {
+      "en": "This file is not shared with the team.",
+      "ko": "이 파일은 팀과 공유되지 않습니다."
+    },
+    {
+      "en": "That distinction matters.",
+      "ko": "이 구분이 중요합니다."
+    },
+    {
+      "en": "User-level memory is for personal workflow preferences.",
+      "ko": "==사용자 계층 메모리는 개인 워크플로 선호용,=="
+    },
+    {
+      "en": "Project-level memory is for shared instructions that belong in version control.",
+      "ko": "==프로젝트 계층 메모리는 버전 관리에 들어가는 공유 지시용== 입니다."
+    },
+    {
+      "en": "For the project, we usually use the CLAUDE.md file.",
+      "ko": "프로젝트에는 보통 `CLAUDE.md` 를 씁니다."
+    },
+    {
+      "en": "Or, depending on the repository layout, the CLAUDE.md file in the .claude folder.",
+      "ko": "또는 저장소 구성에 따라 `.claude` 폴더 안의 `CLAUDE.md` 를 씁니다."
+    },
+    {
+      "en": "This is where we put instructions that every engineer should share.",
+      "ko": "모든 엔지니어가 공유해야 하는 지시를 여기 넣습니다."
+    },
+    {
+      "en": "Claude Code can also use more specific memory files in subdirectories.",
+      "ko": "Claude Code 는 하위 디렉터리의 더 구체적인 메모리 파일도 쓸 수 있습니다."
+    },
+    {
+      "en": "For example, if ShopAssist has API code in the shopassist/api folder,",
+      "ko": "예를 들어 ShopAssist 의 API 코드가 `shopassist/api` 폴더에 있으면,"
+    },
+    {
+      "en": "we can add a shopassist/api/CLAUDE.md file with instructions like this.",
+      "ko": "`shopassist/api/CLAUDE.md` 를 두고 그 폴더용 지시를 적을 수 있습니다."
+    },
+    {
+      "en": "This is useful because not every rule belongs everywhere.",
+      "ko": "==모든 규칙이 모든 곳에 해당하는 것은 아니기== 때문에 유용합니다."
+    },
+    {
+      "en": "API files need API rules.",
+      "ko": "API 파일에는 API 규칙이,"
+    },
+    {
+      "en": "Test files need test rules.",
+      "ko": "테스트 파일에는 테스트 규칙이,"
+    },
+    {
+      "en": "Prompt files may need different rules again.",
+      "ko": "프롬프트 파일에는 또 다른 규칙이 필요합니다."
+    },
+    {
+      "en": "For larger projects, one large CLAUDE.md file can become hard to maintain.",
+      "ko": "큰 프로젝트에서는 거대한 `CLAUDE.md` 하나가 유지하기 어려워집니다."
+    },
+    {
+      "en": "In that case, we can organize memory with imports.",
+      "ko": "그럴 때는 ==import 로 메모리를 나눠== 정리할 수 있습니다."
+    },
+    {
+      "en": "For example, like this.",
+      "ko": "예를 들어 이렇게요."
+    },
+    {
+      "en": "This keeps the main CLAUDE.md file short while still giving Claude Code detailed project context.",
+      "ko": "메인 `CLAUDE.md` 는 짧게 유지하면서도 Claude Code 에게 상세한 프로젝트 context 를 줍니다."
+    },
+    {
+      "en": "Now, let's look at path-specific rules.",
+      "ko": "이제 경로별 규칙(path-specific rules)을 봅시다."
+    },
+    {
+      "en": "Sometimes a directory-level CLAUDE.md file is enough.",
+      "ko": "어떤 때는 디렉터리 단위 `CLAUDE.md` 로 충분합니다."
+    },
+    {
+      "en": "For example, if all tests live under tests, then the tests/CLAUDE.md file is clean and simple.",
+      "ko": "예를 들어 모든 테스트가 `tests` 아래에 있으면 `tests/CLAUDE.md` 가 깔끔하고 단순합니다."
+    },
+    {
+      "en": "But sometimes files are spread across the repository.",
+      "ko": "하지만 파일이 저장소 여기저기 흩어져 있을 때도 있습니다."
+    },
+    {
+      "en": "For example, API-related files might live in shopassist/routes, shopassist/controllers, and shopassist/handlers.",
+      "ko": "예를 들어 API 관련 파일이 `shopassist/routes`, `shopassist/controllers`, `shopassist/handlers` 에 흩어져 있을 수 있습니다."
+    },
+    {
+      "en": "In that case, path-specific rules are easier to maintain.",
+      "ko": "그런 경우에는 ==경로별 규칙이 유지하기 더 쉽습니다.=="
+    },
+    {
+      "en": "A team may organize these under a rules directory,",
+      "ko": "팀은 이것들을 `rules` 디렉터리 아래에 정리할 수 있습니다,"
+    },
+    {
+      "en": "with .claude/rules/api.md and .claude/rules/tests.md files.",
+      "ko": "`.claude/rules/api.md` 와 `.claude/rules/tests.md` 처럼요."
+    },
+    {
+      "en": "An API rule file can use YAML front matter to describe which files it applies to.",
+      "ko": "API 규칙 파일은 ==YAML front matter== 로 ==어떤 파일에 적용되는지== 기술할 수 있습니다."
+    },
+    {
+      "en": "And a test rule can target test files.",
+      "ko": "테스트 규칙은 테스트 파일을 겨냥할 수 있습니다."
+    },
+    {
+      "en": "The practical decision is simple.",
+      "ko": "실무 판단은 단순합니다."
+    },
+    {
+      "en": "Use a subdirectory CLAUDE.md file when all files in that folder share the same rules.",
+      "ko": "==그 폴더의 모든 파일이 같은 규칙을 공유하면 하위 디렉터리 `CLAUDE.md`==,"
+    },
+    {
+      "en": "Use path-specific rules when matching files are spread across multiple folders.",
+      "ko": "==해당 파일이 여러 폴더에 흩어져 있으면 경로별 규칙== 을 씁니다."
+    },
+    {
+      "en": "Claude Code also gives us two useful commands for memory work.",
+      "ko": "Claude Code 는 메모리 작업용 명령을 두 개 줍니다."
+    },
+    {
+      "en": "First, we can use # to quickly add a memory note.",
+      "ko": "첫째, `#` 으로 메모리 항목을 빨리 추가할 수 있습니다."
+    },
+    {
+      "en": "For example, # always run pytest before committing changes.",
+      "ko": "예를 들어 `# always run pytest before committing changes` 처럼요."
+    },
+    {
+      "en": "Claude Code will ask where to save that memory.",
+      "ko": "Claude Code 가 ==그 메모리를 어디에 저장할지 물어봅니다.=="
+    },
+    {
+      "en": "This is useful when you discover a new convention during development",
+      "ko": "개발 중에 새 관례를 발견해서"
+    },
+    {
+      "en": "and want Claude Code to remember it.",
+      "ko": "Claude Code 가 그것을 기억하게 하고 싶을 때 유용합니다."
+    },
+    {
+      "en": "Second, we can use the memory command.",
+      "ko": "둘째, `/memory` 명령을 쓸 수 있습니다."
+    },
+    {
+      "en": "This helps us inspect and manage the memory files Claude Code is using.",
+      "ko": "Claude Code 가 ==실제로 쓰고 있는 메모리 파일을 살펴보고 관리==하게 해 줍니다."
+    },
+    {
+      "en": "That is very useful for debugging.",
+      "ko": "디버깅에 아주 유용합니다."
+    },
+    {
+      "en": "If Claude Code keeps using the wrong test command, check memory.",
+      "ko": "Claude Code 가 계속 엉뚱한 테스트 명령을 쓰면 메모리를 확인하세요."
+    },
+    {
+      "en": "If it follows an old architecture pattern, check memory.",
+      "ko": "옛 아키텍처 패턴을 따르면 메모리를 확인하세요."
+    },
+    {
+      "en": "If it ignores a domain rule, check whether that rule is actually loaded.",
+      "ko": "도메인 규칙을 무시하면 ==그 규칙이 실제로 로드됐는지== 확인하세요."
+    },
+    {
+      "en": "So for ShopAssist, our setup workflow is install Claude Code and run the init command.",
+      "ko": "그래서 ShopAssist 의 설정 워크플로는 Claude Code 를 설치하고 `/init` 을 실행하는 것으로 시작합니다."
+    },
+    {
+      "en": "Then we edit the generated CLAUDE.md file.",
+      "ko": "그다음 생성된 `CLAUDE.md` 를 고칩니다."
+    },
+    {
+      "en": "We add project-specific instructions for coding standards,",
+      "ko": "코딩 표준,"
+    },
+    {
+      "en": "testing, Claude API usage and support rules.",
+      "ko": "테스트, Claude API 사용, 고객지원 규칙에 대한 프로젝트별 지시를 추가합니다."
+    },
+    {
+      "en": "Then we add more specific memory for API files and test files.",
+      "ko": "그다음 API 파일과 테스트 파일용 더 구체적인 메모리를 추가합니다."
+    },
+    {
+      "en": "Then we use the memory command to inspect what Claude Code actually loaded.",
+      "ko": "그다음 `/memory` 로 Claude Code 가 실제로 무엇을 로드했는지 살펴봅니다."
+    },
+    {
+      "en": "And we use # when we want to quickly save a new instruction during a session.",
+      "ko": "그리고 세션 중에 새 지시를 빨리 저장하고 싶을 때 `#` 을 씁니다."
+    },
+    {
+      "en": "The key idea is this.",
+      "ko": "핵심 생각은 이것입니다."
+    },
+    {
+      "en": "Claude Code works best when it has durable project context.",
+      "ko": "Claude Code 는 ==지속되는 프로젝트 context== 가 있을 때 가장 잘 동작합니다."
+    },
+    {
+      "en": "A good CLAUDE.md file turns Claude Code from a generic coding assistant",
+      "ko": "좋은 `CLAUDE.md` 는 Claude Code 를 ==일반적인 코딩 도우미에서=="
+    },
+    {
+      "en": "into a project-aware teammate.",
+      "ko": "==프로젝트를 아는 팀원== 으로 바꿉니다."
+    },
+    {
+      "en": "It knows how the repository is structured.",
+      "ko": "저장소가 어떻게 구성됐는지 알고,"
+    },
+    {
+      "en": "It knows which commands to run.",
+      "ko": "어떤 명령을 실행할지 알고,"
+    },
+    {
+      "en": "It knows which patterns to follow.",
+      "ko": "어떤 패턴을 따를지 압니다."
+    },
+    {
+      "en": "And for ShopAssist, it knows that AI output must be validated,",
+      "ko": "그리고 ShopAssist 에서는 AI 출력이 검증돼야 하고,"
+    },
+    {
+      "en": "retried carefully and routed to humans when confidence is low",
+      "ko": "신중하게 재시도돼야 하고, 확신도가 낮거나"
+    },
+    {
+      "en": "or the customer message is contradictory.",
+      "ko": "고객 메시지가 모순될 때는 사람에게 넘겨야 한다는 것을 압니다."
+    },
+    {
+      "en": "That is why project configuration is not just setup.",
+      "ko": "그래서 프로젝트 설정은 단순한 설치가 아닙니다."
+    },
+    {
+      "en": "It is part of making Claude Code reliable in a real engineering workflow.",
+      "ko": "실제 엔지니어링 워크플로에서 Claude Code 를 신뢰할 수 있게 만드는 일의 일부입니다."
+    }
+  ],
+  "body": "### Claude Code vs the SDK (시험에 나올 구분)\n| | Who builds the agentic layer |\n|---|---|\n| **SDK** | ==we build it ourselves== — define tools, store and resend conversation history, read files, fetch external context, validate tool inputs, connect backends |\n| **Claude Code** | the product ==already includes many agentic capabilities== — works across a project, inspects files, runs terminal commands, keeps session context, uses built-in or connected tools |\n\n- One line: with the SDK we were ==building the agentic workflow==; in Claude Code we are ==configuring and guiding an existing agentic coding environment==. // 만드는 것 vs 설정하는 것.\n- But Claude Code ==does not automatically know your team conventions, architecture, testing style, or domain rules== — that is why project configuration matters. // 관례·아키텍처·테스트·도메인은 알려 줘야 한다.\n\n### Install\n- ==Node.js== first (check with `npm help`), then install Claude Code, then run ==`claude`== inside the project folder. // Node → 설치 → claude.\n- The first run ==asks you to log in==; after authentication Claude is available ==directly inside your terminal==. // 첫 실행은 로그인.\n\n### CLAUDE.md — the project memory file\n- The ==most important project memory file is `CLAUDE.md`==. It tells Claude Code ==how to work inside your repository==. // 이 저장소에서 어떻게 일할지.\n- For ShopAssist it should cover four things: ==coding standards, testing conventions, Claude API patterns, support domain rules==. // 네 가지.\n- ==`/init`== scans the project and creates an initial `CLAUDE.md` with ==project structure, common commands, dependencies, and development patterns==. // /init 이 초안을 만든다.\n- ==`/init` is only the starting point==: edit the file manually afterwards to make it ==useful for the team==. // 초안은 손으로 고쳐야 쓸모 있다.\n- The payoff: ask for a validation rule and it knows ==Pydantic==; ask to update extraction logic and it knows ==model output still needs validation==; ask for tests and it knows ==pytest==. ==We do not repeat the same instructions in every prompt.== // 프롬프트마다 반복하지 않는다.\n\n### Memory levels\n- **User-level memory**: ==personal==, your own preferences ==across projects==, and ==not shared with the team==. // 개인용, 공유 안 됨.\n- **Project-level memory**: ==shared instructions that belong in version control== — `CLAUDE.md`, or `.claude/CLAUDE.md` depending on the repository layout. ==Instructions every engineer should share.== // 팀 공유용, 버전 관리에 들어간다.\n- ==That distinction matters==: personal workflow preferences above, shared project rules below. // 개인 선호 vs 공유 규칙.\n- **Subdirectory memory**: e.g. `shopassist/api/CLAUDE.md`, because ==not every rule belongs everywhere== — ==API files need API rules, test files need test rules, prompt files may need different rules again==. // 규칙은 자리마다 다르다.\n- **Imports**: for larger projects ==one large CLAUDE.md becomes hard to maintain==, so organize memory with imports — the main file stays ==short== while Claude Code still gets ==detailed project context==. // 메인은 짧게, 상세는 import.\n\n### Subdirectory CLAUDE.md vs path-specific rules\n- A ==directory-level `CLAUDE.md`== is enough when the files sit together: all tests under `tests` → `tests/CLAUDE.md` is ==clean and simple==. // 한 폴더에 모여 있으면 디렉터리 파일.\n- But API files may be ==spread across `shopassist/routes`, `shopassist/controllers`, `shopassist/handlers`== — then ==path-specific rules are easier to maintain==, organized under a rules directory (`.claude/rules/api.md`, `.claude/rules/tests.md`). // 흩어져 있으면 경로별 규칙.\n- A rule file can use ==YAML front matter to describe which files it applies to==. // front matter 로 적용 대상 지정.\n- ((The decision: same folder, same rules → subdirectory CLAUDE.md · matching files spread across folders → path-specific rules)). // 판단 기준 한 줄.\n\n### Two memory commands\n- ==`#`== quickly adds a memory note (`# always run pytest before committing changes`), and Claude Code ==asks where to save it==. Useful when you ==discover a new convention during development==. // # 은 즉석 저장, 위치를 물어본다.\n- ==`/memory`== lets you ==inspect and manage the memory files Claude Code is using== — ==very useful for debugging==. // 실제 로드된 메모리를 본다.\n- Debug reflex: wrong test command → ==check memory==; old architecture pattern → ==check memory==; a domain rule ignored → ==check whether that rule is actually loaded==. // 이상하면 메모리부터 확인.\n\n### The ShopAssist setup workflow\n- ((install Claude Code → `/init` → edit the generated `CLAUDE.md` → add project-specific instructions (coding standards, testing, Claude API usage, support rules) → add specific memory for API and test files → `/memory` to inspect what actually loaded → `#` to save new instructions mid-session)). // 일곱 단계.\n\n### Why it matters\n- Claude Code ==works best when it has durable project context==. // 지속되는 context 가 있을 때 가장 잘 된다.\n- A good `CLAUDE.md` turns Claude Code ==from a generic coding assistant into a project-aware teammate==: it knows ==how the repository is structured==, ==which commands to run==, ==which patterns to follow==. // 일반 도우미 → 프로젝트를 아는 팀원.\n- For ShopAssist it also knows the domain rules: ==AI output must be validated, retried carefully, and routed to humans when confidence is low or the customer message is contradictory==. // 도메인 규칙까지 담긴다.\n- So project configuration is ==not just setup — it is part of making Claude Code reliable in a real engineering workflow==. // 설정이 곧 신뢰성 작업.",
+  "keyPoints": [
+    "SDK = you build the agentic layer (tools, history, file reads, validation, backends); Claude Code = the product already provides it, so your job is configuring and guiding it. // SDK 는 만들고, Claude Code 는 설정한다.",
+    "CLAUDE.md is the project memory file that tells Claude Code how to work in the repository; /init generates a first draft (structure, commands, dependencies, patterns) but is only a starting point to edit by hand. // /init 은 출발점, 손으로 고쳐야 한다.",
+    "User-level memory is personal, cross-project, and not shared; project-level memory (CLAUDE.md or .claude/CLAUDE.md) is shared instructions that belong in version control. // 개인용 vs 버전 관리에 들어가는 공유용.",
+    "Subdirectory CLAUDE.md when all files in that folder share the same rules; path-specific rules (e.g. .claude/rules/api.md with YAML front matter naming the files it applies to) when matching files are spread across folders. // 모여 있으면 디렉터리, 흩어져 있으면 경로별 규칙.",
+    "Large projects split memory with imports so the main CLAUDE.md stays short while Claude Code still receives detailed project context. // import 로 나누고 메인은 짧게.",
+    "# adds a memory note mid-session and Claude Code asks where to save it; /memory inspects and manages the memory files actually loaded — the first debugging step when Claude Code uses the wrong command or ignores a rule. // # 은 즉석 저장, /memory 는 확인·디버깅.",
+    "The value of project memory is not repeating the same instructions in every prompt: durable context turns a generic assistant into a project-aware teammate that knows Pydantic, pytest, and the domain rules. // 반복 지시가 사라지고 프로젝트를 아는 팀원이 된다."
+  ],
+  "examTrends": {
+    "how": "Configuration questions with a specific file or command as the answer. The heaviest theme is which memory scope a given instruction belongs to: a personal preference goes to user-level memory, a rule every engineer must follow goes to project-level CLAUDE.md in version control. Another very common shape is subdirectory CLAUDE.md versus path-specific rules, decided purely by whether the matching files sit in one folder or are spread across several. A third describes Claude Code using the wrong test command or ignoring a documented rule and asks what to do first, where the answer is to inspect loaded memory with /memory rather than rewriting the prompt. Expect also a definition item separating Claude Code from the SDK, and a trap that treats /init output as finished. // 설정 문제이고 답이 특정 파일·명령이다. 가장 비중이 큰 주제는 어떤 지시를 어느 메모리 범위에 두는지다. 개인 선호는 사용자 계층, 모든 엔지니어가 따라야 하는 규칙은 버전 관리에 들어가는 프로젝트 `CLAUDE.md`. 두 번째로 흔한 형태는 하위 디렉터리 `CLAUDE.md` 대 경로별 규칙인데, 판단은 오직 해당 파일이 한 폴더에 모여 있는지 여러 폴더에 흩어져 있는지로 갈린다. 세 번째는 Claude Code 가 엉뚱한 테스트 명령을 쓰거나 문서화된 규칙을 무시하는 상황에서 먼저 무엇을 할지 묻는데, 답은 프롬프트를 다시 쓰는 게 아니라 `/memory` 로 로드된 메모리를 확인하는 것이다. Claude Code 와 SDK 를 구분하는 정의 문항, 그리고 `/init` 결과를 완성품으로 취급하는 함정도 나온다.",
+    "answerLooks": [
+      "\"Put the shared convention in the project CLAUDE.md so it is version-controlled and every engineer gets it\" // 공유 규칙은 프로젝트 파일에.",
+      "\"Keep the personal editor or workflow preference in user-level memory, which is not shared with the team\" // 개인 선호는 사용자 계층.",
+      "\"Add a CLAUDE.md in that subdirectory because every file in the folder shares the same rules\" // 한 폴더면 디렉터리 파일.",
+      "\"Use path-specific rules with YAML front matter naming the files they apply to, since the API files span several folders\" // 흩어졌으면 경로별 규칙.",
+      "\"Split the long file with imports so the main CLAUDE.md stays short\" // import 로 분리.",
+      "\"Run /memory to see which memory files are actually loaded\" // 실제 로드 확인.",
+      "\"Use # during the session to save the new convention, and let Claude Code ask where it belongs\" // # 로 즉석 저장.",
+      "\"Run /init to generate the first draft, then edit it manually for the team\" // 초안 생성 후 수정."
+    ],
+    "traps": [
+      "\"Repeat the convention in every prompt so Claude Code cannot miss it\": that is exactly what project memory removes. // 프롬프트 반복은 메모리가 없애려는 것.",
+      "\"Run /init and treat the generated CLAUDE.md as complete\": it is only the starting point and must be edited. // /init 결과는 완성품이 아니다.",
+      "\"Put the team's testing convention in user-level memory so it follows you everywhere\": team rules belong in project memory under version control. // 팀 규칙을 개인 파일에 두면 공유되지 않는다.",
+      "\"Put personal preferences in the project CLAUDE.md so the setup is in one place\": personal preferences are not shared instructions. // 개인 선호를 공유 파일에 넣지 않는다.",
+      "\"Add one large CLAUDE.md listing every rule for every folder\": large single files become hard to maintain; use imports or scoped files. // 하나에 다 넣으면 유지가 어렵다.",
+      "\"Use a subdirectory CLAUDE.md when the matching files are scattered across routes, controllers, and handlers\": scattered files call for path-specific rules. // 흩어진 파일에 디렉터리 파일은 맞지 않는다.",
+      "\"Claude Code ignored the rule, so rewrite the rule more forcefully\": first check with /memory whether the rule is loaded at all. // 강조보다 로드 여부 확인이 먼저.",
+      "\"Claude Code and the SDK are the same thing with different interfaces\": with the SDK you build the agentic layer yourself; Claude Code ships it. // 둘은 같은 것이 아니다."
+    ],
+    "memorize": "CLAUDE.md tells Claude Code how to work in this repo: /init drafts it, you edit it, user-level memory stays personal while project-level memory is version-controlled and shared, same-folder rules go in a subdirectory CLAUDE.md and scattered ones in path-specific rules with YAML front matter, imports keep the main file short, # saves a note mid-session, and /memory shows what actually loaded. // CLAUDE.md 가 이 저장소에서 일하는 법을 알려 준다 — /init 이 초안을 쓰고 사람이 고치며, 사용자 계층은 개인용·프로젝트 계층은 버전 관리 공유용, 한 폴더 규칙은 하위 CLAUDE.md·흩어진 규칙은 YAML front matter 를 쓰는 경로별 규칙, import 로 메인을 짧게, # 은 즉석 저장, /memory 는 로드된 것을 보여 준다."
+  },
+  "createdAt": "2026-09-10T19:00:00Z"
+}
