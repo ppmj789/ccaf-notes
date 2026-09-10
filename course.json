@@ -90,6 +90,10 @@
         {
           "no": "42",
           "title": "Claude Code Project Configuration: CLAUDE.md, Rules, and Memory"
+        },
+        {
+          "no": "43",
+          "title": "Claude Code Session Management: Resume, Compact, Forks, and Scratchpads"
         }
       ]
     }

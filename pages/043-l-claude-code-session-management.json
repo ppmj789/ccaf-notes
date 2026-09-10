@@ -1,0 +1,412 @@
+{
+  "id": "l-043",
+  "kind": "lesson",
+  "order": 43,
+  "section": "Claude Code",
+  "lecture": "43",
+  "title_en": "Claude Code Session Management: Resume, Compact, Forks, and Scratchpads",
+  "title": "Claude Code 세션 관리: resume, compact, fork, scratchpad",
+  "domain": "Claude Code",
+  "summary": "Long Claude Code sessions go wrong through stale context, lost exact details, and exploration mixed with implementation, so resume a session by picker, session id, or the name you gave it — then verify the workspace with git status, diffs, files, and failing tests, because resuming the conversation is not verifying the code. Abandon a noisy session for a fresh one seeded with a structured summary, use /compact while preserving paths, function and test names, IDs, dates, error messages, and decisions, keep stable facts in a scratchpad file rather than only in chat, and use read-only forks to compare divergent designs while the main session stays on the implementation path. // 긴 Claude Code 세션은 낡은 context, 정확한 세부 유실, 탐색과 구현의 혼재로 망가지므로, 세션은 picker·세션 id·직접 붙인 이름으로 이어가고 — 이어간 뒤에는 `git status`·diff·파일·실패 테스트로 작업 공간을 확인해야 한다. 대화를 이어가는 것은 코드를 확인하는 것이 아니기 때문이다. 지저분해진 세션은 버리고 구조화된 요약을 들고 새로 시작하며, `/compact` 는 경로·함수·테스트 이름·ID·날짜·에러 메시지·결정을 보존한 채 쓰고, 안정된 사실은 대화가 아니라 scratchpad 파일에 두고, 갈라지는 설계 비교는 읽기 전용 fork 로 하면서 메인 세션은 구현 경로에 머무른다.",
+  "paragraphs": [
+    {
+      "en": "In real projects, Claude Code sessions can last a long time.",
+      "ko": "실제 프로젝트에서 Claude Code 세션은 오래 이어질 수 있습니다."
+    },
+    {
+      "en": "You may explore files, run tests, compare approaches, make changes, stop, and continue later.",
+      "ko": "파일을 살펴보고, 테스트를 돌리고, 접근을 비교하고, 변경하고, 멈추고, 나중에 이어갈 수 있습니다."
+    },
+    {
+      "en": "If you manage the session badly, Claude may rely on stale context,",
+      "ko": "세션 관리를 잘못하면 Claude 가 낡은 context 에 의존하거나,"
+    },
+    {
+      "en": "lose exact details, or mix exploration with implementation.",
+      "ko": "정확한 세부를 잃거나, 탐색과 구현을 뒤섞을 수 있습니다."
+    },
+    {
+      "en": "So, in this lesson, we'll cover four practical techniques.",
+      "ko": "그래서 이 강의에서는 실용적인 기법들을 다룹니다."
+    },
+    {
+      "en": "Resume, compact, forks, and scratchpads. First, resume.",
+      "ko": "resume, compact, fork, scratchpad. 먼저 resume 입니다."
+    },
+    {
+      "en": "Claude Code saves sessions as you work, so you can continue later.",
+      "ko": "Claude Code 는 작업하는 동안 세션을 저장해서 나중에 이어갈 수 있게 합니다."
+    },
+    {
+      "en": "If you run claude --continue, it resumes the most recent session in the current directory.",
+      "ko": "`claude --continue` 를 실행하면 ==현재 디렉터리의 가장 최근 세션== 을 이어갑니다."
+    },
+    {
+      "en": "If you run claude --resume, it opens the session picker.",
+      "ko": "`claude --resume` 를 실행하면 ==세션 선택 화면== 이 열립니다."
+    },
+    {
+      "en": "If you run claude --resume followed by a session id, it resumes that specific session.",
+      "ko": "`claude --resume` 뒤에 ==세션 id== 를 붙이면 그 특정 세션을 이어갑니다."
+    },
+    {
+      "en": "And for important work, you can give a session a readable name.",
+      "ko": "그리고 중요한 작업에는 세션에 읽기 쉬운 이름을 줄 수 있습니다."
+    },
+    {
+      "en": "For example, you can start Claude with -n and then a name like return-validation.",
+      "ko": "예를 들어 `-n` 뒤에 `return-validation` 같은 이름을 붙여 시작할 수 있습니다."
+    },
+    {
+      "en": "Later, you can resume that same session by running claude --resume return-validation.",
+      "ko": "나중에 `claude --resume return-validation` 으로 같은 세션을 이어갑니다."
+    },
+    {
+      "en": "Inside an active session, you can also rename it with the /rename command.",
+      "ko": "진행 중인 세션 안에서는 `/rename` 명령으로 이름을 바꿀 수도 있습니다."
+    },
+    {
+      "en": "This is useful for the exam. You are not limited to the last session.",
+      "ko": "이건 시험에 유용합니다. ==마지막 세션만 이어갈 수 있는 게 아닙니다.=="
+    },
+    {
+      "en": "You can resume by picker, by session id, or by a user-defined session name.",
+      "ko": "==선택 화면으로, 세션 id 로, 또는 직접 정한 세션 이름으로== 이어갈 수 있습니다."
+    },
+    {
+      "en": "Claude Code stores session transcripts locally under the .claude/projects directory,",
+      "ko": "Claude Code 는 세션 기록을 로컬 `.claude/projects` 디렉터리 아래에,"
+    },
+    {
+      "en": "using the project name and session id.",
+      "ko": "프로젝트 이름과 세션 id 로 저장합니다."
+    },
+    {
+      "en": "The transcript is saved as a JSON lines file.",
+      "ko": "기록은 ==JSON lines 파일== 로 저장됩니다."
+    },
+    {
+      "en": "Sessions are saved continuously.",
+      "ko": "세션은 계속 저장됩니다."
+    },
+    {
+      "en": "But for serious work, do not rely only on chat history.",
+      "ko": "하지만 중요한 작업에서는 ==대화 이력에만 의존하지 마세요.=="
+    },
+    {
+      "en": "Use meaningful session names, scratchpad notes, and export when you need a readable transcript.",
+      "ko": "의미 있는 세션 이름, scratchpad 메모를 쓰고, 읽을 수 있는 기록이 필요하면 export 하세요."
+    },
+    {
+      "en": "Also, avoid non-persistent runs for work you need to resume later.",
+      "ko": "그리고 나중에 이어가야 할 작업은 저장되지 않는 방식으로 돌리지 마세요."
+    },
+    {
+      "en": "Use resume when the task is still the same.",
+      "ko": "==작업이 여전히 같은 것일 때== resume 을 씁니다."
+    },
+    {
+      "en": "For example, you were working on ShopAssist return validation,",
+      "ko": "예를 들어 ShopAssist 반품 검증 작업을 하고 있었고,"
+    },
+    {
+      "en": "and Claude already inspected the relevant files and tests.",
+      "ko": "Claude 가 이미 관련 파일과 테스트를 살펴본 상태라면요."
+    },
+    {
+      "en": "But after resuming, always verify the current workspace.",
+      "ko": "하지만 이어간 뒤에는 ==항상 현재 작업 공간을 확인== 하세요."
+    },
+    {
+      "en": "The repository may have changed while the session was inactive.",
+      "ko": "세션이 멈춰 있는 동안 저장소가 바뀌었을 수 있습니다."
+    },
+    {
+      "en": "A good first prompt would say, resume the return validation task.",
+      "ko": "좋은 첫 프롬프트는 \"반품 검증 작업을 이어가자\" 로 시작합니다."
+    },
+    {
+      "en": "Before editing anything, recheck git status, git diff, relevant files, and failing tests.",
+      "ko": "==아무것도 고치기 전에 `git status`, `git diff`, 관련 파일, 실패 중인 테스트를 다시 확인== 하고,"
+    },
+    {
+      "en": "Then summarize the current state.",
+      "ko": "그다음 현재 상태를 요약하게 합니다."
+    },
+    {
+      "en": "The rule is simple. Resume the conversation, but verify the code.",
+      "ko": "규칙은 단순합니다. ==대화는 이어가되, 코드는 확인한다.=="
+    },
+    {
+      "en": "Second, know when not to resume.",
+      "ko": "둘째, ==언제 이어가지 말아야 하는지== 아는 것입니다."
+    },
+    {
+      "en": "If the previous session became messy, start fresh.",
+      "ko": "앞 세션이 지저분해졌다면 새로 시작하세요."
+    },
+    {
+      "en": "For example, if you explored three designs, looked at unrelated files,",
+      "ko": "예를 들어 설계 셋을 탐색했고, 무관한 파일을 봤고,"
+    },
+    {
+      "en": "canceled a refactor, and pasted long logs, that context may hurt more than help.",
+      "ko": "리팩터를 취소했고, 긴 로그를 붙여 넣었다면, 그 context 는 ==도움보다 해가 될 수== 있습니다."
+    },
+    {
+      "en": "In that case, start a new session with a structured summary.",
+      "ko": "그럴 때는 ==구조화된 요약을 들고 새 세션== 을 시작합니다."
+    },
+    {
+      "en": "The summary should include the goal, relevant files, important functions,",
+      "ko": "요약에는 목표, 관련 파일, 중요한 함수,"
+    },
+    {
+      "en": "failing tests, decisions, and next step. Like this one.",
+      "ko": "실패 중인 테스트, 결정, 다음 단계가 들어가야 합니다."
+    },
+    {
+      "en": "A clean summary is often better than a noisy old conversation.",
+      "ko": "==깔끔한 요약이 지저분한 옛 대화보다 나은 경우가 많습니다.=="
+    },
+    {
+      "en": "Third, compact. Long sessions consume context.",
+      "ko": "셋째, compact. 긴 세션은 context 를 먹습니다."
+    },
+    {
+      "en": "They also become harder for the model to reason over,",
+      "ko": "그리고 모델이 추론하기도 어려워지는데,"
+    },
+    {
+      "en": "because important details may be buried in the middle of the conversation.",
+      "ko": "중요한 세부가 ==대화 가운데에 묻힐 수== 있기 때문입니다."
+    },
+    {
+      "en": "This is related to the lost in the middle problem.",
+      "ko": "==lost in the middle== 문제와 연결됩니다."
+    },
+    {
+      "en": "Claude Code can reduce context usage with the /compact command.",
+      "ko": "Claude Code 는 `/compact` 명령으로 context 사용량을 줄일 수 있습니다."
+    },
+    {
+      "en": "But compaction has a risk. Summaries can lose exact details.",
+      "ko": "하지만 compaction 에는 위험이 있습니다. ==요약은 정확한 세부를 잃을 수== 있습니다."
+    },
+    {
+      "en": "So before or during compaction, preserve the information that must remain exact.",
+      "ko": "그래서 compaction 전이나 중에 ==정확히 남아야 하는 정보를 보존== 하세요."
+    },
+    {
+      "en": "For example, include the current task, file paths, function names,",
+      "ko": "예를 들어 현재 작업, 파일 경로, 함수 이름,"
+    },
+    {
+      "en": "failing test names, exact error messages, decisions, and next step.",
+      "ko": "실패 테스트 이름, 정확한 에러 메시지, 결정, 다음 단계를 담습니다."
+    },
+    {
+      "en": "A good compact summary might look something like this.",
+      "ko": "좋은 compact 요약은 대략 이런 모양입니다."
+    },
+    {
+      "en": "Good compaction preserves file paths, function names, test names,",
+      "ko": "좋은 compaction 은 파일 경로, 함수 이름, 테스트 이름,"
+    },
+    {
+      "en": "IDs, dates, error messages, and decisions.",
+      "ko": "ID, 날짜, 에러 메시지, 결정을 보존합니다."
+    },
+    {
+      "en": "Not just \"changed validation.\"",
+      "ko": "==\"검증을 바꿨음\" 한 줄이 아니라요.=="
+    },
+    {
+      "en": "Fourth, scratchpads.",
+      "ko": "넷째, scratchpad."
+    },
+    {
+      "en": "For long tasks, keep persistent notes in a project file.",
+      "ko": "긴 작업에서는 ==프로젝트 파일에 지속되는 메모== 를 둡니다."
+    },
+    {
+      "en": "For example, a scratchpad file under .claude or a session notes file under docs.",
+      "ko": "예를 들어 `.claude` 아래의 scratchpad 파일이나 `docs` 아래의 세션 노트 파일처럼요."
+    },
+    {
+      "en": "The scratchpad should contain stable facts.",
+      "ko": "scratchpad 에는 ==안정된 사실== 을 담습니다."
+    },
+    {
+      "en": "A scratchpad helps with crash recovery, handoff, and fresh sessions.",
+      "ko": "scratchpad 는 ==크래시 복구, 인계, 새 세션 시작== 에 도움이 됩니다."
+    },
+    {
+      "en": "It is also useful as a work manifest.",
+      "ko": "작업 명세(work manifest)로도 유용합니다."
+    },
+    {
+      "en": "The key point is this.",
+      "ko": "핵심은 이것입니다."
+    },
+    {
+      "en": "Important facts should not live only in the chat. Fifth, forks.",
+      "ko": "==중요한 사실이 대화에만 있어서는 안 됩니다.== 다섯째, fork."
+    },
+    {
+      "en": "Use forks when you want to compare different approaches without polluting the main session.",
+      "ko": "==메인 세션을 오염시키지 않고 서로 다른 접근을 비교== 하고 싶을 때 fork 를 씁니다."
+    },
+    {
+      "en": "For example, one fork can explore the smallest change inside validate_return_request.",
+      "ko": "예를 들어 한 fork 는 `validate_return_request` 안의 ==가장 작은 변경== 을 탐색하고,"
+    },
+    {
+      "en": "Another fork can explore a separate return policy validator design.",
+      "ko": "다른 fork 는 ==별도의 반품 정책 검증기 설계== 를 탐색합니다."
+    },
+    {
+      "en": "Both forks should avoid editing files at first.",
+      "ko": "두 fork 모두 ==처음에는 파일을 고치지 않아야== 합니다."
+    },
+    {
+      "en": "They should return the files involved, risks, and tests.",
+      "ko": "관련 파일, 위험, 테스트를 반환해야 합니다."
+    },
+    {
+      "en": "Then you compare the two results and implement only the chosen approach.",
+      "ko": "그다음 두 결과를 비교하고 ==고른 접근만 구현== 합니다."
+    },
+    {
+      "en": "Forks are useful for divergent designs.",
+      "ko": "fork 는 ==갈라지는 설계== 에 유용합니다."
+    },
+    {
+      "en": "The main session should stay focused on the implementation path.",
+      "ko": "메인 세션은 ==구현 경로에 집중한 상태로== 남아야 합니다."
+    },
+    {
+      "en": "The same principle applies to subagents and exploratory work.",
+      "ko": "같은 원칙이 subagent 와 탐색 작업에도 적용됩니다."
+    },
+    {
+      "en": "Do not ask for long reasoning transcripts. Ask for structured findings.",
+      "ko": "==긴 추론 기록을 요구하지 말고 구조화된 findings 를 요구== 하세요."
+    },
+    {
+      "en": "For example, tell the subagent to inspect the return validation flow",
+      "ko": "예를 들어 subagent 에게 반품 검증 흐름을 살펴보고"
+    },
+    {
+      "en": "and return only relevant files, relevant functions,",
+      "ko": "관련 파일, 관련 함수,"
+    },
+    {
+      "en": "current behavior, proposed change, risks, and tests to run.",
+      "ko": "현재 동작, 제안하는 변경, 위험, 돌려야 할 테스트만 반환하라고 지시합니다."
+    },
+    {
+      "en": "Also tell it not to edit files.",
+      "ko": "그리고 ==파일을 고치지 말라== 고도 말합니다."
+    },
+    {
+      "en": "The same idea applies to command output.",
+      "ko": "같은 생각이 명령 출력에도 적용됩니다."
+    },
+    {
+      "en": "Do not paste a full test log back into Claude. Trim it to the useful part.",
+      "ko": "==테스트 로그 전체를 Claude 에 붙여 넣지 말고 쓸모 있는 부분만 다듬어== 주세요."
+    },
+    {
+      "en": "For example, failing test test_damaged_item_requires_photo,",
+      "ko": "예를 들어 실패 테스트 `test_damaged_item_requires_photo`,"
+    },
+    {
+      "en": "expected status needs_review, actual status approved,",
+      "ko": "기대 상태 `needs_review`, 실제 상태 `approved`,"
+    },
+    {
+      "en": "relevant file validation.py.",
+      "ko": "관련 파일 `validation.py` 처럼요."
+    },
+    {
+      "en": "Claude does not need every line. It needs the right evidence.",
+      "ko": "==Claude 는 모든 줄이 필요한 게 아니라, 맞는 근거가 필요합니다.=="
+    },
+    {
+      "en": "So the rule is, use resume when the task is still clean and continuous.",
+      "ko": "그래서 규칙은 — 작업이 여전히 깔끔하고 연속적이면 resume,"
+    },
+    {
+      "en": "Name important sessions so you can resume them directly.",
+      "ko": "중요한 세션은 이름을 붙여 바로 이어갈 수 있게,"
+    },
+    {
+      "en": "Start fresh when the old context is noisy.",
+      "ko": "옛 context 가 지저분하면 새로 시작,"
+    },
+    {
+      "en": "Use compact when the session is useful but getting too large.",
+      "ko": "세션이 쓸모 있는데 너무 커지면 compact,"
+    },
+    {
+      "en": "Use scratchpads when important facts must survive the conversation.",
+      "ko": "중요한 사실이 대화보다 오래 남아야 하면 scratchpad,"
+    },
+    {
+      "en": "Use forks when comparing different implementation strategies.",
+      "ko": "서로 다른 구현 전략을 비교할 때는 fork."
+    },
+    {
+      "en": "For small tasks, this is productivity.",
+      "ko": "작은 작업에서는 이것이 생산성입니다."
+    },
+    {
+      "en": "For high-risk work like payments, auth, migrations, production bugs, or large refactors,",
+      "ko": "결제·인증·마이그레이션·프로덕션 버그·대규모 리팩터처럼 위험이 큰 작업에서는"
+    },
+    {
+      "en": "this becomes correctness.",
+      "ko": "==이것이 정확성(correctness)이 됩니다.=="
+    },
+    {
+      "en": "Session management is how you keep Claude Code useful, focused, and safe during long engineering work.",
+      "ko": "세션 관리는 긴 엔지니어링 작업 동안 Claude Code 를 쓸모 있고, 집중돼 있고, 안전하게 유지하는 방법입니다."
+    }
+  ],
+  "body": "### Resume — 세 가지 방법\n| Command | What it does |\n|---|---|\n| `claude --continue` | resumes the ==most recent session in the current directory== |\n| `claude --resume` | opens the ==session picker== |\n| `claude --resume <session id>` | resumes ==that specific session== |\n| `claude -n <name>` … then `claude --resume <name>` | start with a ==readable name==, resume by that name |\n| `/rename` | rename the session ==from inside an active session== |\n\n- Exam line: ==you are not limited to the last session — resume by picker, by session id, or by a user-defined name==. // 마지막 세션만이 아니다.\n- Transcripts are stored locally under ==`.claude/projects`==, by ==project name and session id==, as a ==JSON lines file==, and ==sessions are saved continuously==. // 로컬 저장, JSON lines.\n- But ==do not rely only on chat history== for serious work: use ==meaningful session names, scratchpad notes, and export== when you need a readable transcript, and ==avoid non-persistent runs== for work you must resume. // 대화 이력만 믿지 않는다.\n\n### Resume the conversation, verify the code\n- Resume when ==the task is still the same== and Claude already inspected the relevant files and tests. // 같은 작업이면 이어간다.\n- After resuming, ==always verify the current workspace== — ==the repository may have changed while the session was inactive==. // 멈춘 동안 저장소가 바뀌었을 수 있다.\n- Good first prompt: ==resume the task, but before editing anything recheck `git status`, `git diff`, relevant files, and failing tests, then summarize the current state==. // 고치기 전에 다시 확인.\n- ((Resume the conversation, but verify the code.)) // 대화는 이어가고 코드는 확인.\n\n### When not to resume\n- If the previous session became ==messy==, ==start fresh==. // 지저분하면 버린다.\n- Messy looks like: ==explored three designs==, ==looked at unrelated files==, ==canceled a refactor==, ==pasted long logs== — that context ==may hurt more than help==. // 넷 다 오염 신호.\n- Instead start a new session with a ==structured summary==: ==goal, relevant files, important functions, failing tests, decisions, next step==. // 여섯 항목.\n- ==A clean summary is often better than a noisy old conversation.== // 깔끔한 요약 > 지저분한 대화.\n\n### Compact\n- Long sessions ==consume context== and become ==harder to reason over== because important details are ==buried in the middle== — the ==lost in the middle== problem again. // 길면 가운데가 묻힌다.\n- ==`/compact`== reduces context usage, but ==compaction has a risk: summaries can lose exact details==. // 요약은 정확한 값을 잃는다.\n- So before or during compaction, ==preserve what must remain exact==: ==current task, file paths, function names, failing test names, exact error messages, decisions, next step==. // 일곱 항목을 지킨다.\n- Good compaction keeps ==file paths, function names, test names, IDs, dates, error messages, and decisions== — ==not just \"changed validation\"==. // 뭉뚱그린 한 줄은 실패.\n\n### Scratchpads\n- For long tasks, keep ==persistent notes in a project file== — e.g. a scratchpad under ==`.claude`== or session notes under ==`docs`==. // 프로젝트 파일에 남긴다.\n- It should contain ==stable facts==, and it helps with ==crash recovery, handoff, and fresh sessions==; it also works as a ==work manifest==. // 복구·인계·새 세션·작업 명세.\n- ==Important facts should not live only in the chat.== // 39강의 \"대화는 DB 가 아니다\" 와 같은 규칙.\n\n### Forks\n- Use forks to ==compare different approaches without polluting the main session==. // 메인을 오염시키지 않고 비교.\n- Example: one fork explores ==the smallest change inside `validate_return_request`==, another explores ==a separate return policy validator design==. // 최소 변경 vs 새 설계.\n- ==Both forks should avoid editing files at first==; they ==return the files involved, risks, and tests==. Then you ==compare and implement only the chosen approach==. // 처음엔 읽기만, 고른 것만 구현.\n- Forks are for ==divergent designs==; the ==main session stays focused on the implementation path==. // 갈라지는 설계용.\n\n### Ask for findings, not transcripts\n- Same principle for subagents and exploratory work: ==do not ask for long reasoning transcripts, ask for structured findings==. // 기록이 아니라 결과.\n- Tell the subagent to return only ==relevant files, relevant functions, current behavior, proposed change, risks, and tests to run== — and ==not to edit files==. // 여섯 항목 + 수정 금지.\n- Same for command output: ==do not paste a full test log==, ==trim it to the useful part== — ==failing test name, expected vs actual status, relevant file==. // 로그 전체 대신 근거만.\n- ==Claude does not need every line. It needs the right evidence.== // 모든 줄이 아니라 맞는 근거.\n\n### The decision table\n| Situation | Technique |\n|---|---|\n| task still ==clean and continuous== | ==resume== (name important sessions to resume directly) |\n| old context is ==noisy== | ==start fresh with a structured summary== |\n| session ==useful but too large== | ==`/compact`==, preserving exact details |\n| facts must ==survive the conversation== | ==scratchpad== in a project file |\n| comparing ==implementation strategies== | ==forks==, read-only first |\n\n- For small tasks this is ==productivity==. For ==payments, auth, migrations, production bugs, or large refactors== it becomes ==correctness==. // 위험이 큰 일에서는 정확성 문제가 된다.",
+  "keyPoints": [
+    "Resume three ways: --continue takes the most recent session in this directory, --resume opens the picker, --resume with a session id or a user-defined name jumps straight to it, and /rename names a live session. // 마지막 세션만이 아니라 picker·id·이름으로 이어간다.",
+    "Transcripts live locally under .claude/projects by project name and session id as JSON lines, saved continuously — but serious work should not depend on chat history alone. // 로컬 JSON lines 저장, 그래도 대화 이력만 믿지 않는다.",
+    "Resume the conversation, verify the code: the repository may have changed while the session was inactive, so recheck git status, git diff, files, and failing tests before editing. // 이어간 뒤 반드시 작업 공간 확인.",
+    "Do not resume a messy session (three explored designs, unrelated files, a canceled refactor, pasted logs); start fresh with a structured summary of goal, files, functions, failing tests, decisions, and next step. // 지저분하면 구조화된 요약으로 새로 시작.",
+    "/compact reduces context but summaries lose exact details, so preserve file paths, function names, test names, IDs, dates, error messages, and decisions — not just \"changed validation\". // compact 할 때 정확한 값을 지킨다.",
+    "Scratchpads in a project file (.claude or docs) hold stable facts for crash recovery, handoff, and fresh sessions: important facts must not live only in the chat. // 중요한 사실은 대화 밖에 둔다.",
+    "Forks compare divergent approaches without polluting the main session, stay read-only at first, and return files, risks, and tests so you implement only the chosen one; subagents and logs likewise give trimmed structured evidence, not full transcripts. // fork 는 읽기 전용으로 비교, 근거만 다듬어 받는다."
+  ],
+  "examTrends": {
+    "how": "Command-and-judgment questions. One shape asks how to get back into a specific named or older session, where the answer is the picker, a session id, or a user-defined name rather than only --continue. Another gives a scenario with a stale session and asks what to do first after resuming, and the answer is to re-verify git status, diffs, files, and failing tests before editing. A third describes a noisy session (several abandoned designs, pasted logs) and asks resume or restart, where the answer is a fresh session with a structured summary. Compact appears as a risk question: what must survive compaction, answered by exact paths, names, IDs, errors, and decisions. Forks appear as how to compare two designs without polluting the main session, read-only first. // 명령과 판단을 묻는 문제다. 한 형태는 특정 이름이나 예전 세션으로 어떻게 돌아가는지 묻는데, 답은 `--continue` 만이 아니라 picker·세션 id·직접 정한 이름이다. 다른 형태는 오래 멈춰 있던 세션을 이어간 직후 무엇을 먼저 할지 묻고, 답은 고치기 전에 `git status`·diff·파일·실패 테스트를 다시 확인하는 것이다. 세 번째는 지저분한 세션(버린 설계 여러 개, 붙여 넣은 로그)을 주고 이어갈지 새로 시작할지 묻는데, 답은 구조화된 요약을 들고 새 세션이다. compact 는 위험 문제로 나온다 — compaction 을 넘어 무엇이 남아야 하는가, 답은 정확한 경로·이름·ID·에러·결정이다. fork 는 메인 세션을 오염시키지 않고 두 설계를 비교하는 방법으로 나오며 처음에는 읽기 전용이다.",
+    "answerLooks": [
+      "\"Resume by session id or by the session name you assigned, or pick it from the session picker\" // id·이름·picker.",
+      "\"Recheck git status, git diff, the relevant files, and the failing tests before editing anything\" // 코드부터 확인.",
+      "\"Start a new session seeded with a structured summary of goal, files, functions, failing tests, decisions, and next step\" // 요약으로 새 시작.",
+      "\"Compact but preserve file paths, function names, failing test names, exact error messages, and decisions\" // 정확한 값 보존.",
+      "\"Keep the stable facts in a scratchpad file in the project so they survive crashes and new sessions\" // 프로젝트 파일에 남긴다.",
+      "\"Explore both designs in forks that do not edit files, return files, risks, and tests, then implement only the chosen one\" // 읽기 전용 fork 비교.",
+      "\"Ask the subagent for relevant files, functions, current behavior, proposed change, risks, and tests, and tell it not to edit\" // 구조화된 findings 요구.",
+      "\"Paste only the failing test name, expected versus actual, and the relevant file instead of the whole log\" // 로그를 다듬어서."
+    ],
+    "traps": [
+      "\"Only the most recent session can be resumed, so start over if you need an older one\": the picker, session ids, and names all reach older sessions. // 마지막 세션만 이어갈 수 있다는 보기는 오답.",
+      "\"After resuming, continue editing immediately since the conversation already has the context\": the repository may have changed while the session was inactive. // 이어간 뒤 바로 수정하면 안 된다.",
+      "\"Resume the messy session and tell Claude to ignore the earlier exploration\": noisy context hurts more than it helps; start fresh with a summary. // 무시하라고 지시하는 것으로는 해결되지 않는다.",
+      "\"Compact aggressively to a one-line summary such as changed validation\": compaction must keep exact paths, names, IDs, and errors. // 한 줄 요약은 세부를 버린다.",
+      "\"Keep the important IDs and decisions in the chat so they stay in context\": important facts should not live only in the chat. // 대화에만 두지 않는다.",
+      "\"Let both forks start editing files so you can see which change works\": forks stay read-only first and return files, risks, and tests. // 두 fork 가 파일을 고치면 안 된다.",
+      "\"Have the subagent return its full reasoning transcript so nothing is lost\": ask for structured findings instead. // 긴 추론 기록은 요구하지 않는다.",
+      "\"Paste the entire test log so Claude has all the information\": Claude needs the right evidence, not every line. // 전체 로그는 근거가 아니라 소음."
+    ],
+    "memorize": "Resume by picker, id, or name and then verify the code, not just the conversation; abandon a noisy session for a structured summary; compact while keeping paths, names, IDs, errors, and decisions exact; keep stable facts in a scratchpad; fork read-only to compare designs; and hand Claude trimmed evidence rather than whole logs or transcripts. // picker·id·이름으로 이어가고 대화가 아니라 코드를 확인한다, 지저분한 세션은 구조화된 요약으로 갈아탄다, compact 는 경로·이름·ID·에러·결정을 정확히 남긴 채, 안정된 사실은 scratchpad 에, 설계 비교는 읽기 전용 fork 로, 그리고 Claude 에게는 전체 로그·기록이 아니라 다듬은 근거를 준다."
+  },
+  "createdAt": "2026-09-10T19:30:00Z"
+}
