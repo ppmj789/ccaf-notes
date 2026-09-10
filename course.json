@@ -68,6 +68,10 @@
         {
           "no": "38",
           "title": "Task Decomposition, Hooks, Gates, and Handoffs"
+        },
+        {
+          "no": "39",
+          "title": "Session State, Forking, Scratchpads, and Large Context Workflows"
         }
       ]
     }

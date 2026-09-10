@@ -1,0 +1,359 @@
+{
+  "id": "l-039",
+  "kind": "lesson",
+  "order": 39,
+  "section": "Multi-Agent Systems",
+  "lecture": "39",
+  "title_en": "Session State, Forking, Scratchpads, and Large Context Workflows",
+  "title": "세션 상태, 포킹, 스크래치패드, 그리고 큰 context 워크플로",
+  "domain": "신뢰성",
+  "summary": "The production rule is that the conversation is not your database: in long-running Claude SDK applications durable state lives outside the model context as a structured case facts block, because a growing case pushes IDs, dates, amounts, and policy versions into the middle of the context where models miss them and long context degrades gradually while still sounding confident. So trim tool outputs to the relevant facts, put key summaries first, resume interrupted work from a recovery manifest in application state rather than the transcript, let code enforce what prompts only guide, and take structured findings with metadata from isolated subagents while the coordinator owns state and final integration. // 프로덕션 규칙은 대화가 데이터베이스가 아니라는 것이다. 오래 도는 Claude SDK 앱에서 지속 상태는 구조화된 case facts 블록으로 모델 context 바깥에 두는데, 케이스가 커지면 ID·날짜·금액·정책 버전이 context 가운데로 밀려 모델이 놓치고 긴 context 는 자신 있게 말하면서 서서히 나빠지기 때문이다. 그래서 툴 출력은 관련 사실만 남기고, 핵심 요약을 앞에 두고, 중단된 일은 대화 기록이 아니라 애플리케이션 상태의 recovery manifest 로 재개하고, 프롬프트가 안내만 하는 것을 코드가 강제하게 하고, 격리된 subagent 에게서는 metadata 를 곁들인 구조화된 결과를 받으며 상태와 최종 통합은 coordinator 가 소유한다.",
+  "paragraphs": [
+    {
+      "en": "In short Claude workflows, we can often pass the recent conversation, tool results,",
+      "ko": "짧은 Claude 워크플로에서는 최근 대화, 툴 결과,"
+    },
+    {
+      "en": "and user requests directly into the next model call.",
+      "ko": "사용자 요청을 다음 모델 호출에 곧바로 넘겨도 되는 경우가 많습니다."
+    },
+    {
+      "en": "But in long-running workflows, that becomes risky.",
+      "ko": "하지만 오래 이어지는 워크플로에서는 그게 위험해집니다."
+    },
+    {
+      "en": "A real ShopAssist support case may include customer messages, order lookups, policy checks, refund limits,",
+      "ko": "실제 ShopAssist 고객지원 케이스에는 고객 메시지, 주문 조회, 정책 확인, 환불 한도,"
+    },
+    {
+      "en": "damaged item photos, duplicate charge investigations, human review notes, and several internal decisions.",
+      "ko": "파손 상품 사진, 중복 결제 조사, 사람 검토 메모, 그리고 여러 내부 결정이 들어갑니다."
+    },
+    {
+      "en": "If all of that lives only in the conversation history, important facts can get buried.",
+      "ko": "그 전부가 대화 이력에만 있으면 중요한 사실이 묻힐 수 있습니다."
+    },
+    {
+      "en": "So in this lesson, we'll focus on one production rule.",
+      "ko": "그래서 이 강의에서는 프로덕션 규칙 하나에 집중합니다."
+    },
+    {
+      "en": "The conversation is not your database.",
+      "ko": "==대화는 당신의 데이터베이스가 아니다.=="
+    },
+    {
+      "en": "For long-running Claude SDK applications, durable state should live outside the model context.",
+      "ko": "오래 도는 Claude SDK 애플리케이션에서 지속 상태(durable state)는 모델 context 바깥에 있어야 합니다."
+    },
+    {
+      "en": "Let's start with the fragile version.",
+      "ko": "취약한 버전부터 봅시다."
+    },
+    {
+      "en": "This looks simple, but it does not scale well.",
+      "ko": "단순해 보이지만 규모가 커지면 버티지 못합니다."
+    },
+    {
+      "en": "As the case grows, the model sees more repeated messages, verbose tool output,",
+      "ko": "케이스가 커지면 모델은 반복되는 메시지, 장황한 툴 출력,"
+    },
+    {
+      "en": "old assumptions, and outdated intermediate notes.",
+      "ko": "낡은 가정, 오래된 중간 메모를 더 많이 보게 됩니다."
+    },
+    {
+      "en": "Important facts can move into the middle of the context.",
+      "ko": "중요한 사실이 context 의 가운데로 밀려갈 수 있습니다."
+    },
+    {
+      "en": "And that is where models are more likely to miss them.",
+      "ko": "그리고 거기가 모델이 그것을 놓치기 쉬운 자리입니다."
+    },
+    {
+      "en": "This is often called the lost in the middle problem.",
+      "ko": "이것을 흔히 lost in the middle 문제라고 부릅니다."
+    },
+    {
+      "en": "The fix is to maintain a structured case facts block.",
+      "ko": "해법은 구조화된 case facts 블록을 유지하는 것입니다."
+    },
+    {
+      "en": "This is not just a summary for readability.",
+      "ko": "이것은 읽기 편하게 만든 요약이 아닙니다."
+    },
+    {
+      "en": "This is persistent working state.",
+      "ko": "이것은 지속되는 작업 상태(persistent working state)입니다."
+    },
+    {
+      "en": "IDs, dates, refund amounts, policy versions, percentages, and customer expectations",
+      "ko": "ID, 날짜, 환불 금액, 정책 버전, 퍼센트, 고객 기대는"
+    },
+    {
+      "en": "must survive long sessions, retries, handoffs, and human review.",
+      "ko": "긴 세션, 재시도, handoff, 사람 검토를 지나서도 살아남아야 합니다."
+    },
+    {
+      "en": "Now the coordinator can load the current case state explicitly.",
+      "ko": "이제 coordinator 가 현재 케이스 상태를 명시적으로 불러올 수 있습니다."
+    },
+    {
+      "en": "The coordinator is responsible for state. Claude reasons.",
+      "ko": "coordinator 는 상태를 책임집니다. Claude 는 추론합니다."
+    },
+    {
+      "en": "Tools execute, gates enforce, hooks intercept, handoffs carry structured state.",
+      "ko": "툴은 실행하고, 게이트는 강제하고, hook 은 가로채고, handoff 는 구조화된 상태를 실어 나릅니다."
+    },
+    {
+      "en": "For example, if the workflow was interrupted,",
+      "ko": "예를 들어 워크플로가 중단됐다면,"
+    },
+    {
+      "en": "we do not want to guess what happened from a long chat transcript.",
+      "ko": "긴 대화 기록에서 무슨 일이 있었는지 추측하고 싶지 않습니다."
+    },
+    {
+      "en": "We want a recovery manifest.",
+      "ko": "우리가 원하는 것은 recovery manifest(복구 명세)입니다."
+    },
+    {
+      "en": "Notice the distinction.",
+      "ko": "이 구분을 보세요."
+    },
+    {
+      "en": "Drafting a customer response again is usually safe.",
+      "ko": "고객 응답을 다시 작성하는 것은 보통 안전합니다."
+    },
+    {
+      "en": "Processing a refund again is not safe to retry blindly.",
+      "ko": "환불을 다시 처리하는 것은 무턱대고 재시도하면 안전하지 않습니다."
+    },
+    {
+      "en": "That decision should not depend on whether Claude remembers the previous step correctly.",
+      "ko": "그 판단이 Claude 가 앞 단계를 제대로 기억하는지에 달려 있으면 안 됩니다."
+    },
+    {
+      "en": "It should be stored in application state.",
+      "ko": "그것은 애플리케이션 상태에 저장돼 있어야 합니다."
+    },
+    {
+      "en": "Now let's look at enforcement.",
+      "ko": "이제 강제(enforcement)를 봅시다."
+    },
+    {
+      "en": "A prompt can tell Claude not to process large refunds automatically.",
+      "ko": "프롬프트로 Claude 에게 큰 금액 환불을 자동 처리하지 말라고 말할 수 있습니다."
+    },
+    {
+      "en": "But if the rule must always be followed, the backend must enforce it.",
+      "ko": "하지만 규칙이 항상 지켜져야 한다면 백엔드가 강제해야 합니다."
+    },
+    {
+      "en": "Claude may recommend a refund.",
+      "ko": "Claude 는 환불을 권할 수 있습니다."
+    },
+    {
+      "en": "But the tool validates the session, checks the amount, applies business rules, and returns a structured result.",
+      "ko": "하지만 툴이 세션을 검증하고, 금액을 확인하고, 업무 규칙을 적용하고, 구조화된 결과를 돌려줍니다."
+    },
+    {
+      "en": "That is the correct boundary.",
+      "ko": "그것이 올바른 경계입니다."
+    },
+    {
+      "en": "Prompts guide behavior. Code enforces rules.",
+      "ko": "==프롬프트는 행동을 안내하고, 코드는 규칙을 강제한다.=="
+    },
+    {
+      "en": "Now let's reduce context pressure.",
+      "ko": "이제 context 압박을 줄여 봅시다."
+    },
+    {
+      "en": "A weak order lookup might return the full internal order record.",
+      "ko": "빈약한 주문 조회는 내부 주문 레코드 전체를 돌려줄 수 있습니다."
+    },
+    {
+      "en": "Payment logs, warehouse scans, comments, retry events, and every audit field.",
+      "ko": "결제 로그, 창고 스캔, 코멘트, 재시도 이벤트, 그리고 모든 감사 필드까지요."
+    },
+    {
+      "en": "For this decision, the agent only needs the relevant facts.",
+      "ko": "이 판단에는 에이전트가 관련된 사실만 필요합니다."
+    },
+    {
+      "en": "The tool output is not vague, but it is trimmed.",
+      "ko": "툴 출력은 모호한 것이 아니라, 다듬어진(trimmed) 것입니다."
+    },
+    {
+      "en": "It gives Claude the facts needed for reasoning without flooding the context window.",
+      "ko": "추론에 필요한 사실을 주면서 context window 를 넘치게 하지 않습니다."
+    },
+    {
+      "en": "When we aggregate inputs, we should also place key summaries first.",
+      "ko": "입력을 모을 때는 핵심 요약을 앞에 두어야 합니다."
+    },
+    {
+      "en": "Do not bury the most important facts after pages of logs.",
+      "ko": "가장 중요한 사실을 로그 몇 페이지 뒤에 묻어 두지 마세요."
+    },
+    {
+      "en": "This matters because long context workflows degrade gradually.",
+      "ko": "긴 context 워크플로는 서서히 나빠지기 때문에 이게 중요합니다."
+    },
+    {
+      "en": "The model may still sound confident, but it can miss a date,",
+      "ko": "모델은 여전히 자신 있게 말하지만, 날짜를 놓치거나,"
+    },
+    {
+      "en": "confuse an older refund threshold with the current one,",
+      "ko": "예전 환불 한도를 지금 것과 혼동하거나,"
+    },
+    {
+      "en": "or forget that the customer asked for a refund rather than a replacement.",
+      "ko": "고객이 교환이 아니라 환불을 원했다는 것을 잊을 수 있습니다."
+    },
+    {
+      "en": "Progressive summarization has a similar risk.",
+      "ko": "점진적 요약(progressive summarization)에도 비슷한 위험이 있습니다."
+    },
+    {
+      "en": "If every step summarizes the previous summary, small details can disappear over time.",
+      "ko": "단계마다 앞 요약을 다시 요약하면 작은 세부가 시간이 지나며 사라질 수 있습니다."
+    },
+    {
+      "en": "So we should preserve critical facts in structured state, not only in natural language summaries.",
+      "ko": "그래서 결정적 사실은 자연어 요약만이 아니라 구조화된 상태에 보존해야 합니다."
+    },
+    {
+      "en": "Now let's add subagents.",
+      "ko": "이제 subagent 를 더해 봅시다."
+    },
+    {
+      "en": "Subagents are useful when work can be split into independent investigations,",
+      "ko": "subagent 는 일을 독립적인 조사들로 나눌 수 있을 때 유용하지만,"
+    },
+    {
+      "en": "but they have isolated context.",
+      "ko": "격리된 context 를 갖습니다."
+    },
+    {
+      "en": "They do not automatically inherit the parent conversation.",
+      "ko": "부모 대화를 자동으로 물려받지 않습니다."
+    },
+    {
+      "en": "The coordinator must pass the relevant facts explicitly.",
+      "ko": "coordinator 가 관련 사실을 명시적으로 넘겨야 합니다."
+    },
+    {
+      "en": "We are not asking the subagent for a long reasoning transcript.",
+      "ko": "subagent 에게 긴 추론 기록을 요구하는 것이 아닙니다."
+    },
+    {
+      "en": "We are asking for structured findings and metadata.",
+      "ko": "구조화된 findings 와 metadata 를 요구하는 것입니다."
+    },
+    {
+      "en": "That makes the result easier to verify, store, compare, and pass forward.",
+      "ko": "그래야 결과를 검증하고, 저장하고, 비교하고, 다음으로 넘기기 쉬워집니다."
+    },
+    {
+      "en": "Multiple subagents can run in parallel when the work is independent.",
+      "ko": "일이 독립적이면 여러 subagent 가 병렬로 돌 수 있습니다."
+    },
+    {
+      "en": "But the coordinator still owns the final integration.",
+      "ko": "하지만 최종 통합은 여전히 coordinator 의 것입니다."
+    },
+    {
+      "en": "All customer-facing communication should route through the coordinator.",
+      "ko": "고객을 향한 모든 소통은 coordinator 를 거쳐야 합니다."
+    },
+    {
+      "en": "This is a good handoff because it is specific.",
+      "ko": "이 handoff 가 좋은 것은 구체적이기 때문입니다."
+    },
+    {
+      "en": "Another agent, a human reviewer, or a later workflow step can continue without reconstructing the entire conversation.",
+      "ko": "다른 에이전트든, 사람 검토자든, 이후 워크플로 단계든 전체 대화를 재구성하지 않고 이어갈 수 있습니다."
+    },
+    {
+      "en": "For the exam, remember this.",
+      "ko": "시험을 위해 이것을 기억하세요."
+    },
+    {
+      "en": "Large context work is an architecture problem, not just a prompting problem.",
+      "ko": "큰 context 작업은 프롬프팅 문제가 아니라 아키텍처 문제입니다."
+    },
+    {
+      "en": "Do not rely on a long conversation as your source of truth.",
+      "ko": "긴 대화를 진실의 원천으로 삼지 마세요."
+    },
+    {
+      "en": "Store durable state outside the model context.",
+      "ko": "지속 상태는 모델 context 바깥에 저장하세요."
+    },
+    {
+      "en": "Use case facts blocks, trim tool outputs, recovery manifests, structured handoffs,",
+      "ko": "case facts 블록, 다듬은 툴 출력, recovery manifest, 구조화된 handoff,"
+    },
+    {
+      "en": "and subagent outputs with facts and metadata.",
+      "ko": "그리고 사실과 metadata 를 담은 subagent 출력을 쓰세요."
+    },
+    {
+      "en": "And protect the exact details.",
+      "ko": "그리고 정확한 세부를 지키세요."
+    },
+    {
+      "en": "Customer IDs, order IDs, dates, refund amounts, policy versions, percentages,",
+      "ko": "고객 ID, 주문 ID, 날짜, 환불 금액, 정책 버전, 퍼센트,"
+    },
+    {
+      "en": "missing information, and customer expectations.",
+      "ko": "빠진 정보, 그리고 고객 기대."
+    },
+    {
+      "en": "In production, those are not small details.",
+      "ko": "프로덕션에서 그것들은 작은 세부가 아닙니다."
+    },
+    {
+      "en": "They are the case.",
+      "ko": "그것들이 곧 케이스입니다."
+    }
+  ],
+  "body": "### The production rule\n- ==The conversation is not your database.== For long-running Claude SDK applications, ==durable state should live outside the model context==. // 대화는 DB 가 아니다, 지속 상태는 바깥에.\n- Short workflows can pass recent conversation, tool results, and user requests ==straight into the next call==; long-running ones cannot. // 짧으면 그대로 넘겨도 되지만 길면 안 된다.\n- A real case accumulates ==customer messages, order lookups, policy checks, refund limits, damaged item photos, duplicate charge investigations, human review notes, and internal decisions==. // 케이스에 쌓이는 것들.\n- If all of that lives ==only in the conversation history==, important facts ==get buried==. // 이력에만 있으면 묻힌다.\n\n### Lost in the middle\n- As the case grows the model sees more ==repeated messages, verbose tool output, old assumptions, and outdated intermediate notes==. // 반복·장황·낡은 가정·오래된 메모.\n- Important facts ==move into the middle of the context==, and that is ==where models are more likely to miss them== — the ==lost in the middle== problem. // 가운데로 밀리면 놓친다.\n- Long context workflows ==degrade gradually==: the model ==still sounds confident== but may ==miss a date==, ==confuse an older refund threshold with the current one==, or ==forget the customer asked for a refund rather than a replacement==. // 자신 있게 말하면서 틀린다.\n\n### Case facts block\n- The fix is a ==structured case facts block==. This is ==not just a summary for readability==; it is ==persistent working state==. // 가독성 요약이 아니라 작업 상태.\n- What must survive: ==IDs, dates, refund amounts, policy versions, percentages, and customer expectations== — across ==long sessions, retries, handoffs, and human review==. // 세션·재시도·handoff·검토를 넘어 살아남아야 한다.\n- The coordinator ==loads the current case state explicitly== instead of hoping it is still in the transcript. // 명시적으로 불러온다.\n- Division of labor: ((the coordinator is responsible for state · Claude reasons · tools execute · gates enforce · hooks intercept · handoffs carry structured state)). // 상태·추론·실행·강제·가로채기·운반.\n\n### Recovery manifest\n- If the workflow was interrupted, we ==do not want to guess what happened from a long chat transcript==. We want a ==recovery manifest==. // 추측이 아니라 명세로 복구.\n- The retry distinction: ==drafting a customer response again is usually safe==, but ==processing a refund again is not safe to retry blindly==. // 초안은 재시도 가능, 환불은 아니다.\n- That decision ==must not depend on whether Claude remembers the previous step correctly==; it ==belongs in application state==. // 모델의 기억에 맡기지 않고 앱 상태에 저장.\n\n### Prompts guide, code enforces\n- A prompt can tell Claude ==not to process large refunds automatically==, but if the rule ==must always be followed, the backend must enforce it==. // 항상 지켜야 하면 백엔드가.\n- Correct boundary: ==Claude may recommend a refund==, but ==the tool validates the session, checks the amount, applies business rules, and returns a structured result==. // 권하는 건 Claude, 검증·확인·규칙 적용은 툴.\n- One line: ==prompts guide behavior, code enforces rules==. // 프롬프트는 안내, 코드는 강제.\n\n### Reduce context pressure\n- A weak order lookup returns the ==full internal order record==: ==payment logs, warehouse scans, comments, retry events, and every audit field==. // 전부 다 돌려주는 조회.\n- For this decision the agent ==only needs the relevant facts==. The output is ==not vague, it is trimmed== — it gives the facts ==needed for reasoning without flooding the context window==. // 모호한 게 아니라 다듬은 것.\n- When aggregating inputs, ==place key summaries first==. ==Do not bury the most important facts after pages of logs.== // 핵심 요약을 앞에.\n- ==Progressive summarization== carries a similar risk: if ==every step summarizes the previous summary==, small details ==disappear over time==. So preserve critical facts in ==structured state, not only natural language summaries==. // 요약의 요약은 세부를 잃는다.\n\n### Subagents in a large-context workflow\n- Useful when work splits into ==independent investigations==, but subagents have ==isolated context== and ==do not automatically inherit the parent conversation==, so the coordinator ==passes the relevant facts explicitly==. // 격리, 상속 없음, 명시적 전달.\n- Ask them for ==structured findings and metadata==, __not__ a ==long reasoning transcript==, because structure is easier to ==verify, store, compare, and pass forward==. // 추론 기록이 아니라 구조화된 결과.\n- ==Multiple subagents run in parallel when the work is independent==, but the coordinator ==still owns the final integration== and ==all customer-facing communication routes through it==. // 병렬이어도 통합과 고객 응답은 coordinator.\n- A good handoff is good ==because it is specific==: another agent, a human reviewer, or a later step ==continues without reconstructing the entire conversation==. // 구체적이라서 이어받을 수 있다.\n\n### Exam summary\n- ==Large context work is an architecture problem, not just a prompting problem.== // 프롬프팅이 아니라 아키텍처.\n- ==Do not rely on a long conversation as your source of truth. Store durable state outside the model context.== // 대화를 진실의 원천으로 삼지 않는다.\n- The toolkit: ==case facts blocks, trimmed tool outputs, recovery manifests, structured handoffs, and subagent outputs with facts and metadata==. // 다섯 가지 도구.\n- Protect the exact details: ==customer IDs, order IDs, dates, refund amounts, policy versions, percentages, missing information, and customer expectations==. In production ==they are not small details, they are the case==. // 그 세부가 곧 케이스다.",
+  "keyPoints": [
+    "The conversation is not your database: in long-running Claude SDK applications durable state lives outside the model context, and a long transcript is never the source of truth. // 대화는 DB 가 아니다, 지속 상태는 context 바깥.",
+    "Growing cases push important facts into the middle of the context where models miss them (lost in the middle), and long context degrades gradually while the model still sounds confident. // 가운데로 밀린 사실을 놓친다, 자신 있게 틀린다.",
+    "A case facts block is persistent working state, not a readability summary: IDs, dates, refund amounts, policy versions, percentages, and customer expectations must survive sessions, retries, handoffs, and human review. // case facts 는 작업 상태, 정확한 값이 살아남아야 한다.",
+    "After an interruption, recover from a recovery manifest in application state, not from the transcript: redrafting a response is safe to retry, processing a refund again is not. // 복구는 manifest 로, 환불 재시도는 안전하지 않다.",
+    "Trim tool outputs to the relevant facts (not vague, trimmed), put key summaries first, and keep critical values in structured state because progressive summarization loses details each time it summarizes a summary. // 다듬고, 앞에 두고, 요약의 요약에 맡기지 않는다.",
+    "Ask subagents for structured findings and metadata rather than long reasoning transcripts, pass their facts explicitly since context is isolated, and keep final integration and all customer-facing replies with the coordinator. // 구조화된 결과 요구, 명시적 전달, 통합은 coordinator."
+  ],
+  "examTrends": {
+    "how": "Scenarios about a support case or agent session that has run long: facts get missed, a date or an old refund threshold is used, or the model forgets the customer wanted a refund rather than a replacement. The answer is always architectural — durable state outside the context, a case facts block, trimmed tool output, key summaries first — never a longer or firmer prompt. A second shape describes an interrupted workflow and asks how to resume, where the answer is a recovery manifest in application state plus the distinction between safe and unsafe retries. A third asks what a subagent should return, the answer being structured findings and metadata rather than a reasoning transcript. // 오래 돌아간 케이스·세션 시나리오가 나온다. 사실이 누락되거나, 날짜나 옛 환불 한도가 쓰이거나, 고객이 교환이 아니라 환불을 원했다는 걸 모델이 잊는다. 답은 항상 아키텍처다 — context 바깥의 지속 상태, case facts 블록, 다듬은 툴 출력, 핵심 요약 앞에 두기 — 더 길거나 강한 프롬프트가 아니다. 두 번째 유형은 중단된 워크플로를 어떻게 재개하는지 묻는데 답은 애플리케이션 상태의 recovery manifest 와 안전·비안전 재시도 구분이다. 세 번째는 subagent 가 무엇을 돌려줘야 하는지 묻고 답은 추론 기록이 아니라 구조화된 findings 와 metadata 다.",
+    "answerLooks": [
+      "\"Store durable case state outside the model context and load it explicitly each turn\" // 바깥에 저장하고 명시적으로 불러온다.",
+      "\"Maintain a structured case facts block with IDs, dates, amounts, policy version, and customer expectations\" // 정확한 값을 구조화해 유지.",
+      "\"Return only the relevant fields from the order lookup instead of the full internal record\" // 툴 출력은 다듬어서.",
+      "\"Place the key summary first so critical facts are not buried after pages of logs\" // 핵심 요약을 앞에.",
+      "\"Resume from a recovery manifest that records which steps completed\" // 완료 단계를 기록한 manifest 로 재개.",
+      "\"Redrafting the response is safe to retry, but the refund must not be reprocessed based on the model's memory\" // 재시도 안전성은 앱 상태가 판단.",
+      "\"Have the tool validate the session, check the amount, and apply business rules, while Claude only recommends\" // 검증·강제는 툴, 권고는 Claude.",
+      "\"Ask each subagent for structured findings and metadata that the coordinator can verify, store, and compare\" // 구조화된 결과와 metadata."
+    ],
+    "traps": [
+      "\"Increase the context window or use a longer-context model so nothing is lost\": large context work is an architecture problem, and long context still degrades gradually. // context 를 늘리는 것으로 해결되지 않는다.",
+      "\"Add a reminder at the end of the prompt telling Claude not to forget the refund amount\": exact values belong in structured state, not in a reminder. // 정확한 값은 상태에 저장한다.",
+      "\"Summarize the conversation at every step to keep it short\": summarizing a summary loses small details over time, so critical facts must stay in structured state. // 요약의 요약은 세부를 잃는다.",
+      "\"Reconstruct what happened from the chat transcript after the interruption\": that is guessing, which is what a recovery manifest replaces. // 기록에서 추측하는 것이 문제.",
+      "\"Retry the whole workflow including the refund because the model remembers it did not finish\": refund reprocessing safety must come from application state. // 모델 기억에 재시도를 맡기지 않는다.",
+      "\"Return the full internal order record so the agent never lacks information\": audit fields and logs flood the context window without helping the decision. // 전부 주면 context 가 넘친다.",
+      "\"Let subagents include their full reasoning transcript so nothing is hidden\": the coordinator needs structured findings it can verify and pass forward. // 긴 추론 기록은 검증·전달에 불리하다.",
+      "\"Let each subagent answer the customer directly to save a step\": all customer-facing communication routes through the coordinator. // 고객 응답은 coordinator 를 거친다."
+    ],
+    "memorize": "The conversation is not your database: keep a case facts block of IDs, dates, amounts, policy versions, and expectations in durable state outside the context, trim tool output and put summaries first, recover from a manifest rather than a transcript, and take structured findings plus metadata from subagents. // 대화는 DB 가 아니다 — ID·날짜·금액·정책 버전·기대를 담은 case facts 를 context 바깥 지속 상태에 두고, 툴 출력은 다듬어 요약을 앞에 두고, 복구는 기록이 아니라 manifest 로, subagent 에게서는 구조화된 findings 와 metadata 를 받는다."
+  },
+  "createdAt": "2026-09-10T16:10:00Z"
+}
