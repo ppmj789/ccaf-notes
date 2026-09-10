@@ -1,0 +1,82 @@
+{
+  "id": "q-039-1",
+  "kind": "question",
+  "order": 39.1,
+  "section": "Multi-Agent Systems",
+  "lecture": "39",
+  "title_en": "Subagents returned prose, the report lost its evidence",
+  "title": "subagent 가 산문을 돌려줘서 근거가 사라진 보고서",
+  "domain": "멀티에이전트",
+  "question_en": "A research coordinator uses the ==Task tool to run two subagents in parallel==: WebScout searches recent public sources, and DocReader analyzes uploaded PDFs. During testing, ==both subagents find relevant sources==, but the final ReportWriter output contains ==unsupported claims==, ==generic citations like \"industry report\"==, and ==no quoted excerpts==. The coordinator log shows that WebScout and DocReader ==returned short prose summaries==, which the coordinator then ==pasted into the ReportWriter task==. What is the most likely ==root cause and best prevention==?",
+  "question_ko": "리서치 coordinator 가 ==Task 툴로 subagent 둘을 병렬로== 돌린다. WebScout 은 최신 공개 자료를 검색하고, DocReader 는 업로드된 PDF 를 분석한다. 테스트에서 ==두 subagent 는 관련 자료를 잘 찾아내는데==, 최종 ReportWriter 출력에는 ==근거 없는 주장==, ==\"industry report\" 같은 뭉뚱그린 인용==, ==인용 발췌가 아예 없음== 이 나타난다. coordinator 로그를 보면 WebScout 과 DocReader 가 ==짧은 산문 요약을 돌려주었고==, coordinator 는 그것을 ==ReportWriter task 에 그대로 붙여 넣었다==. 가장 그럴듯한 ==근본 원인과 최선의 예방==은?",
+  "options": [
+    {
+      "key": "A",
+      "en": "The system should add a ==shared research scratchpad== that every coordinator and subagent ==reads and updates implicitly==, so citations and unresolved questions remain available ==across all agent invocations==.",
+      "ko": "모든 coordinator 와 subagent 가 ==암묵적으로 읽고 갱신하는== ==공유 리서치 스크래치패드==를 추가해서, 인용과 미해결 질문이 ==모든 에이전트 호출에 걸쳐== 남아 있게 한다."
+    },
+    {
+      "key": "B",
+      "en": "The web and document agents should ==keep returning concise narrative summaries==, and the synthesis agent should ==reconstruct URLs, excerpts, confidence, and evidence gaps from those summaries== when preparing the final report.",
+      "ko": "웹·문서 에이전트는 ==간결한 서술형 요약을 계속 돌려주고==, 종합 에이전트가 최종 보고서를 만들 때 ==그 요약에서 URL·발췌·확신도·근거 공백을 재구성==한다."
+    },
+    {
+      "key": "C",
+      "en": "The coordinator ==treated each Task invocation as an isolated boundary but failed to require and forward a structured evidence contract==; update the search and document agents to return ==claims, source IDs/URLs, quoted excerpts, relevance, confidence, and gaps==, then ==pass those artifacts explicitly== to synthesis and reporting.",
+      "ko": "coordinator 가 ==각 Task 호출을 격리된 경계로 두면서 구조화된 근거 계약을 요구하고 전달하지 않은 것== 이 원인이다. 검색·문서 에이전트가 ==주장, source ID/URL, 인용 발췌, 관련성, 확신도, 공백==을 반환하게 고치고, 그 산출물을 ==종합·보고 단계에 명시적으로 전달==한다."
+    },
+    {
+      "key": "D",
+      "en": "The report agent should be configured to ==read the completed agents' full internal tool transcripts==, so it can retrieve URLs, observations, and intermediate notes ==after their Task calls finish==.",
+      "ko": "보고 에이전트가 ==완료된 에이전트들의 내부 툴 기록 전체를 읽도록== 설정해서, ==Task 호출이 끝난 뒤== URL·관찰·중간 메모를 가져오게 한다."
+    }
+  ],
+  "answer": "C",
+  "explanation": "증상을 거꾸로 따라가면 원인이 한 곳으로 모인다.\n\n| 증상 | 무엇이 사라졌나 |\n|---|---|\n| ==근거 없는 주장== | 주장과 출처의 연결 |\n| ==\"industry report\" 같은 뭉뚱그린 인용== | source ID · URL |\n| ==인용 발췌가 없음== | quoted excerpt |\n\n두 subagent 는 자료를 **잘 찾았다**. 즉 검색·분석 능력 문제가 아니다. 잃어버린 지점은 ==짧은 산문 요약으로 돌려준 순간== 이다. 산문은 URL·발췌·확신도·공백을 담을 자리가 없어서, **자료를 실제로 본 그 자리에서** 근거가 버려졌다.\n\n그래서 정답 C 는 두 겹이다.\n- **원인**: Task 호출은 ==격리된 경계== 인데(subagent 는 부모 대화를 물려받지 않고, 끝나면 그 안의 관찰도 남지 않는다) coordinator 가 ==구조화된 근거 계약을 요구하지 않았다==.\n- **예방**: 반환 형식을 계약으로 못 박는다 — ==claims · source IDs/URLs · quoted excerpts · relevance · confidence · gaps== — 그리고 그 산출물을 ==명시적으로== 종합·보고 단계로 넘긴다.\n\n39강의 문장 그대로다 — ==subagent 에게 긴 추론 기록이 아니라 구조화된 findings 와 metadata 를 요구한다. 그래야 검증·저장·비교·전달이 쉬워진다.== 그리고 ==결정적 사실은 자연어 요약이 아니라 구조화된 상태에 보존한다.==",
+  "traps": [
+    {
+      "key": "A",
+      "why": "==암묵적으로(implicitly)== 가 함정이다. 에이전트는 격리된 context 를 가지므로 자동으로 공유되는 기억은 없다. 상태는 coordinator 가 명시적으로 넘기고 명시적으로 저장하는 것이지, 모두가 알아서 읽고 쓰는 공용 메모장이 아니다. 게다가 인용이 애초에 수집되지 않았으니 저장 장소를 늘려도 담을 내용이 없다."
+    },
+    {
+      "key": "B",
+      "why": "순서가 거꾸로다. 근거는 ==자료를 본 시점== 에 붙잡아야 하고, 산문 요약은 이미 출처·불확실성을 떨어뜨렸다. 사라진 URL 과 발췌를 나중에 종합 단계에서 복원할 수는 없다 — 복원을 시도하면 그것이 바로 지문의 \"근거 없는 주장\" 이 만들어지는 방식이다."
+    },
+    {
+      "key": "D",
+      "why": "다른 에이전트의 내부 툴 기록을 나중에 읽는다는 전제 자체가 성립하지 않는다. subagent 의 context 는 격리돼 있고 끝나면 남는 것은 그가 ==반환한 것== 뿐이다. 게다가 39강은 긴 추론 기록 자체를 원하지 않는다고 못 박는다 — 필요한 것은 검증 가능한 구조화된 결과다."
+    }
+  ],
+  "keyPoints": [
+    "subagent 는 산문 요약이 아니라 구조화된 findings + metadata 를 돌려줘야 한다. claims · source ID/URL · 인용 발췌 · 관련성 · 확신도 · 공백.",
+    "근거는 자료를 본 그 자리에서 붙잡는다. 나중에 요약에서 URL·발췌를 복원하는 설계는 허위 인용을 만든다.",
+    "Task 호출은 격리된 경계다. 자동 공유 기억도 없고, 끝난 에이전트의 내부 기록을 뒤져 볼 수도 없다 — 남는 것은 반환값뿐.",
+    "coordinator 의 일은 반환 형식을 계약으로 요구하고, 그 산출물을 다음 단계로 명시적으로 전달하는 것."
+  ],
+  "pattern": {
+    "type": "subagent 반환 계약(구조화 findings)",
+    "asks": "subagent 결과가 다음 단계에서 쓸모없어진 이유와, 반환 형식을 어떻게 고칠지.",
+    "clues": [
+      {
+        "text": "returned short prose summaries",
+        "means": "반환 형식이 원인 — 산문에는 출처·확신도 자리가 없다"
+      },
+      {
+        "text": "both subagents find relevant sources",
+        "means": "검색 능력 문제 아님 → 전달 계약 문제"
+      },
+      {
+        "text": "generic citations / no quoted excerpts",
+        "means": "source ID·URL·발췌가 계약에 없었다"
+      },
+      {
+        "text": "pasted into the ReportWriter task",
+        "means": "명시적 전달이지만 실을 내용이 이미 비었다"
+      }
+    ],
+    "answerShape": "격리된 Task 경계 + 구조화된 근거 계약(주장·출처·발췌·관련성·확신도·공백) 요구 + 산출물을 다음 단계로 명시적 전달.",
+    "distractorShape": "암묵적 공유 스크래치패드, 나중에 요약에서 근거 재구성, 다른 에이전트의 내부 툴 기록 읽기, 산문 유지."
+  },
+  "patternId": "evidence-contract",
+  "createdAt": "2026-09-10T17:40:00Z"
+}

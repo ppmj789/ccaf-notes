@@ -1,0 +1,79 @@
+{
+  "id": "b-evidence-contract-2",
+  "order": 39.12,
+  "section": "Multi-Agent Systems",
+  "lecture": "39",
+  "patternId": "evidence-contract",
+  "generated": true,
+  "reviewed": false,
+  "source": "q-039-1 변형",
+  "title_en": "Compliance review lost its clause references",
+  "title": "조항 근거가 사라진 컴플라이언스 검토",
+  "domain": "멀티에이전트",
+  "question_en": "A contract-review coordinator spawns ==ClauseScan== over the vendor agreement and ==PolicyMatch== over the internal policy library, ==in parallel==. Both ==identify the conflicting termination terms==, yet the ==reviewer memo== the coordinator assembles claims the contract ==\"may conflict with company policy\"== with ==no clause numbers, no policy version, and no quoted wording==. Each subagent had ==summarized its analysis in a few sentences==. Which explanation and fix is best?",
+  "question_ko": "계약 검토 coordinator 가 공급사 계약서를 보는 ==ClauseScan== 과 사내 정책 라이브러리를 보는 ==PolicyMatch== 를 ==병렬로== 띄운다. 둘 다 ==상충하는 해지 조항을 찾아냈는데==, coordinator 가 모은 ==검토자 메모==에는 계약이 ==\"사내 정책과 상충할 수 있음\"== 이라고만 적혀 있고 ==조항 번호·정책 버전·인용 문구가 없다==. 각 subagent 는 ==분석을 몇 문장으로 요약==했다. 가장 좋은 설명과 수정은?",
+  "options": [
+    {
+      "key": "A",
+      "en": "Have the memo step ==re-run both analyses itself== so it can see the clause numbers directly, ==replacing the subagents== for anything that needs citations.",
+      "ko": "메모 단계가 ==두 분석을 스스로 다시 실행==해서 조항 번호를 직접 보게 하고, 인용이 필요한 일에서는 ==subagent 를 대체==한다."
+    },
+    {
+      "key": "B",
+      "en": "Add a ==team memory area== that all review agents ==read and write in the background== during their Task calls, so clause references persist ==without being returned==.",
+      "ko": "모든 검토 에이전트가 Task 호출 중에 ==백그라운드에서 읽고 쓰는== ==팀 메모리 영역==을 추가해, 조항 근거가 ==반환되지 않아도== 남아 있게 한다."
+    },
+    {
+      "key": "C",
+      "en": "Keep the ==few-sentence summaries== and have the memo writer ==restore clause numbers, policy versions, and exact wording== from them, since the analyses were correct.",
+      "ko": "==몇 문장 요약을 유지==하고, 분석이 맞았으므로 메모 작성자가 그 요약에서 ==조항 번호·정책 버전·정확한 문구를 복원==하게 한다."
+    },
+    {
+      "key": "D",
+      "en": "The coordinator ==never defined a structured evidence contract for an isolated Task boundary==; require each reviewer to return ==the finding, clause and section IDs, policy document version, quoted wording from both sides, severity, confidence, and open questions==, and ==pass those fields explicitly== to the memo step.",
+      "ko": "coordinator 가 ==격리된 Task 경계에 맞는 구조화된 근거 계약을 정의하지 않은 것== 이 원인이다. 각 검토자가 ==발견 내용, 조항·조 번호, 정책 문서 버전, 양쪽의 인용 문구, 심각도, 확신도, 열린 질문==을 반환하게 하고, 그 필드들을 ==메모 단계로 명시적으로 전달==한다.\n"
+    }
+  ],
+  "answer": "D",
+  "explanation": "패턴이 원본과 같다. 분석은 ==맞았고==, 잃어버린 것은 ==근거의 출처== 다. 몇 문장 요약에는 조항 번호·정책 버전·인용 문구를 담을 자리가 없었다.\n\n정답 D 의 계약 항목이 이 도메인에 맞게 구체화된 것을 보라 — ==조항·조 번호==(source ID), ==정책 문서 버전==(39강이 지키라고 한 policy version), ==양쪽 인용 문구==(quoted excerpt), ==심각도·확신도==, ==열린 질문==(빠진 정보). 39강의 \"==정확한 세부를 지켜라: ID·날짜·금액·정책 버전·퍼센트·빠진 정보==\" 목록과 그대로 겹친다.\n\n인용은 ==문서를 읽는 그 자리에서== 붙잡아야 하고, 요약에서 복원할 수 없다.",
+  "traps": [
+    {
+      "key": "A",
+      "why": "분석을 두 번 하게 만드는 낭비이고, subagent 로 나눈 이유(병렬·전문화)를 없앤다. 문제는 분석이 아니라 반환 형식이었다."
+    },
+    {
+      "key": "B",
+      "why": "\"반환되지 않아도 남는다\" 는 격리된 context 에서 성립하지 않는다. 암묵적 백그라운드 공유 메모리는 없고, 상태는 명시적으로 반환·저장한다."
+    },
+    {
+      "key": "C",
+      "why": "요약에서 조항 번호와 정확한 문구를 복원하는 것은 불가능하고, 시도하면 지어낸 인용이 된다. 근거는 출처를 본 시점에 구조화한다."
+    }
+  ],
+  "keyPoints": [
+    "인용·조항 번호·문서 버전은 문서를 읽는 그 자리에서 구조화해 반환한다.",
+    "계약 항목: 발견 내용 · 출처 ID · 문서 버전 · 인용 문구 · 심각도 · 확신도 · 열린 질문.",
+    "반환하지 않은 것은 남지 않는다. 암묵적 공유 메모리도, 재분석 우회도 답이 아니다."
+  ],
+  "pattern": {
+    "type": "subagent 반환 계약(구조화 findings)",
+    "asks": "검토는 맞았는데 메모에 근거가 없는 이유와 반환 계약 설계.",
+    "clues": [
+      {
+        "text": "summarized its analysis in a few sentences",
+        "means": "반환 형식이 원인"
+      },
+      {
+        "text": "no clause numbers, no policy version",
+        "means": "출처 ID·버전이 계약에 없었다"
+      },
+      {
+        "text": "identify the conflicting terms",
+        "means": "분석 능력 문제 아님"
+      }
+    ],
+    "answerShape": "격리된 Task 경계 + 발견·출처 ID·버전·인용 문구·심각도·확신도·열린 질문 계약 + 명시적 전달.",
+    "distractorShape": "메모 단계가 재분석, 백그라운드 팀 메모리, 요약에서 인용 복원."
+  },
+  "createdAt": "2026-09-10T17:40:00Z"
+}

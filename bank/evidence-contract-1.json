@@ -1,0 +1,79 @@
+{
+  "id": "b-evidence-contract-1",
+  "order": 39.11,
+  "section": "Multi-Agent Systems",
+  "lecture": "39",
+  "patternId": "evidence-contract",
+  "generated": true,
+  "reviewed": false,
+  "source": "q-039-1 변형",
+  "title_en": "Refund findings arrived as chat-style summaries",
+  "title": "환불 조사 결과가 대화체 요약으로 도착했다",
+  "domain": "멀티에이전트",
+  "question_en": "A support coordinator runs ==BillingProbe and ShipmentProbe as parallel Task calls== on a disputed refund. Both ==correctly locate the duplicate charge and the failed delivery scan==, but the ==human escalation packet== the coordinator produces says only ==\"payment looks duplicated\" and \"delivery appears to have failed\"==, with ==no transaction IDs, no scan timestamps, and no amounts==. The log shows each probe ==replied in one short paragraph of chat-style prose==. What is the root cause, and what prevents it?",
+  "question_ko": "고객지원 coordinator 가 분쟁 중인 환불 건에 ==BillingProbe 와 ShipmentProbe 를 병렬 Task 호출==로 돌린다. 둘 다 ==중복 결제와 실패한 배송 스캔을 정확히 찾아냈지만==, coordinator 가 만든 ==사람 에스컬레이션 패킷==에는 ==\"결제가 중복된 것 같음\", \"배송이 실패한 것으로 보임\"== 만 적혀 있고 ==거래 ID·스캔 시각·금액이 하나도 없다==. 로그를 보면 각 probe 가 ==짧은 대화체 산문 한 단락으로 답했다==. 근본 원인과 예방은?",
+  "options": [
+    {
+      "key": "A",
+      "en": "Keep the ==prose replies== and have the coordinator ==infer the transaction IDs and timestamps== from the case history when it writes the escalation packet.",
+      "ko": "==산문 응답을 유지==하고, coordinator 가 에스컬레이션 패킷을 쓸 때 케이스 이력에서 ==거래 ID 와 시각을 추론==하게 한다."
+    },
+    {
+      "key": "B",
+      "en": "Each probe ==returned unstructured prose, so the evidence was dropped where the records were actually read==; require a ==findings contract== (finding, ==record IDs==, ==exact amounts and timestamps==, ==quoted system fields==, confidence, ==what is still missing==) and ==forward those fields verbatim== into the escalation packet.",
+      "ko": "각 probe 가 ==비구조화 산문을 반환해서 기록을 실제로 읽은 그 자리에서 근거가 버려졌다.== ==findings 계약==(발견 내용, ==레코드 ID==, ==정확한 금액·시각==, ==인용한 시스템 필드==, 확신도, ==아직 빠진 것==)을 요구하고, 그 필드들을 ==그대로== 에스컬레이션 패킷으로 넘긴다."
+    },
+    {
+      "key": "C",
+      "en": "Give both probes ==write access to one shared case notebook== they ==update automatically as they work==, so every ID and timestamp is ==available to any later agent==.",
+      "ko": "두 probe 에게 ==작업하면서 자동으로 갱신하는 공유 케이스 노트== 쓰기 권한을 줘서, 모든 ID 와 시각이 ==이후 어떤 에이전트에게든 남아 있게== 한다."
+    },
+    {
+      "key": "D",
+      "en": "Let the escalation step ==reopen each finished probe's tool history== and pull the payment and scan records out of it ==after the Task calls have returned==.",
+      "ko": "에스컬레이션 단계가 ==끝난 각 probe 의 툴 기록을 다시 열어서== ==Task 호출이 반환된 뒤== 결제·스캔 레코드를 꺼내 오게 한다."
+    }
+  ],
+  "answer": "B",
+  "explanation": "두 probe 는 ==정확히 찾아냈다==. 그러니 조사 능력이 아니라 ==반환 형식== 이 원인이다. 대화체 한 단락에는 거래 ID·시각·금액이 들어갈 자리가 없어서, 레코드를 실제로 읽은 그 순간에 근거가 버려졌다.\n\n정답 B 의 처방은 39강의 ==구조화된 findings 와 metadata== 를 이 상황에 옮긴 것이고, 40강의 handoff 항목(고객·주문·근본 원인·금액·증거·빠진 정보·사유)과도 같은 모양이다. 핵심은 ==빠진 것(what is still missing)== 까지 계약에 넣는 것 — 사람 검토자가 무엇을 더 확인해야 하는지 알 수 있다.\n\n| 보기 | 왜 틀렸나 |\n|---|---|\n| A | 없는 값을 coordinator 가 추론 = 지어내기 |\n| C | 자동으로 공유되는 기억은 없다(격리된 context) |\n| D | 끝난 subagent 에게 남는 것은 반환값뿐 |",
+  "traps": [
+    {
+      "key": "A",
+      "why": "산문에서 사라진 거래 ID 를 coordinator 가 추론하면 그것이 곧 근거 없는 주장이다. 금액·시각은 추론 대상이 아니라 기록에서 가져올 값."
+    },
+    {
+      "key": "C",
+      "why": "\"작업하면서 자동으로 갱신\" 이 함정. subagent 는 격리된 context 를 갖고 암묵적 공유 저장소는 없다. 상태는 명시적으로 반환·저장한다."
+    },
+    {
+      "key": "D",
+      "why": "Task 가 반환된 뒤 그 안의 툴 기록을 다시 열 수 있다는 전제가 틀렸다. 또 39강은 긴 기록이 아니라 검증 가능한 구조화 결과를 원한다."
+    }
+  ],
+  "keyPoints": [
+    "찾기는 성공했는데 다음 단계 산출물이 부실하면 원인은 반환 형식이다.",
+    "레코드 ID·금액·시각·인용 필드·확신도·빠진 것을 계약으로 요구하고 그대로 다음 단계로 넘긴다.",
+    "격리된 context: 자동 공유 노트도, 끝난 에이전트의 기록 재열람도 없다."
+  ],
+  "pattern": {
+    "type": "subagent 반환 계약(구조화 findings)",
+    "asks": "조사는 성공했는데 handoff 가 빈약해진 이유와 반환 형식 처방.",
+    "clues": [
+      {
+        "text": "replied in one short paragraph of chat-style prose",
+        "means": "반환 형식이 원인"
+      },
+      {
+        "text": "correctly locate",
+        "means": "조사 능력 문제 아님"
+      },
+      {
+        "text": "no transaction IDs, no timestamps",
+        "means": "계약에 ID·시각이 없었다"
+      }
+    ],
+    "answerShape": "산문이 근거를 버렸음을 지적 + ID·금액·시각·인용·확신도·빠진 것 계약 + 그대로 전달.",
+    "distractorShape": "coordinator 가 추론, 자동 갱신 공유 노트, 끝난 Task 의 툴 기록 재열람."
+  },
+  "createdAt": "2026-09-10T17:40:00Z"
+}

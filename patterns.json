@@ -150,5 +150,22 @@
     "answerShape": "실패 모드를 정확히 지명 + 위임 권한 제한·fan-out 제한·최소 툴·구조화 반환으로 고침.",
     "distractorShape": "진단을 거꾸로(정보 부족·과도한 제한), 전체 대화 통째 전달, 마지막 subagent 응답을 최종 답으로, 프롬프트 문구로 통제.",
     "memorize": "Task 를 전원에게 주면 재귀 fan-out. 위임은 coordinator 가, 툴은 역할별 최소, 결과는 구조화해서 coordinator 로."
+  },
+  {
+    "id": "evidence-contract",
+    "name": "subagent 반환 계약(구조화 findings)",
+    "domain": "멀티에이전트",
+    "official": "D1",
+    "formula": "subagent 가 일은 잘했는데 다음 단계 산출물이 부실하면 원인은 반환 형식이다. 산문 요약은 출처·발췌·확신도·공백을 떨어뜨린다. 처방 = 구조화된 findings 계약(주장·source ID/URL·인용 발췌·관련성·확신도·공백)을 요구하고 그 산출물을 다음 단계로 명시적으로 전달.",
+    "clueWords": [
+      "returned short prose summaries",
+      "generic citations",
+      "no quoted excerpts",
+      "unsupported claims",
+      "both subagents find relevant sources"
+    ],
+    "answerShape": "격리된 Task 경계를 인정 + 구조화된 근거 계약 요구 + 명시적 전달.",
+    "distractorShape": "암묵적 공유 메모장, 나중에 요약에서 근거 재구성, 끝난 에이전트의 내부 툴 기록 읽기, 산문 요약 유지.",
+    "memorize": "근거는 자료를 본 그 자리에서 구조화해 받는다. 산문으로 받으면 복원 불가, 남는 것은 반환값뿐."
   }
 ]
