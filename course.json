@@ -98,6 +98,10 @@
         {
           "no": "45",
           "title": "CI/CD Explained for Non-Developers"
+        },
+        {
+          "no": "46",
+          "title": "Claude Code in CI/CD and Independent Review"
         }
       ]
     }

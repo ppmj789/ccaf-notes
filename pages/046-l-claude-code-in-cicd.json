@@ -1,0 +1,388 @@
+{
+  "id": "l-046",
+  "kind": "lesson",
+  "order": 46,
+  "section": "Claude Code",
+  "lecture": "46",
+  "title_en": "Claude Code in CI/CD and Independent Review",
+  "title": "CI/CD 안의 Claude Code 와 독립 리뷰",
+  "domain": "Claude Code",
+  "summary": "A CI job cannot wait for a conversation, so Claude Code runs non-interactively with claude -p (--print) and returns machine-parsable findings via --output-format json constrained by --json-schema, each carrying file path, line number, severity, category, message, suggested fix, and a stable fingerprint built from path, line, category, and normalized message so reruns skip duplicates instead of flooding the pull request. Context comes from CLAUDE.md plus existing tests and fixtures, only high-confidence high-severity findings fail the check while broader quality review runs as a non-blocking overnight report, and the review itself must run in a separate clean invocation because the session that wrote the code remembers its own intention. // CI 작업은 대화를 기다릴 수 없으므로 Claude Code 를 `claude -p`(`--print`) 로 비대화형으로 돌리고, `--output-format json` 과 `--json-schema` 로 기계가 파싱할 수 있는 findings 를 반환하는데, 각 finding 에는 파일 경로·줄 번호·심각도·카테고리·메시지·제안 수정과, 경로·줄·카테고리·정규화 메시지로 만든 안정된 fingerprint 가 담겨 재실행 때 중복을 건너뛰고 pull request 를 소음으로 채우지 않는다. context 는 `CLAUDE.md` 와 기존 테스트·fixture 에서 오고, 확신도 높고 심각한 findings 만 검사를 실패시키며 넓은 품질 리뷰는 비차단 야간 보고서로 돌리고, 리뷰 자체는 코드를 쓴 세션이 자기 의도를 기억하므로 별도의 깨끗한 실행에서 돌아야 한다.",
+  "paragraphs": [
+    {
+      "en": "In this lesson, we'll look at how to run Claude Code safely inside CI/CD pipelines.",
+      "ko": "이 강의에서는 CI/CD pipeline 안에서 Claude Code 를 안전하게 돌리는 방법을 봅니다."
+    },
+    {
+      "en": "Interactive Claude Code is useful when a developer is working in the terminal,",
+      "ko": "대화형 Claude Code 는 개발자가 터미널에서 일하면서"
+    },
+    {
+      "en": "asking questions, approving edits, and refining the result.",
+      "ko": "질문하고, 수정을 승인하고, 결과를 다듬을 때 유용합니다."
+    },
+    {
+      "en": "But CI is different. A CI job cannot wait for a conversation.",
+      "ko": "하지만 CI 는 다릅니다. ==CI 작업은 대화를 기다릴 수 없습니다.=="
+    },
+    {
+      "en": "It must start, run, produce output, and finish.",
+      "ko": "시작하고, 돌고, 출력을 내고, ==끝나야== 합니다."
+    },
+    {
+      "en": "That is why Claude Code supports non-interactive mode.",
+      "ko": "그래서 Claude Code 는 비대화형(non-interactive) 모드를 지원합니다."
+    },
+    {
+      "en": "The command is claude -p. You can also write the same thing as claude --print.",
+      "ko": "명령은 `claude -p` 입니다. 같은 것을 `claude --print` 로 쓸 수도 있습니다."
+    },
+    {
+      "en": "This prevents CI jobs from hanging.",
+      "ko": "이것이 ==CI 작업이 멈춰 매달리는 것을 막습니다.=="
+    },
+    {
+      "en": "In a pull request workflow for ShopAssist, the prompt could say, review this ShopAssist pull request.",
+      "ko": "ShopAssist 의 pull request 워크플로에서 프롬프트는 \"이 ShopAssist pull request 를 리뷰하라\" 로 시작할 수 있습니다."
+    },
+    {
+      "en": "Focus on refund logic, escalation behavior, customer messaging, security issues, and missing tests.",
+      "ko": "환불 로직, 에스컬레이션 동작, 고객 메시지, 보안 문제, 빠진 테스트에 집중하라고요."
+    },
+    {
+      "en": "Return only structured findings.",
+      "ko": "그리고 ==구조화된 findings 만 반환== 하라고 합니다."
+    },
+    {
+      "en": "The key point is simple. In CI, do not start an interactive Claude Code session.",
+      "ko": "핵심은 단순합니다. ==CI 에서는 대화형 Claude Code 세션을 시작하지 않습니다.=="
+    },
+    {
+      "en": "Use print mode so the job finishes automatically.",
+      "ko": "작업이 자동으로 끝나도록 print 모드를 씁니다."
+    },
+    {
+      "en": "Now let's talk about output.",
+      "ko": "이제 출력 이야기를 해 봅시다."
+    },
+    {
+      "en": "Plain text is fine for humans, but it is fragile for automation.",
+      "ko": "일반 텍스트는 사람에게는 괜찮지만 ==자동화에는 취약== 합니다."
+    },
+    {
+      "en": "If we want to post pull request comments, create annotations, fail the build,",
+      "ko": "pull request 코멘트를 달고, annotation 을 만들고, 빌드를 실패시키고,"
+    },
+    {
+      "en": "or skip duplicate findings, we need structured output.",
+      "ko": "중복 findings 를 건너뛰려면 ==구조화된 출력== 이 필요합니다."
+    },
+    {
+      "en": "Claude Code can return JSON. The command option is --output-format json.",
+      "ko": "Claude Code 는 JSON 을 반환할 수 있습니다. 명령 옵션은 `--output-format json` 입니다."
+    },
+    {
+      "en": "For stricter automation, we can also provide a JSON schema.",
+      "ko": "더 엄격한 자동화를 위해 ==JSON schema== 도 줄 수 있습니다."
+    },
+    {
+      "en": "The command option is --json-schema.",
+      "ko": "명령 옵션은 `--json-schema` 입니다."
+    },
+    {
+      "en": "In spoken form, the CI command means run Claude Code in print mode.",
+      "ko": "말로 풀면 CI 명령은 이런 뜻입니다 — Claude Code 를 print 모드로 돌려라."
+    },
+    {
+      "en": "Use JSON output format. Apply this JSON schema.",
+      "ko": "JSON 출력 형식을 쓰고, 이 JSON schema 를 적용하라."
+    },
+    {
+      "en": "Review the pull request. Return an array of findings.",
+      "ko": "pull request 를 리뷰하고, findings 배열을 반환하라."
+    },
+    {
+      "en": "Each finding should include file path, line number, severity, categories, message,",
+      "ko": "각 finding 에는 ==파일 경로, 줄 번호, 심각도, 카테고리, 메시지,=="
+    },
+    {
+      "en": "suggested fix, and a stable fingerprint.",
+      "ko": "==제안하는 수정, 그리고 안정된 fingerprint== 가 들어가야 합니다."
+    },
+    {
+      "en": "The fingerprint is important because CI may run more than once.",
+      "ko": "fingerprint 가 중요한 이유는 ==CI 가 여러 번 돌 수 있기== 때문입니다."
+    },
+    {
+      "en": "A developer can push another commit. A workflow can be rerun.",
+      "ko": "개발자가 커밋을 또 push 할 수 있고, 워크플로가 재실행될 수 있습니다."
+    },
+    {
+      "en": "The same review can happen again.",
+      "ko": "같은 리뷰가 다시 일어날 수 있습니다."
+    },
+    {
+      "en": "If Claude posts the same comment every time, the pull request becomes noisy.",
+      "ko": "Claude 가 매번 같은 코멘트를 달면 ==pull request 가 소음으로 가득 찹니다.=="
+    },
+    {
+      "en": "So the workflow should generate a stable fingerprint for each finding.",
+      "ko": "그래서 워크플로는 finding 마다 ==안정된 fingerprint== 를 만들어야 합니다."
+    },
+    {
+      "en": "For example, the fingerprint can be based on file path, line number, category, and normalized message.",
+      "ko": "예를 들어 fingerprint 는 ==파일 경로 + 줄 번호 + 카테고리 + 정규화된 메시지== 로 만들 수 있습니다."
+    },
+    {
+      "en": "Before posting a new pull request comment, the CI script checks whether that fingerprint already exists.",
+      "ko": "새 코멘트를 달기 전에 CI 스크립트가 ==그 fingerprint 가 이미 있는지 확인== 합니다."
+    },
+    {
+      "en": "If it already exists, skip it. If it is new, post the comment.",
+      "ko": "이미 있으면 건너뛰고, 새것이면 코멘트를 답니다."
+    },
+    {
+      "en": "Now let's talk about context.",
+      "ko": "이제 context 이야기를 해 봅시다."
+    },
+    {
+      "en": "Claude Code in CI still needs to understand the project.",
+      "ko": "CI 안의 Claude Code 도 ==여전히 프로젝트를 이해해야== 합니다."
+    },
+    {
+      "en": "That context can come from the CLAUDE.md file.",
+      "ko": "그 context 는 `CLAUDE.md` 파일에서 올 수 있습니다."
+    },
+    {
+      "en": "For ShopAssist, this file may explain how refund workflows are organized, where support fixtures live,",
+      "ko": "ShopAssist 에서는 이 파일이 환불 워크플로 구성, 지원 fixture 위치,"
+    },
+    {
+      "en": "which tests must be run, what counts as an escalation,",
+      "ko": "반드시 돌려야 하는 테스트, 무엇이 에스컬레이션에 해당하는지,"
+    },
+    {
+      "en": "and what customer messaging rules must be followed.",
+      "ko": "어떤 고객 메시지 규칙을 따라야 하는지를 설명할 수 있습니다."
+    },
+    {
+      "en": "Existing tests and fixtures are also useful context.",
+      "ko": "==기존 테스트와 fixture 도 유용한 context== 입니다."
+    },
+    {
+      "en": "If ShopAssist already has refund policy tests, escalation fixtures, and customer message snapshots,",
+      "ko": "ShopAssist 에 이미 환불 정책 테스트, 에스컬레이션 fixture, 고객 메시지 snapshot 이 있으면,"
+    },
+    {
+      "en": "Claude can compare the pull request against real project behavior.",
+      "ko": "Claude 가 pull request 를 ==실제 프로젝트 동작과 대조== 할 수 있습니다."
+    },
+    {
+      "en": "That makes the review more grounded.",
+      "ko": "그러면 리뷰가 더 근거 있게 됩니다."
+    },
+    {
+      "en": "Now we need to decide how strict the CI review should be.",
+      "ko": "이제 CI 리뷰를 얼마나 엄격하게 할지 정해야 합니다."
+    },
+    {
+      "en": "There are two common modes.",
+      "ko": "흔한 모드가 둘 있습니다."
+    },
+    {
+      "en": "First, blocking pre-merge checks.",
+      "ko": "첫째, ==병합 전 차단(blocking pre-merge) 검사== 입니다."
+    },
+    {
+      "en": "This is useful for high confidence issues, security problems, broken tests,",
+      "ko": "확신도 높은 문제, 보안 문제, 깨진 테스트,"
+    },
+    {
+      "en": "schema violations, missing required fixtures, or dangerous production behavior.",
+      "ko": "스키마 위반, 필수 fixture 누락, 위험한 프로덕션 동작에 유용합니다."
+    },
+    {
+      "en": "If Claude returns a critical finding, the CI check can fail.",
+      "ko": "Claude 가 critical finding 을 반환하면 CI 검사를 실패시킬 수 있습니다."
+    },
+    {
+      "en": "Second, non-blocking reports. This can run overnight or on demand.",
+      "ko": "둘째, ==비차단 보고서== 입니다. 야간이나 필요할 때 돌릴 수 있습니다."
+    },
+    {
+      "en": "They are useful for broader review. Code quality, missing edge cases,",
+      "ko": "더 넓은 리뷰에 유용합니다 — 코드 품질, 빠진 엣지 케이스,"
+    },
+    {
+      "en": "test suggestions, duplication, or architecture concerns.",
+      "ko": "테스트 제안, 중복, 아키텍처 우려 같은 것들이요."
+    },
+    {
+      "en": "These reports should help the team, but they do not need to block every pull request.",
+      "ko": "이 보고서는 팀을 도와야 하지만 ==모든 pull request 를 막을 필요는 없습니다.=="
+    },
+    {
+      "en": "For ShopAssist, a good pattern is block only critical and high severity structured findings.",
+      "ko": "ShopAssist 에서 좋은 패턴은 ==critical·high 심각도만 차단== 하는 것입니다."
+    },
+    {
+      "en": "Post medium and low findings as pull request comments.",
+      "ko": "==medium·low 는 pull request 코멘트로== 달고,"
+    },
+    {
+      "en": "Run a deeper review overnight for broader improvements.",
+      "ko": "==더 넓은 개선은 야간 심층 리뷰== 로 돌립니다."
+    },
+    {
+      "en": "Finally, let's talk about independent review.",
+      "ko": "마지막으로 ==독립 리뷰(independent review)== 이야기입니다."
+    },
+    {
+      "en": "The same Claude session that generated code is not always the best reviewer of that code.",
+      "ko": "==코드를 만든 그 Claude 세션이 그 코드의 최선의 리뷰어는 아닙니다.=="
+    },
+    {
+      "en": "The implementation session may remember the intention behind the change.",
+      "ko": "구현 세션은 변경의 ==의도를 기억== 하고 있습니다."
+    },
+    {
+      "en": "That can be useful, but it can also make review weaker.",
+      "ko": "그건 유용할 수도 있지만 ==리뷰를 약하게 만들== 수도 있습니다."
+    },
+    {
+      "en": "A reviewer should ask, does the code actually do what it claims?",
+      "ko": "리뷰어는 이렇게 물어야 합니다 — 코드가 ==정말 주장하는 대로 동작하는가?=="
+    },
+    {
+      "en": "Are tests missing? Did the implementation introduce a regression?",
+      "ko": "테스트가 빠졌는가? 구현이 ==회귀(regression)를 만들었는가?=="
+    },
+    {
+      "en": "Would this behavior be clear to another developer?",
+      "ko": "이 동작이 ==다른 개발자에게 명확할까?=="
+    },
+    {
+      "en": "That is why independent review instances matter.",
+      "ko": "그래서 독립 리뷰 인스턴스가 중요합니다."
+    },
+    {
+      "en": "In CI, the review should run in a separate Claude Code invocation with a clean session.",
+      "ko": "CI 에서 리뷰는 ==깨끗한 세션의 별도 Claude Code 실행== 으로 돌아야 합니다."
+    },
+    {
+      "en": "It should read the repository, the pull request diff, CLAUDE.md, tests, and fixtures.",
+      "ko": "저장소, pull request diff, `CLAUDE.md`, 테스트, fixture 를 읽어야 하고,"
+    },
+    {
+      "en": "But it should not inherit the implementation conversation.",
+      "ko": "==구현 대화를 물려받아서는 안 됩니다.=="
+    },
+    {
+      "en": "This gives us session isolation.",
+      "ko": "이것이 ==세션 격리(session isolation)== 입니다."
+    },
+    {
+      "en": "One Claude session can help build the feature.",
+      "ko": "한 Claude 세션은 기능을 만드는 것을 돕고,"
+    },
+    {
+      "en": "A separate Claude Code run can review it independently.",
+      "ko": "별도의 Claude Code 실행이 그것을 독립적으로 리뷰합니다."
+    },
+    {
+      "en": "For the ShopAssist pull request workflow, the full idea is",
+      "ko": "ShopAssist pull request 워크플로의 전체 그림은 이렇습니다 —"
+    },
+    {
+      "en": "run Claude Code with claude -p, use JSON output, constrain the result with a JSON schema,",
+      "ko": "`claude -p` 로 실행하고, JSON 출력을 쓰고, JSON schema 로 결과를 제약하고,"
+    },
+    {
+      "en": "ask for structured findings, generate stable fingerprints, skip duplicate comments,",
+      "ko": "구조화된 findings 를 요구하고, 안정된 fingerprint 를 만들고, 중복 코멘트를 건너뛰고,"
+    },
+    {
+      "en": "post new findings to the pull request, fail the check only for serious issues.",
+      "ko": "새 findings 를 pull request 에 달고, ==심각한 문제에만 검사를 실패== 시킵니다."
+    },
+    {
+      "en": "This is the key difference between interactive Claude Code and Claude Code in CI.",
+      "ko": "이것이 대화형 Claude Code 와 CI 안의 Claude Code 의 핵심 차이입니다."
+    },
+    {
+      "en": "Interactive mode is for collaboration. CI mode is for repeatable automation.",
+      "ko": "==대화형은 협업용, CI 모드는 반복 가능한 자동화용== 입니다."
+    },
+    {
+      "en": "For the exam, remember the core pattern.",
+      "ko": "시험을 위해 핵심 패턴을 기억하세요."
+    },
+    {
+      "en": "Use claude -p or claude --print for non-interactive execution.",
+      "ko": "비대화형 실행에는 `claude -p` 또는 `claude --print`."
+    },
+    {
+      "en": "Use structured JSON output for automation.",
+      "ko": "자동화에는 구조화된 JSON 출력."
+    },
+    {
+      "en": "Use JSON schemas when the output must be machine parsable.",
+      "ko": "출력이 ==기계가 파싱할 수 있어야 하면== JSON schema."
+    },
+    {
+      "en": "Use project context such as CLAUDE.md, tests, and fixtures.",
+      "ko": "`CLAUDE.md`·테스트·fixture 같은 프로젝트 context 활용."
+    },
+    {
+      "en": "Avoid duplicate findings on repeated runs.",
+      "ko": "==반복 실행에서 중복 findings 피하기.=="
+    },
+    {
+      "en": "Choose carefully between blocking checks and non-blocking reports.",
+      "ko": "차단 검사와 비차단 보고서 사이를 신중히 선택."
+    },
+    {
+      "en": "And use an independent review session instead of asking the same coding session to judge its own work.",
+      "ko": "그리고 ==같은 코딩 세션에게 자기 작업을 판정하게 하지 말고 독립 리뷰 세션== 을 쓰세요."
+    },
+    {
+      "en": "This is how Claude Code surfaces messages in automated workflows.",
+      "ko": "이것이 Claude Code 를 자동화 워크플로에 올리는 방법입니다."
+    }
+  ],
+  "body": "### Non-interactive mode\n- Interactive Claude Code suits a developer ==asking questions, approving edits, refining the result==. But ==a CI job cannot wait for a conversation== — it must ==start, run, produce output, and finish==. // CI 는 대화를 기다릴 수 없다.\n- So use ==`claude -p`== (same as ==`claude --print`==), which ==prevents CI jobs from hanging==. // print 모드가 매달림을 막는다.\n- ==In CI, do not start an interactive Claude Code session.== // 대화형 세션을 열지 않는다.\n- Example CI prompt: review this ShopAssist pull request, focus on ==refund logic, escalation behavior, customer messaging, security issues, and missing tests==, and ==return only structured findings==. // 다섯 초점 + 구조화된 결과만.\n\n### Structured output\n- ==Plain text is fine for humans but fragile for automation.== To ==post PR comments, create annotations, fail the build, or skip duplicate findings==, you need structure. // 텍스트로는 자동화가 안 된다.\n- ==`--output-format json`== returns JSON; ==`--json-schema`== constrains it further for ==stricter automation==. // JSON 출력 + 스키마 제약.\n- The CI command in words: ((print mode → JSON output format → apply this JSON schema → review the PR → return an array of findings)). // 다섯 지시.\n- Each finding: ==file path, line number, severity, categories, message, suggested fix, and a stable fingerprint==. // 일곱 필드.\n\n### Fingerprints — the duplicate problem\n- CI ==may run more than once==: a developer ==pushes another commit==, a ==workflow is rerun==, the ==same review happens again==. // 여러 번 돌 수밖에 없다.\n- ==If Claude posts the same comment every time, the pull request becomes noisy.== // 매번 같은 코멘트 = 소음.\n- So generate a ==stable fingerprint== per finding, based on ==file path + line number + category + normalized message==. // fingerprint 재료 네 가지.\n- Before posting, the CI script ==checks whether that fingerprint already exists — if it exists, skip it; if it is new, post the comment==. // 있으면 건너뛰고 새것만 단다.\n\n### Context in CI\n- Claude Code in CI ==still needs to understand the project==, and that context comes from ==`CLAUDE.md`==: ==how refund workflows are organized, where support fixtures live, which tests must be run, what counts as an escalation, and what customer messaging rules apply==. // CLAUDE.md 가 다섯 가지를 알려 준다.\n- ==Existing tests and fixtures are also useful context== — refund policy tests, escalation fixtures, customer message snapshots — so Claude can ==compare the pull request against real project behavior==, which makes the review ==more grounded==. // 실제 동작과 대조해 근거를 얻는다.\n\n### Blocking checks vs non-blocking reports\n| Mode | Use it for |\n|---|---|\n| **Blocking pre-merge check** | ==high confidence issues==, ==security problems==, ==broken tests==, ==schema violations==, ==missing required fixtures==, ==dangerous production behavior== — a ==critical finding can fail the CI check== |\n| **Non-blocking report** (overnight or on demand) | ==broader review==: ==code quality, missing edge cases, test suggestions, duplication, architecture concerns== — helps the team but ==need not block every pull request== |\n\n- The ShopAssist pattern: ==block only critical and high severity structured findings==, ==post medium and low as pull request comments==, and ==run a deeper review overnight== for broader improvements. // critical·high 만 차단, 나머지는 코멘트, 심층은 야간.\n\n### Independent review and session isolation\n- ==The same Claude session that generated the code is not always the best reviewer of that code.== The implementation session ==remembers the intention behind the change==, which ==can also make review weaker==. // 의도를 아는 것이 리뷰를 약하게 만든다.\n- A reviewer must ask: ==does the code actually do what it claims?== ==Are tests missing?== ==Did the implementation introduce a regression?== ==Would this behavior be clear to another developer?== // 리뷰어의 네 질문.\n- So in CI the review runs in a ==separate Claude Code invocation with a clean session==. It reads ==the repository, the pull request diff, CLAUDE.md, tests, and fixtures==, but ==does not inherit the implementation conversation==. // 깨끗한 세션, 자료는 읽고 대화는 안 물려받는다.\n- That is ==session isolation==: ==one session builds the feature, a separate run reviews it independently==. // 만드는 세션과 리뷰하는 세션을 분리.\n\n### The full ShopAssist PR workflow\n- ((`claude -p` → JSON output → JSON schema → structured findings → stable fingerprints → skip duplicate comments → post new findings to the PR → fail the check only for serious issues)) // 여덟 단계.\n- ==Interactive mode is for collaboration. CI mode is for repeatable automation.== // 협업 vs 반복 자동화.",
+  "keyPoints": [
+    "CI cannot wait for a conversation, so run Claude Code non-interactively with claude -p (or --print) to keep jobs from hanging. // CI 에서는 -p / --print, 대화형 세션 금지.",
+    "Automation needs structure: --output-format json for JSON, and --json-schema when the output must be machine parsable. // JSON 출력, 기계 파싱이 필요하면 스키마.",
+    "Each finding carries file path, line number, severity, categories, message, suggested fix, and a stable fingerprint. // finding 일곱 필드.",
+    "CI reruns on new commits, so build a stable fingerprint from file path, line number, category, and normalized message, and skip a finding whose fingerprint already exists — otherwise the PR fills with duplicate comments. // fingerprint 로 중복 코멘트를 막는다.",
+    "CI still needs project context: CLAUDE.md plus existing tests, fixtures, and snapshots let Claude compare the PR against real project behavior. // CLAUDE.md·테스트·fixture 가 리뷰를 근거 있게 만든다.",
+    "Block only high-confidence, high-risk findings (security, broken tests, schema violations, missing fixtures, dangerous production behavior); post medium and low as comments and run broader review as a non-blocking overnight report. // critical·high 만 차단, 나머지는 보고.",
+    "The session that wrote the code is not the best reviewer of it, because it remembers the intention; run review as a separate clean Claude Code invocation that reads the repo, diff, CLAUDE.md, tests, and fixtures but does not inherit the implementation conversation. // 독립 리뷰 = 세션 격리."
+  ],
+  "examTrends": {
+    "how": "Command-and-design questions about putting Claude Code in a pipeline. The most predictable item asks which flag to use so the CI job does not hang, answered by claude -p or --print. A second asks why the pipeline cannot act on the review output and gives JSON output plus a JSON schema as the fix. A third describes the same comments reappearing on every rerun and asks for the prevention, answered by a stable fingerprint from path, line, category, and normalized message with a skip-if-exists check. A fourth asks which findings should fail the check, answered by high-confidence, high-severity issues only, with broader quality findings as non-blocking reports. And the Claude-specific one asks who should review the code, answered by a separate clean session rather than the session that wrote it. // Claude Code 를 pipeline 에 올리는 명령·설계 문제다. 가장 예측 가능한 문항은 CI 작업이 매달리지 않게 하는 플래그이며 답은 `claude -p` 또는 `--print` 다. 두 번째는 pipeline 이 리뷰 결과로 아무것도 못 하는 이유를 묻고 답은 JSON 출력 + JSON schema 다. 세 번째는 재실행마다 같은 코멘트가 다시 붙는 상황의 예방을 묻고 답은 경로·줄·카테고리·정규화 메시지로 만든 안정된 fingerprint 와 이미 있으면 건너뛰는 확인이다. 네 번째는 어떤 findings 가 검사를 실패시켜야 하는지 묻고 답은 확신도 높고 심각한 문제만, 넓은 품질 findings 는 비차단 보고서다. 그리고 Claude 다운 문항은 누가 리뷰해야 하는지 묻고 답은 코드를 쓴 세션이 아니라 별도의 깨끗한 세션이다.",
+    "answerLooks": [
+      "\"Run claude -p (or --print) so the CI job produces output and exits instead of waiting for input\" // 비대화형 실행.",
+      "\"Use --output-format json and constrain it with --json-schema so the pipeline can parse the result\" // JSON + 스키마.",
+      "\"Return findings with file path, line number, severity, category, message, suggested fix, and fingerprint\" // 구조화된 finding 필드.",
+      "\"Compute a stable fingerprint from file path, line number, category, and normalized message, and skip findings whose fingerprint already exists\" // 중복 방지.",
+      "\"Give the CI review project context from CLAUDE.md, existing tests, and fixtures\" // 프로젝트 context 주입.",
+      "\"Fail the check only on critical and high severity findings; post medium and low as PR comments\" // 차단은 심각한 것만.",
+      "\"Run the deeper analysis as a non-blocking overnight report\" // 심층은 비차단.",
+      "\"Run the review in a separate Claude Code invocation with a clean session that reads the diff, CLAUDE.md, tests, and fixtures\" // 독립 리뷰 세션."
+    ],
+    "traps": [
+      "\"Launch an interactive Claude Code session in the CI job and have it approve its own edits\": a CI job cannot wait for a conversation and would hang. // CI 에서 대화형은 매달린다.",
+      "\"Parse Claude's prose review with a regex in the CI script\": free-form text is fragile; return JSON constrained by a schema. // 산문 파싱은 취약하다.",
+      "\"Post every finding on every run so nothing is missed\": repeated identical comments make the pull request noisy; dedupe by fingerprint. // 매번 다 달면 소음.",
+      "\"Fingerprint each finding with a timestamp or run id so every entry is unique\": the fingerprint must be stable across runs to detect duplicates. // 실행마다 달라지면 중복을 못 잡는다.",
+      "\"Block the merge on every finding, including style and duplication\": only high-confidence, high-risk findings should block. // 전부 차단은 오답.",
+      "\"Put the deep overnight analysis in the blocking pre-merge check for maximum safety\": it is slow and belongs in a non-blocking report. // 심층 분석을 차단형에 넣지 않는다.",
+      "\"Have the same session that implemented the change review it, since it has the most context\": it remembers the intention, which weakens review; use an isolated session. // 같은 세션 리뷰는 약하다.",
+      "\"Give the review session the implementation conversation so it knows the reasoning\": it should read the repo, diff, CLAUDE.md, tests, and fixtures, not inherit the conversation. // 대화를 물려주면 격리가 깨진다."
+    ],
+    "memorize": "claude -p for non-interactive CI, --output-format json plus --json-schema for machine-parsable findings, stable fingerprints from path, line, category, and normalized message to skip duplicates, CLAUDE.md and fixtures for context, block only critical and high severity while broader review runs as a non-blocking overnight report, and review in a separate clean session because the session that wrote the code remembers its intention. // 비대화형은 `claude -p`, 기계가 읽을 findings 는 `--output-format json` + `--json-schema`, 중복은 경로·줄·카테고리·정규화 메시지 기반 안정된 fingerprint 로 건너뛰고, context 는 CLAUDE.md·fixture 에서, 차단은 critical·high 만이고 넓은 리뷰는 비차단 야간 보고서, 그리고 코드를 쓴 세션은 의도를 기억하므로 리뷰는 별도의 깨끗한 세션에서."
+  },
+  "createdAt": "2026-09-10T20:20:00Z"
+}
