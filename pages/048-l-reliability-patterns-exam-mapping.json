@@ -1,0 +1,490 @@
+{
+  "id": "l-048",
+  "kind": "lesson",
+  "order": 48,
+  "section": "Production Reliability & Exam Synthesis",
+  "lecture": "48",
+  "title_en": "Reliability Patterns and Final Exam Mapping",
+  "title": "신뢰성 패턴과 시험 영역 매핑",
+  "domain": "신뢰성",
+  "summary": "Reliability means escalating on explicit triggers rather than sentiment — a request for a human, missing or ambiguous policy, no meaningful progress, ambiguous backend results — never guessing when identity, permissions, or money are involved, recovering transient failures locally before propagating a structured error with attempts and partial results, and distinguishing a valid empty result from an access failure. It also means preserving claim-to-source mappings with dates because summarization strips attribution, keeping both sides of a conflict and escalating when money or policy is at stake since a newer source may supersede an older one, and rendering content in the right form; ShopAssist maps onto all five exam domains, with D1 largest, D3 and D4 heavy, D2 on tools and MCP, and D5 woven through scenario questions. // 신뢰성은 감정이 아니라 명시적 방아쇠로 에스컬레이션하는 것이다 — 사람 요구, 없거나 모호한 정책, 진전 없음, 모호한 백엔드 결과. 신원·권한·돈이 걸린 곳에서는 추측하지 않고, 일시적 실패는 로컬에서 복구한 뒤 시도 내용과 부분 결과를 담은 구조화된 오류를 전파하며, 유효한 빈 결과와 접근 실패를 구분한다. 또 요약이 출처 표시를 지우므로 주장↔출처 매핑을 날짜와 함께 보존하고, 충돌은 양쪽을 남기며 돈·정책이 걸리면 에스컬레이션하고(새 출처가 옛것을 대체할 수 있다), 내용에 맞는 형식으로 보여 준다. ShopAssist 는 시험 5개 영역 전부에 대응되며 D1 이 가장 크고 D3·D4 도 비중이 크며 D2 는 툴·MCP, D5 는 시나리오 문제 속에 섞여 나온다.",
+  "paragraphs": [
+    {
+      "en": "In this final lesson, we bring ShopAssist together as a production-style Claude architecture.",
+      "ko": "이 마지막 강의에서는 ShopAssist 를 프로덕션급 Claude 아키텍처로 모읍니다."
+    },
+    {
+      "en": "ShopAssist now has prompts, tools, structured outputs, validation,",
+      "ko": "ShopAssist 에는 이제 프롬프트, 툴, 구조화 출력, 검증,"
+    },
+    {
+      "en": "agentic workflows, Claude Code configuration, CI review, and reliability patterns.",
+      "ko": "에이전트 워크플로, Claude Code 설정, CI 리뷰, 신뢰성 패턴이 있습니다."
+    },
+    {
+      "en": "The final question is, how do we make this system safe and trustworthy in real customer support?",
+      "ko": "마지막 질문은 — 이 시스템을 실제 고객지원에서 ==안전하고 믿을 만하게== 만드는 방법입니다."
+    },
+    {
+      "en": "Let's start with escalation.",
+      "ko": "에스컬레이션부터 시작합시다."
+    },
+    {
+      "en": "A reliable system does not escalate only because the customer sounds angry.",
+      "ko": "==믿을 만한 시스템은 고객이 화나 보인다는 이유만으로 에스컬레이션하지 않습니다.=="
+    },
+    {
+      "en": "Sentiment is useful context, but it is not a reliable signal of case complexity.",
+      "ko": "감정은 유용한 context 지만 ==케이스 복잡도의 신뢰할 만한 신호는 아닙니다.=="
+    },
+    {
+      "en": "A frustrated customer may have a simple return request.",
+      "ko": "짜증 난 고객이 단순한 반품 요청을 할 수 있고,"
+    },
+    {
+      "en": "A calm customer may have a policy exception, identity ambiguity, or financial risk.",
+      "ko": "차분한 고객이 정책 예외·신원 모호성·재무 위험을 안고 있을 수 있습니다."
+    },
+    {
+      "en": "So, ShopAssist needs explicit escalation triggers.",
+      "ko": "그래서 ShopAssist 에는 ==명시적인 에스컬레이션 방아쇠== 가 필요합니다."
+    },
+    {
+      "en": "Escalate when the customer explicitly asks for a human.",
+      "ko": "고객이 ==명시적으로 사람을 요구== 할 때 에스컬레이션."
+    },
+    {
+      "en": "Escalate when the policy is missing, ambiguous, or does not cover the request.",
+      "ko": "==정책이 없거나, 모호하거나, 그 요청을 다루지 않을== 때 에스컬레이션."
+    },
+    {
+      "en": "Escalate when the agent cannot make meaningful progress.",
+      "ko": "에이전트가 ==의미 있는 진전을 만들 수 없을== 때 에스컬레이션."
+    },
+    {
+      "en": "Escalate or ask for clarification when backend results are ambiguous, such as multiple customer matches.",
+      "ko": "==백엔드 결과가 모호할== 때(고객 매칭이 여러 건인 경우처럼) 에스컬레이션하거나 명확화를 요청."
+    },
+    {
+      "en": "For example, if the customer says, I want to speak to a real person.",
+      "ko": "예를 들어 고객이 \"진짜 사람과 얘기하고 싶어요\" 라고 하면,"
+    },
+    {
+      "en": "The agent should honor that request immediately.",
+      "ko": "==에이전트는 그 요청을 즉시 존중해야== 합니다."
+    },
+    {
+      "en": "It can summarize the case for the support specialist,",
+      "ko": "지원 담당자를 위해 케이스를 요약할 수는 있지만,"
+    },
+    {
+      "en": "but it should not force the customer through more automated investigation first.",
+      "ko": "==고객을 자동 조사에 더 끌고 다니면 안 됩니다.=="
+    },
+    {
+      "en": "If the customer says, I'm frustrated, my package arrived damaged.",
+      "ko": "고객이 \"짜증 나요, 물건이 파손돼서 왔어요\" 라고 하면,"
+    },
+    {
+      "en": "That alone is not automatic escalation.",
+      "ko": "==그것만으로는 자동 에스컬레이션이 아닙니다.=="
+    },
+    {
+      "en": "The agent can acknowledge the frustration, verify the order,",
+      "ko": "에이전트는 그 감정을 인정하고, 주문을 확인하고,"
+    },
+    {
+      "en": "check the policy, and resolve the issue if it is within scope.",
+      "ko": "정책을 확인하고, 범위 안이면 문제를 해결할 수 있습니다."
+    },
+    {
+      "en": "Now, consider ambiguity.",
+      "ko": "이제 모호성을 봅시다."
+    },
+    {
+      "en": "If get_customer returns two matching customers, the agent should not guess.",
+      "ko": "`get_customer` 가 일치하는 고객을 둘 돌려주면 ==에이전트는 추측해서는 안 됩니다.=="
+    },
+    {
+      "en": "It should ask for another identifier, such as email address or order number.",
+      "ko": "==이메일 주소나 주문 번호 같은 다른 식별자를 요청== 해야 합니다."
+    },
+    {
+      "en": "This is a common exam pattern.",
+      "ko": "이것이 흔한 시험 패턴입니다."
+    },
+    {
+      "en": "When identity, permissions, or financial actions are involved, do not use heuristics.",
+      "ko": "==신원·권한·재무 행동이 걸린 일에는 어림짐작(heuristics)을 쓰지 마세요.=="
+    },
+    {
+      "en": "Clarify, verify, or escalate.",
+      "ko": "==명확히 하거나, 확인하거나, 에스컬레이션== 합니다."
+    },
+    {
+      "en": "Next, error propagation.",
+      "ko": "다음은 오류 전파(error propagation)입니다."
+    },
+    {
+      "en": "In a multi-agent system, failures should not disappear.",
+      "ko": "==멀티에이전트 시스템에서 실패가 사라져서는 안 됩니다.=="
+    },
+    {
+      "en": "A weak error response says something like this.",
+      "ko": "빈약한 오류 응답은 대략 이런 식입니다."
+    },
+    {
+      "en": "This gives the coordinator enough context to recover.",
+      "ko": "좋은 오류 응답은 coordinator 에게 ==복구할 만큼의 context== 를 줍니다."
+    },
+    {
+      "en": "It can retry, ask the customer for missing information,",
+      "ko": "재시도하거나, 고객에게 빠진 정보를 묻거나,"
+    },
+    {
+      "en": "continue with partial results, or escalate.",
+      "ko": "부분 결과로 계속하거나, 에스컬레이션할 수 있습니다."
+    },
+    {
+      "en": "The key pattern is local recovery first. Coordinator propagation second.",
+      "ko": "핵심 패턴은 ==먼저 로컬 복구, 그다음 coordinator 로 전파== 입니다."
+    },
+    {
+      "en": "A sub-agent should retry transient failures locally.",
+      "ko": "sub-agent 는 일시적 실패를 ==로컬에서 재시도== 해야 합니다."
+    },
+    {
+      "en": "But if it cannot recover, it should propagate a structured error with what was attempted",
+      "ko": "하지만 복구할 수 없으면 ==무엇을 시도했고=="
+    },
+    {
+      "en": "and what partial results exist.",
+      "ko": "==어떤 부분 결과가 있는지 담은 구조화된 오류를 전파== 해야 합니다."
+    },
+    {
+      "en": "Also remember the difference between an access failure and a valid empty result.",
+      "ko": "그리고 ==접근 실패== 와 ==유효한 빈 결과== 의 차이를 기억하세요."
+    },
+    {
+      "en": "A valid empty result means the query succeeded, but no matching record was found.",
+      "ko": "유효한 빈 결과는 ==질의가 성공했지만 일치하는 레코드가 없다== 는 뜻이고,"
+    },
+    {
+      "en": "An access failure means the system could not reach the data source.",
+      "ko": "접근 실패는 ==데이터 출처에 도달할 수 없었다== 는 뜻입니다."
+    },
+    {
+      "en": "Those require different decisions.",
+      "ko": "==둘은 다른 결정을 요구합니다.=="
+    },
+    {
+      "en": "Now let's talk about provenance.",
+      "ko": "이제 출처(provenance) 이야기입니다."
+    },
+    {
+      "en": "A reliable system must preserve where important claims came from.",
+      "ko": "==믿을 만한 시스템은 중요한 주장이 어디서 왔는지 보존해야== 합니다."
+    },
+    {
+      "en": "For ShopAssist, the final answer should keep claim source mappings.",
+      "ko": "ShopAssist 에서 최종 답변은 ==주장 ↔ 출처 매핑== 을 유지해야 합니다."
+    },
+    {
+      "en": "For example, like this.",
+      "ko": "예를 들어 이렇게요."
+    },
+    {
+      "en": "This matters because summarization can remove attribution.",
+      "ko": "==요약이 출처 표시를 없앨 수== 있기 때문에 중요합니다."
+    },
+    {
+      "en": "If a research sub-agent compresses five sources into one summary, but drops the sources,",
+      "ko": "리서치 sub-agent 가 출처 다섯 개를 요약 하나로 압축하면서 출처를 버리면,"
+    },
+    {
+      "en": "the synthesis agent can no longer verify the claims.",
+      "ko": "종합 에이전트는 ==더 이상 주장을 검증할 수 없습니다.=="
+    },
+    {
+      "en": "That is a reliability failure.",
+      "ko": "그것이 신뢰성 실패입니다."
+    },
+    {
+      "en": "For conflicting values, the agent should not randomly choose one.",
+      "ko": "==값이 충돌할 때 에이전트가 아무거나 골라서는 안 됩니다.=="
+    },
+    {
+      "en": "If the return policy says 30 days, but a newer support memo says damaged item exceptions may be reviewed up to 45 days,",
+      "ko": "반품 정책은 30일이라고 하는데 더 새로운 지원 메모는 파손 상품 예외를 45일까지 검토할 수 있다고 한다면,"
+    },
+    {
+      "en": "the agent should preserve both sources, include publication or collection dates,",
+      "ko": "==두 출처를 모두 보존하고, 발행·수집 날짜를 포함하고,=="
+    },
+    {
+      "en": "and escalate if the decision affects money or policy.",
+      "ko": "==결정이 돈이나 정책에 영향을 주면 에스컬레이션== 해야 합니다."
+    },
+    {
+      "en": "Temporal context matters.",
+      "ko": "==시간 맥락(temporal context)이 중요합니다.=="
+    },
+    {
+      "en": "A 2024 policy and a 2026 memo may not be a contradiction.",
+      "ko": "2024년 정책과 2026년 메모는 ==모순이 아닐 수== 있습니다."
+    },
+    {
+      "en": "The newer source may supersede the older one.",
+      "ko": "새 출처가 옛것을 ==대체(supersede)== 하는 것일 수 있습니다."
+    },
+    {
+      "en": "The system should also render different content types appropriately.",
+      "ko": "시스템은 ==내용 종류에 맞는 형식== 으로 보여 줘야 합니다."
+    },
+    {
+      "en": "Financial comparisons may work best as tables.",
+      "ko": "재무 비교는 ==표== 가 가장 낫고,"
+    },
+    {
+      "en": "Policy reasoning may work best as structured bullets.",
+      "ko": "정책 추론은 ==구조화된 목록== 이 가장 낫고,"
+    },
+    {
+      "en": "Customer replies should be clear prose.",
+      "ko": "고객 응답은 ==명확한 산문== 이어야 하고,"
+    },
+    {
+      "en": "Technical review findings should include file paths, severity, and suggested fixes.",
+      "ko": "기술 리뷰 findings 에는 ==파일 경로·심각도·제안 수정== 이 들어가야 합니다."
+    },
+    {
+      "en": "Now let's map ShopAssist to the five exam domains.",
+      "ko": "이제 ShopAssist 를 ==시험 5개 영역== 에 대응시켜 봅시다."
+    },
+    {
+      "en": "Domain 1 is agentic architecture and orchestration.",
+      "ko": "Domain 1 은 에이전트 아키텍처·오케스트레이션입니다."
+    },
+    {
+      "en": "ShopAssist uses an agentic loop, tool calls, handoffs, sub-agents where useful,",
+      "ko": "ShopAssist 는 에이전트 루프, 툴 호출, handoff, 필요한 곳의 sub-agent,"
+    },
+    {
+      "en": "and deterministic enforcement for critical steps like customer verification before refunds.",
+      "ko": "그리고 환불 전 고객 확인 같은 결정적 단계의 ==결정론적 강제== 를 씁니다."
+    },
+    {
+      "en": "Domain 2 is tool design and MCP integration.",
+      "ko": "Domain 2 는 툴 설계·MCP 연동입니다."
+    },
+    {
+      "en": "ShopAssist has tools like get_customer, lookup_order, check_policy, process_refund, and escalate_to_human,",
+      "ko": "ShopAssist 에는 `get_customer`, `lookup_order`, `check_policy`, `process_refund`, `escalate_to_human` 같은 툴이 있고,"
+    },
+    {
+      "en": "with clear boundaries and structured errors.",
+      "ko": "==명확한 경계와 구조화된 오류== 를 갖습니다."
+    },
+    {
+      "en": "Domain 3 is Claude Code configuration and workflows.",
+      "ko": "Domain 3 은 Claude Code 설정·워크플로입니다."
+    },
+    {
+      "en": "The project uses CLAUDE.md, slash commands, skills, plan mode,",
+      "ko": "프로젝트는 `CLAUDE.md`, 슬래시 명령, skills, plan mode,"
+    },
+    {
+      "en": "direct execution, session management, and CI review.",
+      "ko": "직접 실행, 세션 관리, CI 리뷰를 씁니다."
+    },
+    {
+      "en": "Domain 4 is prompt engineering and structured output.",
+      "ko": "Domain 4 는 프롬프트 엔지니어링·구조화 출력입니다."
+    },
+    {
+      "en": "ShopAssist uses explicit criteria, few-shot examples,",
+      "ko": "ShopAssist 는 명시적 기준, few-shot 예시,"
+    },
+    {
+      "en": "JSON schemas, validation, retry loops, and structured findings.",
+      "ko": "JSON schema, 검증, retry 루프, 구조화된 findings 를 씁니다."
+    },
+    {
+      "en": "Domain 5 is context management and reliability.",
+      "ko": "Domain 5 는 컨텍스트 관리·신뢰성입니다."
+    },
+    {
+      "en": "ShopAssist preserves context, escalates safely, propagates errors, tracks provenance,",
+      "ko": "ShopAssist 는 context 를 보존하고, 안전하게 에스컬레이션하고, 오류를 전파하고, 출처를 추적하고,"
+    },
+    {
+      "en": "handles uncertainty, and routes risky cases to human review.",
+      "ko": "불확실성을 다루고, 위험한 케이스를 사람 검토로 보냅니다."
+    },
+    {
+      "en": "For the exam, remember the weights.",
+      "ko": "시험을 위해 ==비중== 을 기억하세요."
+    },
+    {
+      "en": "Domain 1 is the largest.",
+      "ko": "==Domain 1 이 가장 큽니다.=="
+    },
+    {
+      "en": "Domains 3 and 4 are also heavily represented.",
+      "ko": "==Domain 3 과 4 도 비중이 큽니다.=="
+    },
+    {
+      "en": "Domain 2 focuses on tools and MCP.",
+      "ko": "Domain 2 는 툴과 MCP 에 집중되고,"
+    },
+    {
+      "en": "Domain 5 has a smaller percentage, but it appears inside many scenario questions",
+      "ko": "==Domain 5 는 퍼센트는 작지만 많은 시나리오 문제 안에 등장== 합니다."
+    },
+    {
+      "en": "because reliability affects the whole architecture.",
+      "ko": "신뢰성이 아키텍처 전체에 영향을 주기 때문입니다."
+    },
+    {
+      "en": "Let's finish with one exam style scenario.",
+      "ko": "시험형 시나리오 하나로 마무리합시다."
+    },
+    {
+      "en": "A customer says, I need a refund.",
+      "ko": "고객이 말합니다 — \"환불이 필요해요."
+    },
+    {
+      "en": "Your site said this was eligible, but now your bot says it is not.",
+      "ko": "사이트에서는 대상이라고 했는데 지금 봇은 아니라고 하네요."
+    },
+    {
+      "en": "I want a human if this cannot be fixed.",
+      "ko": "이게 해결 안 되면 사람과 얘기하고 싶어요.\""
+    },
+    {
+      "en": "The order exists.",
+      "ko": "주문은 존재합니다."
+    },
+    {
+      "en": "The main policy says refunds are allowed within 30 days.",
+      "ko": "주 정책은 30일 내 환불 허용이라고 하고,"
+    },
+    {
+      "en": "The customer is at day 42.",
+      "ko": "고객은 ==42일째== 입니다."
+    },
+    {
+      "en": "A newer internal memo says damaged item exceptions may be reviewed up to 45 days,",
+      "ko": "더 새로운 내부 메모는 파손 상품 예외를 45일까지 검토할 수 있다고 하는데,"
+    },
+    {
+      "en": "but only by a human specialist.",
+      "ko": "==사람 담당자만== 그럴 수 있습니다."
+    },
+    {
+      "en": "What is the best behavior?",
+      "ko": "가장 좋은 행동은?"
+    },
+    {
+      "en": "Option A, deny the refund because the main policy says 30 days.",
+      "ko": "A: 주 정책이 30일이라 환불을 거절한다."
+    },
+    {
+      "en": "Option B, approve the refund because the newer memo says 45 days.",
+      "ko": "B: 새 메모가 45일이라 환불을 승인한다."
+    },
+    {
+      "en": "Option C, explain the conflict, preserve both sources,",
+      "ko": "C: 충돌을 설명하고, 두 출처를 보존하고,"
+    },
+    {
+      "en": "summarize the case, and escalate to a human specialist.",
+      "ko": "케이스를 요약해 사람 담당자에게 에스컬레이션한다."
+    },
+    {
+      "en": "Option D, ask the model for its confidence score and proceed if confidence is above 80%.",
+      "ko": "D: 모델에게 확신도 점수를 물어 80% 넘으면 진행한다."
+    },
+    {
+      "en": "The correct answer is C.",
+      "ko": "정답은 ==C== 입니다."
+    },
+    {
+      "en": "Option A ignores the newer source.",
+      "ko": "A 는 ==새 출처를 무시== 합니다."
+    },
+    {
+      "en": "Option B applies an exception without authority.",
+      "ko": "B 는 ==권한 없이 예외를 적용== 합니다."
+    },
+    {
+      "en": "Option D relies on self-reported confidence, which is not enough for business risk.",
+      "ko": "D 는 ==스스로 보고한 확신도에 의존== 하는데, 업무 위험에는 그것으로 충분하지 않습니다."
+    },
+    {
+      "en": "Option C preserves provenance, handles uncertainty, and escalates with useful context.",
+      "ko": "C 는 ==출처를 보존하고, 불확실성을 다루고, 유용한 context 와 함께 에스컬레이션== 합니다."
+    },
+    {
+      "en": "This is the mindset the exam rewards.",
+      "ko": "이것이 ==시험이 보상하는 사고방식== 입니다."
+    },
+    {
+      "en": "The final takeaway is simple.",
+      "ko": "마지막 교훈은 단순합니다."
+    },
+    {
+      "en": "A reliable Claude system is not just a strong prompt.",
+      "ko": "믿을 만한 Claude 시스템은 강한 프롬프트만이 아닙니다."
+    },
+    {
+      "en": "It is an architecture that knows when to act, when to ask, when to stop, and when to escalate.",
+      "ko": "==언제 행동하고, 언제 묻고, 언제 멈추고, 언제 넘길지 아는 아키텍처== 입니다."
+    },
+    {
+      "en": "That is what we build with ShopAssist,",
+      "ko": "그것이 ShopAssist 로 만든 것이고,"
+    },
+    {
+      "en": "and that is the mindset to bring into the certification exam.",
+      "ko": "그것이 시험장에 가져갈 사고방식입니다."
+    }
+  ],
+  "body": "### Escalation: sentiment is not a trigger\n- ==A reliable system does not escalate only because the customer sounds angry.== ==Sentiment is useful context, but it is not a reliable signal of case complexity.== // 감정은 복잡도의 신호가 아니다.\n- ==A frustrated customer may have a simple return request; a calm customer may have a policy exception, identity ambiguity, or financial risk.== // 화난 사람이 쉬운 건, 차분한 사람이 어려운 건일 수 있다.\n- **Explicit escalation triggers**: ==the customer explicitly asks for a human== · ==policy is missing, ambiguous, or does not cover the request== · ==the agent cannot make meaningful progress== · ==backend results are ambiguous (multiple customer matches) → escalate or ask for clarification==. // 네 방아쇠.\n- \"I want to speak to a real person\" → ==honor it immediately==; summarize the case for the specialist, but ==do not force the customer through more automated investigation first==. // 즉시 존중, 더 캐묻지 않는다.\n- \"I'm frustrated, my package arrived damaged\" → ==not automatic escalation==: acknowledge, verify the order, check policy, and ==resolve it if within scope==. // 감정 표현만으로는 넘기지 않는다.\n\n### Ambiguity: never guess\n- `get_customer` returns two matching customers → ==do not guess==; ==ask for another identifier such as email address or order number==. // 다른 식별자를 요청.\n- ==Common exam pattern: when identity, permissions, or financial actions are involved, do not use heuristics — clarify, verify, or escalate.== // 신원·권한·돈에는 어림짐작 금지.\n\n### Error propagation\n- ==In a multi-agent system, failures should not disappear.== A good error gives the coordinator ==enough context to recover== so it can ==retry, ask the customer for missing information, continue with partial results, or escalate==. // 실패가 사라지면 안 된다.\n- ((Local recovery first, coordinator propagation second.)) A sub-agent ==retries transient failures locally==; if it cannot recover it ==propagates a structured error with what was attempted and what partial results exist==. // 먼저 로컬, 그다음 전파.\n- **Access failure vs valid empty result**: a ==valid empty result== means ==the query succeeded but no matching record was found==; an ==access failure== means ==the system could not reach the data source==. ==Those require different decisions.== // 빈 결과와 접근 실패는 다른 결정.\n\n### Provenance\n- ==A reliable system must preserve where important claims came from== — the final answer keeps ==claim-to-source mappings==. // 주장 ↔ 출처 매핑.\n- Why: ==summarization can remove attribution==. If a research sub-agent ==compresses five sources into one summary but drops the sources==, the synthesis agent ==can no longer verify the claims== — ==that is a reliability failure==. // 요약이 출처를 지우면 검증 불가.\n- **Conflicting values**: ==do not randomly choose one==. Policy says 30 days, a newer memo allows damaged-item review up to 45 days → ==preserve both sources==, ==include publication or collection dates==, and ==escalate if the decision affects money or policy==. // 둘 다 보존 + 날짜 + 에스컬레이션.\n- ==Temporal context matters: a 2024 policy and a 2026 memo may not be a contradiction — the newer source may supersede the older one.== // 새것이 옛것을 대체하는 것일 수 있다.\n\n### Render by content type\n| Content | Best form |\n|---|---|\n| financial comparisons | ==tables== |\n| policy reasoning | ==structured bullets== |\n| customer replies | ==clear prose== |\n| technical review findings | ==file paths, severity, suggested fixes== |\n\n### ShopAssist mapped to the five exam domains\n- **D1 Agentic architecture & orchestration** — ==agentic loop, tool calls, handoffs, sub-agents where useful, deterministic enforcement for critical steps like customer verification before refunds==. // 루프·툴·handoff·subagent·결정론적 강제.\n- **D2 Tool design & MCP integration** — ==get_customer, lookup_order, check_policy, process_refund, escalate_to_human with clear boundaries and structured errors==. // 툴 다섯 + 경계 + 구조화 오류.\n- **D3 Claude Code configuration & workflows** — ==CLAUDE.md, slash commands, skills, plan mode, direct execution, session management, CI review==. // 일곱 요소.\n- **D4 Prompt engineering & structured output** — ==explicit criteria, few-shot examples, JSON schemas, validation, retry loops, structured findings==. // 여섯 요소.\n- **D5 Context management & reliability** — ==preserve context, escalate safely, propagate errors, track provenance, handle uncertainty, route risky cases to human review==. // 여섯 요소.\n- Weights: ==D1 is the largest==; ==D3 and D4 are also heavily represented==; ==D2 focuses on tools and MCP==; ==D5 has a smaller percentage but appears inside many scenario questions because reliability affects the whole architecture==. // D5 는 비중은 작아도 시나리오마다 섞여 나온다.\n\n### The closing scenario (정답 C)\n- Case: order exists, ==main policy 30 days==, customer at ==day 42==, a ==newer memo allows damaged-item review up to 45 days but only by a human specialist==, and the customer ==asked for a human if it cannot be fixed==. // 42일 · 30일 정책 · 45일 메모(사람만) · 사람 요구.\n- ==C: explain the conflict, preserve both sources, summarize the case, and escalate to a human specialist.== // 충돌 설명 + 출처 보존 + 요약 + 에스컬레이션.\n- ==A ignores the newer source. B applies an exception without authority. D relies on self-reported confidence, which is not enough for business risk.== // 세 오답의 실패 지점.\n- ==A reliable Claude system is not just a strong prompt. It is an architecture that knows when to act, when to ask, when to stop, and when to escalate.== // 마지막 문장.",
+  "keyPoints": [
+    "Never escalate on sentiment alone: a frustrated customer may have a simple case and a calm one may carry policy, identity, or financial risk. Escalate on explicit triggers — a request for a human, missing or ambiguous policy, no meaningful progress, or ambiguous backend results. // 감정이 아니라 명시적 방아쇠로 에스컬레이션.",
+    "When the customer explicitly asks for a human, honor it immediately and summarize the case; do not push them through more automated investigation first. // 사람을 요구하면 즉시 존중.",
+    "Two matching customers means ask for another identifier (email, order number). When identity, permissions, or financial actions are involved, never use heuristics — clarify, verify, or escalate. // 신원·권한·돈에는 어림짐작 금지.",
+    "Local recovery first, coordinator propagation second: a subagent retries transient failures itself, then propagates a structured error stating what was attempted and what partial results exist. // 먼저 로컬 재시도, 그다음 구조화된 전파.",
+    "Distinguish a valid empty result (query succeeded, no record found) from an access failure (could not reach the data source) — they require different decisions. // 빈 결과와 접근 실패는 다른 결정.",
+    "Preserve provenance with claim-to-source mappings, because summarization drops attribution and then claims cannot be verified; on conflicting values keep both sources with dates and escalate if money or policy is affected, remembering a newer source may supersede an older one. // 출처 보존, 충돌은 둘 다 + 날짜 + 에스컬레이션.",
+    "Match the form to the content: tables for financial comparisons, structured bullets for policy reasoning, clear prose for customer replies, and file path plus severity plus suggested fix for technical findings. // 내용 종류에 맞는 형식.",
+    "Domain weights: D1 is largest, D3 and D4 are heavily represented, D2 covers tools and MCP, and D5 is smaller by percentage but woven through scenario questions. // D1 최대, D3·D4 큼, D5 는 시나리오에 섞여 나온다.",
+    "A reliable Claude system is an architecture that knows when to act, when to ask, when to stop, and when to escalate — not one strong prompt. // 행동·질문·중단·에스컬레이션 시점을 아는 아키텍처."
+  ],
+  "examTrends": {
+    "how": "This is the synthesis lecture, so its content is the exam's default answer shape. The most repeated item is the escalation trigger question: an angry message alone is not a trigger, while an explicit request for a human, unclear policy, stalled progress, or ambiguous backend results are. A second recurring shape gives conflicting sources with different dates and asks what to do, answered by preserving both with dates and escalating when money or policy is at stake — never picking one silently and never treating a newer memo as automatic authority. A third asks how a subagent should report a failure, answered by local retry then a structured error with attempts and partial results, and separately by distinguishing an empty result from an access failure. Watch for the self-reported confidence distractor: a confidence score above a threshold is never sufficient for business risk. // 종합 강의라 이 내용이 시험의 기본 정답 모양이다. 가장 반복되는 문항은 에스컬레이션 방아쇠다 — 화난 메시지만으로는 방아쇠가 아니고, 명시적인 사람 요구·불명확한 정책·진전 없음·모호한 백엔드 결과가 방아쇠다. 두 번째로 반복되는 형태는 날짜가 다른 충돌 출처를 주고 무엇을 할지 묻는데, 답은 둘 다 날짜와 함께 보존하고 돈·정책이 걸리면 에스컬레이션하는 것이며, 조용히 하나를 고르거나 새 메모를 자동 권한으로 취급하지 않는다. 세 번째는 subagent 가 실패를 어떻게 보고해야 하는지 묻고, 답은 로컬 재시도 후 시도 내용과 부분 결과를 담은 구조화된 오류이며, 빈 결과와 접근 실패의 구분도 따로 나온다. 자기 보고 확신도 함정을 주의하라 — 확신도 몇 퍼센트 이상이면 진행한다는 보기는 업무 위험 앞에서 절대 충분하지 않다.",
+    "answerLooks": [
+      "\"Escalate because the customer explicitly asked for a human, and summarize the case for the specialist\" // 명시적 요구는 즉시 존중.",
+      "\"Acknowledge the frustration, verify the order, check the policy, and resolve it if it is within scope\" // 감정만으로는 넘기지 않는다.",
+      "\"Ask for another identifier such as email or order number instead of guessing which customer matched\" // 모호하면 식별자 요청.",
+      "\"Preserve both sources with their dates, explain the conflict, and escalate because the decision affects money\" // 충돌은 보존 + 에스컬레이션.",
+      "\"Retry the transient failure locally, then propagate a structured error stating what was attempted and what partial results exist\" // 로컬 먼저, 그다음 전파.",
+      "\"Report no matching record as a valid empty result, distinct from an access failure that could not reach the data source\" // 빈 결과 ≠ 접근 실패.",
+      "\"Keep claim-to-source mappings in the final answer so the synthesis step can verify each claim\" // 출처 매핑 유지.",
+      "\"Present the financial comparison as a table and the customer reply as clear prose\" // 내용에 맞는 형식."
+    ],
+    "traps": [
+      "\"Escalate immediately because the customer's message is angry\": sentiment is not a reliable signal of complexity. // 감정은 방아쇠가 아니다.",
+      "\"Run one more verification round before honoring the request for a human\": an explicit request must be honored immediately. // 사람 요구 후 더 캐묻지 않는다.",
+      "\"Choose the account that was created most recently when two customers match\": that is a heuristic on identity, which is forbidden. // 신원 문제에 어림짐작 금지.",
+      "\"Approve the day-42 refund because the newer memo allows 45 days\": the memo grants review by a human specialist, not agent authority. // 새 메모는 권한 부여가 아니다.",
+      "\"Deny the refund because the main policy says 30 days\": that ignores the newer source. // 새 출처를 무시하는 것도 오답.",
+      "\"Proceed when the model reports over 80% confidence\": self-reported confidence is not enough for business risk. // 자기 확신도는 근거가 아니다.",
+      "\"Have the subagent summarize the five sources into one clean paragraph\": summarization drops attribution and claims become unverifiable. // 출처를 지우는 요약은 신뢰성 실패.",
+      "\"Return a generic failure when the record simply does not exist\": an empty result is a success, not an access failure. // 없음을 오류로 만들면 안 된다."
+    ],
+    "memorize": "Sentiment is context, not a trigger; explicit human requests, unclear policy, stalled progress, and ambiguous results are triggers; never guess on identity, permissions, or money; retry locally then propagate a structured error, keeping empty results separate from access failures; keep claim-to-source mappings with dates and escalate conflicts that touch money or policy; and remember reliability is an architecture that knows when to act, ask, stop, and escalate. // 감정은 context 이고 방아쇠가 아니다 — 명시적 사람 요구·불명확한 정책·진전 없음·모호한 결과가 방아쇠다. 신원·권한·돈에는 추측 금지, 로컬 재시도 후 구조화된 오류를 전파하며 빈 결과와 접근 실패를 구분하고, 주장↔출처 매핑을 날짜와 함께 유지하고 돈·정책이 걸린 충돌은 에스컬레이션한다. 신뢰성은 언제 행동·질문·중단·에스컬레이션할지 아는 아키텍처다."
+  },
+  "createdAt": "2026-09-10T21:00:00Z"
+}

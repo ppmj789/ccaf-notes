@@ -184,5 +184,22 @@
     "answerShape": "실행 직전 hook/게이트가 선행 조건 검사 + 구조화된 오류로 거부 + 모델의 조사 순서 자유 유지.",
     "distractorShape": "프롬프트 문구 강화, tool_choice 로 다른 툴 봉쇄와 '가정', 고정 스크립트 교체, 모델의 판단에 맡기기.",
     "memorize": "항상 지켜야 하면 코드로. hook 이 이력을 보고 막고, 구조화된 오류로 다음 안전한 단계를 알려 준다."
+  },
+  {
+    "id": "conflict-escalation",
+    "name": "정책 충돌·권한 부족 시 에스컬레이션",
+    "domain": "신뢰성",
+    "official": "D5",
+    "formula": "출처가 충돌하거나 권한이 없으면 고르지 않는다. 충돌 설명 + 양쪽 출처와 날짜 보존 + 케이스 요약 + 사람 에스컬레이션. 돈·정책·신원이 걸리면 항상 에스컬레이션, 검토 권한(review)과 승인 권한(approve)을 구분한다.",
+    "clueWords": [
+      "I want a human",
+      "newer internal memo",
+      "only by a human specialist",
+      "main policy says ... but",
+      "refund"
+    ],
+    "answerShape": "충돌 설명 + 두 출처 보존(날짜 포함) + 요약 + 사람 담당자 에스컬레이션.",
+    "distractorShape": "옛 정책만 적용해 거절, 새 문서를 권한으로 착각해 승인, confidence 임계값으로 진행, 감정만으로 판단.",
+    "memorize": "충돌은 고르지 말고 둘 다 남겨 사람에게. 검토 가능 ≠ 승인 가능. confidence 점수는 권한이 아니다."
   }
 ]
