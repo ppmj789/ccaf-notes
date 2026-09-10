@@ -167,5 +167,22 @@
     "answerShape": "격리된 Task 경계를 인정 + 구조화된 근거 계약 요구 + 명시적 전달.",
     "distractorShape": "암묵적 공유 메모장, 나중에 요약에서 근거 재구성, 끝난 에이전트의 내부 툴 기록 읽기, 산문 요약 유지.",
     "memorize": "근거는 자료를 본 그 자리에서 구조화해 받는다. 산문으로 받으면 복원 불가, 남는 것은 반환값뿐."
+  },
+  {
+    "id": "code-enforced-gate",
+    "name": "규칙 강제 위치 선택(프롬프트 vs 코드)",
+    "domain": "멀티에이전트",
+    "official": "D1",
+    "formula": "모델이 규칙을 '간혹' 어기는 시나리오면 답은 실행 지점의 코드다. hook·선행 조건 게이트가 툴 호출 이력·금액·권한을 검사하고 없으면 구조화된 오류(isError)로 거부한다. 모델의 툴 선택 자유는 그대로 남긴다.",
+    "clueWords": [
+      "occasionally calls",
+      "even when ... has not yet verified",
+      "must never be called",
+      "while preserving ... dynamically",
+      "which implementation pattern"
+    ],
+    "answerShape": "실행 직전 hook/게이트가 선행 조건 검사 + 구조화된 오류로 거부 + 모델의 조사 순서 자유 유지.",
+    "distractorShape": "프롬프트 문구 강화, tool_choice 로 다른 툴 봉쇄와 '가정', 고정 스크립트 교체, 모델의 판단에 맡기기.",
+    "memorize": "항상 지켜야 하면 코드로. hook 이 이력을 보고 막고, 구조화된 오류로 다음 안전한 단계를 알려 준다."
   }
 ]

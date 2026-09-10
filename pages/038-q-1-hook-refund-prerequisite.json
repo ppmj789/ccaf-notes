@@ -1,0 +1,83 @@
+{
+  "id": "q-038-1",
+  "kind": "question",
+  "order": 38.1,
+  "section": "Multi-Agent Systems",
+  "lecture": "38",
+  "title_en": "Stopping an unverified refund without killing dynamic decomposition",
+  "title": "동적 분해는 살리고 확인 없는 환불만 막기",
+  "domain": "멀티에이전트",
+  "question_en": "A support agent named ResolveBot can ==dynamically investigate== returns, billing disputes, and missing-order complaints. In testing, it ==occasionally calls process_refund immediately== after an angry customer writes, \"I want my money back,\" even when the agent has ==not yet verified the customer or looked up the order==. Which implementation pattern best ==prevents this unsafe refund action== while ==preserving the agent's ability to decompose ambiguous cases dynamically==?",
+  "question_ko": "ResolveBot 이라는 고객지원 에이전트가 반품·청구 분쟁·주문 미도착 불만을 ==동적으로 조사==할 수 있다. 테스트에서 화난 고객이 \"내 돈 돌려줘요\" 라고 쓰면 ==아직 고객 확인도 주문 조회도 하지 않은 상태에서== ==곧바로 `process_refund` 를 호출==하는 경우가 간혹 있다. ==애매한 케이스를 동적으로 분해하는 능력은 유지하면서== 이 ==안전하지 않은 환불 행동을 막는== 가장 좋은 구현 패턴은?",
+  "options": [
+    {
+      "key": "A",
+      "en": "Set ==tool_choice so process_refund is the only available tool== after the customer asks for a refund, and ==assume the model will only reach that turn== after get_customer and lookup_order have run.",
+      "ko": "고객이 환불을 요구한 뒤에는 ==`tool_choice` 로 `process_refund` 만 쓸 수 있게== 설정하고, `get_customer` 와 `lookup_order` 가 이미 돌았을 때만 그 턴에 도달할 것이라고 ==가정한다==."
+    },
+    {
+      "key": "B",
+      "en": "Add ==stronger system prompt text== stating that process_refund ==must never be called== until get_customer and lookup_order have completed successfully for the customer's request.",
+      "ko": "고객 요청에 대해 `get_customer` 와 `lookup_order` 가 성공적으로 끝나기 전에는 `process_refund` 를 ==절대 호출하면 안 된다==는 ==더 강한 시스템 프롬프트 문구==를 추가한다."
+    },
+    {
+      "key": "C",
+      "en": "==Replace the adaptive support agent with a fixed script== that always runs get_customer, lookup_order, process_refund, and escalate_to_human ==in that exact order for every== refund-related conversation.",
+      "ko": "==적응형 에이전트를 고정 스크립트로 교체==해서, 환불 관련 대화마다 ==항상 그 순서대로== `get_customer` → `lookup_order` → `process_refund` → `escalate_to_human` 을 돌린다."
+    },
+    {
+      "key": "D",
+      "en": "Add an ==Agent SDK hook around process_refund== that ==checks the tool-call history for successful get_customer and lookup_order results for the same case==, and returns a ==structured isError response when those prerequisites are missing==.",
+      "ko": "==`process_refund` 주변에 Agent SDK hook== 을 추가해서, ==같은 케이스에 대한 `get_customer`·`lookup_order` 성공 결과가 툴 호출 이력에 있는지 확인==하고, ==선행 조건이 없으면 구조화된 isError 응답을 반환==한다."
+    }
+  ],
+  "answer": "D",
+  "explanation": "지문이 조건을 ==둘== 걸었다. 이 둘을 동시에 만족하는 보기만 남는다.\n\n| 조건 | 뜻 |\n|---|---|\n| ==prevents this unsafe refund action== | 확인 전 환불 ==실행== 을 반드시 막아야 함 |\n| ==preserving ... decompose ambiguous cases dynamically== | 어떤 툴을 어떤 순서로 부를지는 ==에이전트가 계속 정해야 함== |\n\n정답 D 는 ==실행 지점만== 막는다. hook 이 `process_refund` 앞에서 ==툴 호출 이력==을 보고 같은 케이스의 `get_customer`·`lookup_order` 성공 결과가 있는지 확인한 뒤, 없으면 ==구조화된 isError== 를 돌려준다. 그러면\n- 에이전트는 여전히 조사 순서를 자유롭게 정한다 → 동적 분해 유지\n- 확인 없는 환불은 ==코드가== 거부한다 → 규칙은 결정론적으로 강제\n- 게다가 `isError` 는 40강의 ==구조화된 오류가 복구를 안내한다== 와 같다. 에이전트는 \"확인부터 해야 한다\" 를 배워 다음 단계로 간다.\n\n38강의 문장 그대로다 — ==규칙이 항상 강제돼야 한다면 그것은 코드에 있어야 한다==, ==프롬프트는 행동을 안내하고 코드는 규칙을 강제한다==. 그리고 \"모델은 툴을 동적으로 고를 수 있지만 무엇이 허용되는지는 애플리케이션이 통제한다\".",
+  "traps": [
+    {
+      "key": "A",
+      "why": "==assume the model will only reach that turn== 이 결정적 결함이다. 가정은 강제가 아니다. 더 나쁘게, `process_refund` 만 쓸 수 있게 만들면 확인·조회 툴을 부를 길을 막아 버려서 에이전트가 ==확인을 하고 싶어도 못 한다==. tool_choice 는 \"반드시 툴을 쓰게\" 하는 장치이고 선행 조건 검사기가 아니다."
+    },
+    {
+      "key": "B",
+      "why": "지문의 현상 자체가 프롬프트로는 안 된다는 증거다(이미 그렇게 시켰는데도 간혹 어긴다). \"never\" 를 더 세게 써도 확률을 낮출 뿐 보장하지 못한다. ==항상 지켜져야 하는 규칙은 프롬프트가 아니라 코드로.== 시험에서 프롬프트 강화 보기는 거의 항상 오답."
+    },
+    {
+      "key": "C",
+      "why": "안전은 얻지만 지문이 지키라고 한 것을 버린다. 고정 스크립트는 ==동적 분해 능력을 없애고==, 환불 대화마다 무조건 `process_refund` 와 `escalate_to_human` 을 돌리는 순서라 환불이 부당한 케이스에도 실행 단계를 통과시킨다. \"동적 분해는 유지\" 조건 위반."
+    }
+  ],
+  "keyPoints": [
+    "규칙 강제는 실행 지점에 코드로 둔다. hook 이 툴 호출 이력에서 선행 조건을 확인하고 없으면 구조화된 isError 로 거부한다.",
+    "프롬프트를 더 강하게 쓰는 보기는 오답. 지문이 \"간혹 어긴다\" 고 했으면 이미 프롬프트로는 실패한 것이다.",
+    "tool_choice 는 툴 사용을 강제하는 장치이고 선행 조건 검사기가 아니다. \"모델이 그 턴에만 도달할 것이라 가정\" 은 강제가 아니다.",
+    "고정 스크립트로 바꾸면 안전해지지만 동적 분해를 버린다. 지문이 유지하라고 한 능력을 없애는 보기는 오답.",
+    "차단은 끝이 아니다. 구조화된 오류로 다음 안전한 단계(확인 먼저)를 알려 줘야 에이전트가 복구한다."
+  ],
+  "pattern": {
+    "type": "규칙 강제 위치 선택(프롬프트 vs 코드)",
+    "asks": "항상 지켜져야 하는 규칙을 어디에 두어 강제할지, 그러면서 모델의 유연성은 어떻게 남길지.",
+    "clues": [
+      {
+        "text": "occasionally calls process_refund immediately",
+        "means": "간혹 어김 = 프롬프트로는 보장 불가"
+      },
+      {
+        "text": "not yet verified ... looked up",
+        "means": "선행 조건 게이트가 필요"
+      },
+      {
+        "text": "preserving ... decompose dynamically",
+        "means": "고정 스크립트·툴 봉쇄는 탈락"
+      },
+      {
+        "text": "which implementation pattern",
+        "means": "프롬프트 문구가 아니라 구현(hook·게이트)을 묻는 것"
+      }
+    ],
+    "answerShape": "실행 직전 hook·게이트가 툴 호출 이력으로 선행 조건을 검사하고, 없으면 구조화된 오류로 거부. 나머지 선택권은 모델에 남긴다.",
+    "distractorShape": "프롬프트 문구 강화, tool_choice 로 다른 툴 봉쇄 + \"가정\", 고정 스크립트로 교체(유연성 제거)."
+  },
+  "patternId": "code-enforced-gate",
+  "createdAt": "2026-09-10T18:00:00Z"
+}
