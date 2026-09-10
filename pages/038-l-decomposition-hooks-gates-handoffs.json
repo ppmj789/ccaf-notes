@@ -1,0 +1,371 @@
+{
+  "id": "l-038",
+  "kind": "lesson",
+  "order": 38,
+  "section": "Multi-Agent Systems",
+  "lecture": "38",
+  "title_en": "Task Decomposition, Hooks, Gates, and Handoffs",
+  "title": "작업 분해, hook, 게이트, 그리고 handoff",
+  "domain": "멀티에이전트",
+  "summary": "Shape the work to the task: a fixed sequential pipeline (prompt chaining) when the steps are known and each depends on the previous one, dynamic decomposition that maps the situation before investigating when the request is open-ended, and local passes plus an integration pass for large reviews. Prompts only guide, so anything that must always hold goes in code as prerequisite gates, backend thresholds, and hooks that normalize tool results, block unsafe or policy-violating calls, and redirect to human escalation, with structured handoffs carrying the facts the next reviewer needs. // 일의 모양에 맞춰 설계한다. 단계를 알고 서로 의존하면 고정 순차 파이프라인(prompt chaining), 요청이 열려 있으면 먼저 상황을 파악한 뒤 조사하는 동적 분해, 큰 리뷰는 local pass 와 integration pass 로 나눈다. 프롬프트는 안내만 하므로 항상 지켜져야 하는 것은 코드로 — 선행 조건 게이트, 백엔드 한도, 그리고 툴 결과를 정규화하고 위험·정책 위반 호출을 막고 사람 에스컬레이션으로 돌리는 hook — 그리고 handoff 는 다음 검토자가 필요한 사실을 담는다.",
+  "paragraphs": [
+    {
+      "en": "In the previous lesson, we looked at coordinator and sub-agent architecture.",
+      "ko": "앞 강의에서 coordinator 와 sub-agent 아키텍처를 봤습니다."
+    },
+    {
+      "en": "Now, let's go one level deeper.",
+      "ko": "이제 한 단계 더 깊이 들어갑니다."
+    },
+    {
+      "en": "How do we design the work itself?",
+      "ko": "일 자체는 어떻게 설계할까요?"
+    },
+    {
+      "en": "In agentic systems, not every task should be handled the same way.",
+      "ko": "에이전트 시스템에서 모든 작업을 같은 방식으로 처리해야 하는 것은 아닙니다."
+    },
+    {
+      "en": "Sometimes we know the exact steps in advance.",
+      "ko": "어떤 때는 정확한 단계를 미리 알고 있습니다."
+    },
+    {
+      "en": "Sometimes we only know the goal.",
+      "ko": "어떤 때는 목표만 알고 있습니다."
+    },
+    {
+      "en": "And Claude needs to investigate dynamically.",
+      "ko": "그러면 Claude 가 동적으로 조사해야 합니다."
+    },
+    {
+      "en": "That is the difference between a fixed workflow and adaptive decomposition.",
+      "ko": "그것이 고정 워크플로와 적응적 분해(adaptive decomposition)의 차이입니다."
+    },
+    {
+      "en": "For ShopAssist, a predictable refund workflow might look like this.",
+      "ko": "ShopAssist 에서 예측 가능한 환불 워크플로는 이런 모양일 수 있습니다."
+    },
+    {
+      "en": "This is a fixed sequential pipeline.",
+      "ko": "이것은 고정된 순차 파이프라인입니다."
+    },
+    {
+      "en": "Each step depends on the previous step.",
+      "ko": "각 단계가 앞 단계에 의존합니다."
+    },
+    {
+      "en": "This is a good design when the business process is known.",
+      "ko": "업무 프로세스가 이미 알려져 있을 때 좋은 설계입니다."
+    },
+    {
+      "en": "Verify the customer, check the order, check the policy, then decide.",
+      "ko": "고객 확인 → 주문 확인 → 정책 확인 → 판단."
+    },
+    {
+      "en": "This is also called prompt chaining, when each step uses Claude",
+      "ko": "각 단계가 Claude 를 쓰고"
+    },
+    {
+      "en": "and passes its output to the next step.",
+      "ko": "그 출력을 다음 단계로 넘길 때, 이것을 prompt chaining 이라고도 부릅니다."
+    },
+    {
+      "en": "For example, in this case.",
+      "ko": "예를 들어 이런 경우입니다."
+    },
+    {
+      "en": "Chaining keeps each call focused.",
+      "ko": "체이닝은 각 호출을 한 가지에 집중하게 유지합니다."
+    },
+    {
+      "en": "Claude does not need to classify, extract, validate, decide,",
+      "ko": "Claude 가 분류·추출·검증·판단을,"
+    },
+    {
+      "en": "and write the final answer all inside one massive prompt.",
+      "ko": "그리고 최종 답변 작성까지 하나의 거대한 프롬프트 안에서 다 할 필요가 없습니다."
+    },
+    {
+      "en": "But not every task is predictable.",
+      "ko": "하지만 모든 작업이 예측 가능한 것은 아닙니다."
+    },
+    {
+      "en": "If a customer says, something is wrong with my account.",
+      "ko": "고객이 이렇게 말한다면 — \"제 계정에 뭔가 문제가 있어요."
+    },
+    {
+      "en": "I was charged, but I don't see my order, and support told me something different yesterday.",
+      "ko": "결제는 됐는데 주문이 안 보이고, 어제 상담원은 다른 얘기를 했어요.\""
+    },
+    {
+      "en": "We may not know the exact path yet.",
+      "ko": "아직 정확한 경로를 모를 수 있습니다."
+    },
+    {
+      "en": "That is where dynamic decomposition is useful.",
+      "ko": "그런 곳에서 동적 분해(dynamic decomposition)가 유용합니다."
+    },
+    {
+      "en": "The coordinator can first map the situation, then decide what to investigate.",
+      "ko": "coordinator 가 먼저 상황을 파악(map)하고, 그다음 무엇을 조사할지 결정할 수 있습니다."
+    },
+    {
+      "en": "This pattern is especially important in unfamiliar code bases or large review tasks.",
+      "ko": "이 패턴은 낯선 코드베이스나 큰 리뷰 작업에서 특히 중요합니다."
+    },
+    {
+      "en": "Before acting, the agent should map the structure.",
+      "ko": "행동하기 전에 에이전트는 구조를 파악해야 합니다."
+    },
+    {
+      "en": "For example, in a code base review, do not immediately edit files.",
+      "ko": "예를 들어 코드베이스 리뷰에서 파일을 곧바로 수정하지 마세요."
+    },
+    {
+      "en": "First, identify the relevant modules, entry points, dependencies, and risk areas.",
+      "ko": "먼저 관련 모듈, 진입점, 의존성, 위험 영역을 파악합니다."
+    },
+    {
+      "en": "In ShopAssist, the same idea applies to business workflows.",
+      "ko": "ShopAssist 에서도 같은 생각이 업무 워크플로에 적용됩니다."
+    },
+    {
+      "en": "First map the issue, then act.",
+      "ko": "먼저 문제를 파악하고, 그다음 행동합니다."
+    },
+    {
+      "en": "For large reviews, we can also split the work into local and integration passes.",
+      "ko": "큰 리뷰에서는 일을 local pass 와 integration pass 로 나눌 수도 있습니다."
+    },
+    {
+      "en": "Local passes focus on one area.",
+      "ko": "local pass 는 한 영역에 집중합니다."
+    },
+    {
+      "en": "The integration pass checks how the findings fit together.",
+      "ko": "integration pass 는 그 결과들이 어떻게 맞물리는지 확인합니다."
+    },
+    {
+      "en": "This is more reliable than asking one prompt to inspect everything at once.",
+      "ko": "하나의 프롬프트에 전부 한꺼번에 검사하라고 하는 것보다 더 믿을 만합니다."
+    },
+    {
+      "en": "Now let's talk about enforcement.",
+      "ko": "이제 강제(enforcement) 이야기를 해 봅시다."
+    },
+    {
+      "en": "Prompts are useful for guidance,",
+      "ko": "프롬프트는 안내(guidance)에는 유용하지만,"
+    },
+    {
+      "en": "but prompts are not enough when deterministic compliance is required.",
+      "ko": "결정론적 준수(deterministic compliance)가 요구될 때는 프롬프트로 부족합니다."
+    },
+    {
+      "en": "For example, we can tell Claude, never process a refund unless the customer has been verified.",
+      "ko": "예를 들어 Claude 에게 \"고객이 확인되지 않으면 절대 환불을 처리하지 마라\" 라고 말할 수 있습니다."
+    },
+    {
+      "en": "That instruction is important.",
+      "ko": "그 지시는 중요합니다."
+    },
+    {
+      "en": "But for a production support system, it is not enough.",
+      "ko": "하지만 프로덕션 고객지원 시스템에서는 그것으로 충분하지 않습니다."
+    },
+    {
+      "en": "If the rule must always be enforced, it belongs in code.",
+      "ko": "규칙이 항상 강제돼야 한다면, 그것은 코드에 있어야 합니다."
+    },
+    {
+      "en": "This is where prerequisite gates come in.",
+      "ko": "여기서 prerequisite gate(선행 조건 게이트)가 등장합니다."
+    },
+    {
+      "en": "Here, process_refund cannot run unless get_customer confirms the customer.",
+      "ko": "여기서 `process_refund` 는 `get_customer` 가 고객을 확인하지 않으면 실행될 수 없습니다."
+    },
+    {
+      "en": "This is not just a prompt instruction, it is a programmatic gate.",
+      "ko": "이것은 단순한 프롬프트 지시가 아니라 프로그램적 게이트입니다."
+    },
+    {
+      "en": "The same idea applies to refund thresholds.",
+      "ko": "환불 한도에도 같은 생각이 적용됩니다."
+    },
+    {
+      "en": "If ShopAssist policy says refunds above $100 require human approval,",
+      "ko": "ShopAssist 정책이 100달러 넘는 환불에 사람 승인을 요구한다면,"
+    },
+    {
+      "en": "then the backend must block automatic refund processing above that threshold.",
+      "ko": "백엔드가 그 한도를 넘는 자동 환불 처리를 막아야 합니다."
+    },
+    {
+      "en": "Claude can recommend escalation, but the application must enforce it.",
+      "ko": "Claude 는 에스컬레이션을 권할 수 있지만, 강제하는 것은 애플리케이션이어야 합니다."
+    },
+    {
+      "en": "In agentic systems, we can enforce these rules with hooks.",
+      "ko": "에이전트 시스템에서는 이런 규칙을 hooks 로 강제할 수 있습니다."
+    },
+    {
+      "en": "Hooks let us intercept or normalize agent behavior around tool calls.",
+      "ko": "hook 은 툴 호출 주변에서 에이전트 동작을 가로채거나 정규화하게 해 줍니다."
+    },
+    {
+      "en": "A common example is a post-tool-use hook.",
+      "ko": "흔한 예가 post-tool-use hook 입니다."
+    },
+    {
+      "en": "After a tool runs, the hook can normalize the result before Claude sees it.",
+      "ko": "툴이 실행된 뒤, Claude 가 결과를 보기 전에 hook 이 결과를 정규화할 수 있습니다."
+    },
+    {
+      "en": "This keeps tool results consistent.",
+      "ko": "이것이 툴 결과를 일관되게 유지합니다."
+    },
+    {
+      "en": "Instead of letting every downstream prompt deal with messy formats,",
+      "ko": "뒤따르는 프롬프트마다 지저분한 형식을 처리하게 두는 대신,"
+    },
+    {
+      "en": "the hook standardizes the output once.",
+      "ko": "hook 이 출력을 한 번에 표준화합니다."
+    },
+    {
+      "en": "Hooks can also intercept tool calls before execution.",
+      "ko": "hook 은 실행 전에 툴 호출을 가로챌 수도 있습니다."
+    },
+    {
+      "en": "For example, before process_refund runs, we can check whether the action violates policy.",
+      "ko": "예를 들어 `process_refund` 가 실행되기 전에 그 행동이 정책을 위반하는지 확인할 수 있습니다."
+    },
+    {
+      "en": "This gives us deterministic enforcement.",
+      "ko": "이것이 결정론적 강제를 줍니다."
+    },
+    {
+      "en": "The model may choose tools dynamically, but the application still controls what is allowed.",
+      "ko": "모델은 툴을 동적으로 고를 수 있지만, 무엇이 허용되는지는 여전히 애플리케이션이 통제합니다."
+    },
+    {
+      "en": "If the requested action is unsafe or policy violating, the hook blocks it.",
+      "ko": "요청된 행동이 안전하지 않거나 정책을 위반하면 hook 이 그것을 막습니다."
+    },
+    {
+      "en": "If the case needs judgment, the hook redirects to human escalation.",
+      "ko": "케이스에 판단이 필요하면 hook 이 사람 에스컬레이션으로 돌립니다."
+    },
+    {
+      "en": "Now, let's connect this to handoffs.",
+      "ko": "이제 이것을 handoff(인계)와 연결해 봅시다."
+    },
+    {
+      "en": "A handoff is not just send this to another agent or send this to a human.",
+      "ko": "handoff 는 단순히 \"이거 다른 에이전트에게 보내\" 나 \"이거 사람에게 보내\" 가 아닙니다."
+    },
+    {
+      "en": "A good handoff has a structured protocol.",
+      "ko": "좋은 handoff 에는 구조화된 프로토콜이 있습니다."
+    },
+    {
+      "en": "For ShopAssist, a refund escalation should include the facts needed by the next reviewer.",
+      "ko": "ShopAssist 에서 환불 에스컬레이션은 다음 검토자가 필요한 사실을 담아야 합니다."
+    },
+    {
+      "en": "This is much better than a vague escalation like,",
+      "ko": "이것이 이런 모호한 에스컬레이션보다 훨씬 낫습니다 —"
+    },
+    {
+      "en": "please review this refund.",
+      "ko": "\"이 환불 좀 검토해 주세요.\""
+    },
+    {
+      "en": "The human reviewer, another agent, or another workflow",
+      "ko": "사람 검토자든, 다른 에이전트든, 다른 워크플로든"
+    },
+    {
+      "en": "should receive enough context to continue without reconstructing the entire conversation.",
+      "ko": "전체 대화를 다시 재구성하지 않고도 이어서 할 만큼의 context 를 받아야 합니다."
+    },
+    {
+      "en": "For the exam, remember the design rule.",
+      "ko": "시험을 위해 설계 규칙을 기억하세요."
+    },
+    {
+      "en": "Use fixed sequential pipelines when the steps are known.",
+      "ko": "단계가 알려져 있으면 고정 순차 파이프라인."
+    },
+    {
+      "en": "Use dynamic decomposition when the task is open-ended or investigative.",
+      "ko": "작업이 열려 있거나 조사형이면 동적 분해."
+    },
+    {
+      "en": "Use local and integration passes for large reviews.",
+      "ko": "큰 리뷰에는 local pass 와 integration pass."
+    },
+    {
+      "en": "Use prompts for guidance, but use programmatic gates when compliance must be guaranteed.",
+      "ko": "안내에는 프롬프트, 준수가 보장돼야 하면 프로그램적 게이트."
+    },
+    {
+      "en": "Use hooks to normalize tool results, intercept tool calls,",
+      "ko": "hook 으로 툴 결과를 정규화하고, 툴 호출을 가로채고,"
+    },
+    {
+      "en": "block unsafe actions, and redirect to escalation.",
+      "ko": "안전하지 않은 행동을 막고, 에스컬레이션으로 돌립니다."
+    },
+    {
+      "en": "And use structured handoff protocols,",
+      "ko": "그리고 구조화된 handoff 프로토콜을 써서,"
+    },
+    {
+      "en": "so work can move safely between agents, tools, and humans.",
+      "ko": "일이 에이전트·툴·사람 사이를 안전하게 오갈 수 있게 합니다."
+    },
+    {
+      "en": "In ShopAssist, this means Claude can be flexible in how it investigates a customer problem.",
+      "ko": "ShopAssist 에서 이것은 Claude 가 고객 문제를 조사하는 방식에서는 유연할 수 있다는 뜻입니다."
+    },
+    {
+      "en": "But customer verification, refund limits, policy enforcement, and escalation rules are controlled by the application.",
+      "ko": "하지만 고객 확인·환불 한도·정책 강제·에스컬레이션 규칙은 애플리케이션이 통제합니다."
+    }
+  ],
+  "body": "### Fixed pipeline vs dynamic decomposition\n- Not every task should be handled the same way: sometimes we ==know the exact steps in advance==, sometimes we ==only know the goal== and Claude must investigate dynamically. // 단계를 아는 경우와 목표만 아는 경우.\n- **Fixed sequential pipeline**: ((verify the customer → check the order → check the policy → decide)). ==Each step depends on the previous step==, and it is a good design ==when the business process is known==. // 앞 단계에 의존, 프로세스가 알려졌을 때.\n- **Dynamic decomposition**: for a message like ==something is wrong with my account, I was charged but I don't see my order, and support told me something different yesterday==, we do not know the path yet, so the coordinator ==first maps the situation, then decides what to investigate==. // 경로를 모르면 먼저 파악하고 나서 조사.\n- One line: ==known steps → fixed pipeline; open-ended or investigative → dynamic decomposition==. // 알면 고정, 모르면 동적.\n\n### Prompt chaining\n- **Prompt chaining** = each step ==uses Claude and passes its output to the next step==. // 단계마다 Claude, 출력은 다음 단계로.\n- Benefit: chaining ==keeps each call focused==. // 호출 하나가 한 가지에 집중.\n- Claude does __not__ need to ==classify, extract, validate, decide, and write the final answer all inside one massive prompt==. // 거대한 프롬프트 하나에 전부 몰지 않는다.\n\n### Map before you act\n- Before acting, the agent should ==map the structure==. Especially important in ==unfamiliar code bases or large review tasks==. // 낯선 코드베이스·큰 리뷰에서 특히.\n- Code base review: ==do not immediately edit files==. First identify the relevant ==modules, entry points, dependencies, and risk areas==. // 바로 고치지 말고 구조부터.\n- ShopAssist: the same idea for business workflows — ==first map the issue, then act==. // 먼저 파악, 그다음 행동.\n\n### Local and integration passes\n- For large reviews, split the work into ==local passes== and an ==integration pass==. // 큰 리뷰는 두 겹으로.\n- ==Local pass focuses on one area==; the ==integration pass checks how the findings fit together==. // 한 영역씩 → 맞물림 확인.\n- This is ==more reliable than asking one prompt to inspect everything at once==. // 한꺼번에 전부보다 믿을 만하다.\n\n### Prompts guide, code enforces\n- ==Prompts are useful for guidance, but not enough when deterministic compliance is required.== // 안내는 프롬프트, 결정론적 준수는 아니다.\n- Telling Claude ==never process a refund unless the customer has been verified== is important but ==not enough for a production system==. // 중요하지만 프로덕션에는 부족.\n- Rule: ==if the rule must always be enforced, it belongs in code==. // 항상 강제돼야 하면 코드로.\n- **Prerequisite gate**: `process_refund` ==cannot run unless `get_customer` confirms the customer==. Not a prompt instruction, a ==programmatic gate==. // 선행 조건을 코드가 막는다.\n- **Threshold**: if refunds above ==$100 require human approval==, the ==backend must block== automatic processing above that threshold. ==Claude can recommend escalation, but the application must enforce it.== // 권하는 건 Claude, 막는 건 앱.\n\n### Hooks\n- **Hooks** let us ==intercept or normalize agent behavior around tool calls==. // 툴 호출 주변을 가로채거나 정규화.\n- **post-tool-use hook**: after a tool runs, the hook ==normalizes the result before Claude sees it==, keeping tool results consistent — the hook ==standardizes the output once== instead of every downstream prompt handling messy formats. // 실행 후 정규화, 한 번에 표준화.\n- **Pre-execution intercept**: before `process_refund` runs, check whether the action ==violates policy==. This gives ==deterministic enforcement==. // 실행 전 정책 검사.\n- The division of power: ==the model may choose tools dynamically, but the application still controls what is allowed==. // 선택은 모델, 허용은 앱.\n- Hook outcomes: ==unsafe or policy-violating → block==; ==needs judgment → redirect to human escalation==. // 위험하면 차단, 판단 필요하면 사람에게.\n\n### Structured handoffs\n- A handoff is ==not just send this to another agent or send this to a human==; a good handoff has a ==structured protocol==. // 그냥 넘기는 게 아니라 프로토콜이 있다.\n- A refund escalation should ==include the facts needed by the next reviewer==, unlike a vague ==please review this refund==. // 다음 검토자가 필요한 사실을 담는다.\n- The next handler — ==human reviewer, another agent, or another workflow== — should receive ==enough context to continue without reconstructing the entire conversation==. // 대화를 재구성하지 않고 이어갈 수 있게.\n\n### Exam design rule\n- ==Known steps → fixed sequential pipeline.== ==Open-ended or investigative → dynamic decomposition.== ==Large reviews → local + integration passes.== // 세 갈래 선택.\n- ==Prompts for guidance, programmatic gates when compliance must be guaranteed.== // 안내 vs 보장.\n- ==Hooks: normalize tool results, intercept tool calls, block unsafe actions, redirect to escalation.== // hook 네 가지 용도.\n- ==Structured handoff protocols so work moves safely between agents, tools, and humans.== // 안전한 이동.\n- ShopAssist summary: Claude is ==flexible in how it investigates==, but ==customer verification, refund limits, policy enforcement, and escalation rules are controlled by the application==. // 조사 방식은 유연, 규칙은 앱이 통제.",
+  "keyPoints": [
+    "Fixed sequential pipeline when the steps are known and each depends on the previous one (verify customer → order → policy → decide); dynamic decomposition when the request is open-ended, where the coordinator maps the situation first, then decides what to investigate. // 알면 고정 파이프라인, 모르면 먼저 파악하고 조사.",
+    "Prompt chaining = each step uses Claude and passes its output to the next, which keeps every call focused instead of classifying, extracting, validating, deciding, and writing in one massive prompt. // 체이닝은 호출마다 한 가지에 집중하게 한다.",
+    "Map before acting: in an unfamiliar code base identify modules, entry points, dependencies, and risk areas before editing files; large reviews use local passes per area plus an integration pass that checks how findings fit together. // 구조 파악 먼저, 큰 리뷰는 local + integration.",
+    "Prompts are guidance only. If a rule must always hold it belongs in code: a prerequisite gate stops process_refund unless get_customer confirmed the customer, and the backend blocks automatic refunds above the $100 approval threshold. // 항상 지켜야 할 규칙은 코드로, 게이트와 한도는 백엔드가 막는다.",
+    "Hooks intercept or normalize behavior around tool calls: a post-tool-use hook standardizes results once before Claude sees them, and a pre-execution hook blocks unsafe or policy-violating actions or redirects to human escalation. // hook 은 결과 정규화와 실행 전 차단·에스컬레이션 전환.",
+    "The model chooses tools dynamically, but the application controls what is allowed, and a handoff must carry a structured protocol with the facts the next reviewer needs to continue without reconstructing the conversation. // 선택은 모델·허용은 앱, handoff 는 필요한 사실을 담은 프로토콜로."
+  ],
+  "examTrends": {
+    "how": "This lecture ends with an explicit design rule, so most questions are a matching test: a scenario describes the shape of the work and you pick fixed pipeline, dynamic decomposition, or local plus integration passes. The heaviest exam theme is prompt versus code: a system prompt that says never refund without verification keeps getting violated, and the answer is always a programmatic gate, a backend threshold check, or a hook, never a stronger instruction. A third shape describes messy tool output or an unsafe tool call and asks where to put the fix, the answer being a post-tool-use or pre-execution hook, and a fourth gives a vague escalation and asks what a good handoff includes. // 강의가 설계 규칙으로 끝나므로 대부분은 짝짓기 문제다. 일의 모양을 주고 고정 파이프라인·동적 분해·local+integration 중에 고르게 한다. 가장 비중이 큰 주제는 프롬프트 대 코드다. \"확인 없이 환불 금지\" 라는 시스템 프롬프트가 계속 어겨지는 상황이 나오면 답은 언제나 프로그램적 게이트·백엔드 한도 검사·hook 이고 더 강한 지시가 아니다. 세 번째 유형은 지저분한 툴 출력이나 위험한 툴 호출을 주고 어디서 고칠지 묻는데 답은 post-tool-use 또는 실행 전 hook 이며, 네 번째는 모호한 에스컬레이션을 주고 좋은 handoff 가 무엇을 담아야 하는지 묻는다.",
+    "answerLooks": [
+      "\"Enforce it with a prerequisite gate so process_refund cannot run unless get_customer has confirmed the customer\" // 선행 조건을 코드가 강제.",
+      "\"Block refunds above the $100 threshold in the backend and let Claude recommend escalation\" // 한도는 백엔드가 막고 Claude 는 권한다.",
+      "\"Use a post-tool-use hook to normalize the result once before Claude sees it\" // 결과를 한 번에 표준화.",
+      "\"Intercept the tool call before execution and block it if it violates policy, or redirect to human escalation\" // 실행 전 차단 또는 에스컬레이션.",
+      "\"Use a fixed sequential pipeline because the steps are known and each depends on the previous result\" // 단계가 알려져 있으니 고정.",
+      "\"Let the coordinator map the situation first, then decide what to investigate\" // 열린 문제는 먼저 파악.",
+      "\"Run local passes per area and then an integration pass to check how the findings fit together\" // 큰 리뷰는 두 겹.",
+      "\"Send a structured escalation containing the customer, order, amount, policy checked, and what was already verified\" // 필요한 사실을 담은 handoff."
+    ],
+    "traps": [
+      "\"Strengthen the system prompt with ALWAYS verify the customer first in capital letters\": prompts are guidance, and deterministic compliance belongs in code. // 프롬프트 강화로는 보장되지 않는다.",
+      "\"Trust the model to escalate refunds above $100 because it was told the policy\": the application must enforce the threshold, not the model. // 한도 강제는 모델이 아니라 앱의 일.",
+      "\"Have every downstream prompt handle whatever format the tool returns\": that is exactly what a post-tool-use hook removes by standardizing the output once. // 프롬프트마다 형식 처리하는 게 hook 이 없애려는 것.",
+      "\"Use dynamic decomposition for the standard refund workflow so the agent can adapt\": the steps are already known, so a fixed pipeline is the right shape. // 알려진 프로세스에 동적 분해는 과하다.",
+      "\"Start editing the files immediately and let the agent discover the structure as it goes\": map modules, entry points, dependencies, and risk areas first. // 파악 없이 수정부터 하면 안 된다.",
+      "\"Ask one prompt to review the entire code base at once so nothing is missed\": local passes plus an integration pass are more reliable. // 한 번에 전부 검사는 덜 믿을 만하다.",
+      "\"Escalate with please review this refund so the reviewer can look it up themselves\": the next reviewer should not have to reconstruct the conversation. // 검토자가 대화를 재구성하게 만들면 안 된다.",
+      "\"Remove the model's tool choice so it cannot request unsafe actions\": the model may still choose dynamically; the application controls what is allowed. // 선택권을 없애는 게 아니라 허용을 통제한다."
+    ],
+    "memorize": "Known steps go in a fixed pipeline, open-ended work maps first then decomposes, big reviews get local plus integration passes; prompts only guide, so gates, thresholds, and hooks in code enforce; hooks normalize results, block unsafe calls, and redirect to escalation; handoffs carry the facts the next reviewer needs. // 아는 단계는 고정 파이프라인, 열린 일은 파악 후 분해, 큰 리뷰는 local+integration, 프롬프트는 안내일 뿐이라 게이트·한도·hook 이 코드로 강제하고, hook 은 정규화·차단·에스컬레이션 전환을 하고, handoff 는 다음 검토자가 필요한 사실을 담는다."
+  },
+  "createdAt": "2026-09-10T15:50:00Z"
+}

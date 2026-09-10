@@ -64,6 +64,10 @@
         {
           "no": "37",
           "title": "Coordinator, Subagents, Task Tool, and Explicit Context Passing"
+        },
+        {
+          "no": "38",
+          "title": "Task Decomposition, Hooks, Gates, and Handoffs"
         }
       ]
     }
