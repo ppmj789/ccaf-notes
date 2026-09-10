@@ -1,0 +1,439 @@
+{
+  "id": "l-045",
+  "kind": "lesson",
+  "order": 45,
+  "section": "Claude Code",
+  "lecture": "45",
+  "title_en": "CI/CD Explained for Non-Developers",
+  "title": "비개발자를 위한 CI/CD",
+  "domain": "Claude Code",
+  "summary": "CI integrates changes into the shared codebase frequently and checks them automatically so problems are caught before they join the main version, Continuous Delivery keeps approved changes prepared and ready while a person decides when to release, and Continuous Deployment releases automatically once all required checks pass; a pipeline is an event-triggered automated sequence of build, test, review, and deploy stages whose checks either block the workflow on failure or merely report information, with blocking power decided by the check's reliability and the risk of ignoring it. Claude Code can join such pipelines as an automated reviewer — fast checks inside the blocking flow, slower deep analysis as a non-blocking overnight report — and because pipelines need predictable structure rather than prose, it should return machine-readable output such as file, issue type, severity, description, and recommended action. // CI 는 변경을 공유 코드베이스에 자주 통합하고 자동으로 확인해 주 버전에 들어가기 전에 문제를 잡고, Continuous Delivery 는 승인된 변경을 배포 가능한 상태로 준비해 두고 배포 시점은 사람이 정하며, Continuous Deployment 는 필수 검사가 모두 통과하면 자동으로 배포한다. pipeline 은 이벤트로 시작되는 자동 단계 연속(build·test·review·deploy)이고 그 검사는 실패 시 워크플로를 막는 차단형이거나 정보만 주는 비차단형인데, 차단 권한은 검사의 신뢰도와 무시했을 때의 위험으로 정한다. Claude Code 는 이런 pipeline 에 자동 리뷰어로 참여할 수 있고 — 빠른 검사는 차단 흐름 안에, 느린 심층 분석은 비차단 야간 보고서로 — pipeline 은 산문이 아니라 예측 가능한 구조가 필요하므로 file·issue type·severity·description·recommended action 같은 machine-readable output 을 반환해야 한다.",
+  "paragraphs": [
+    {
+      "en": "CI/CD is a common way development teams automate how software is checked, prepared, and released.",
+      "ko": "CI/CD 는 개발 팀이 소프트웨어를 ==확인하고, 준비하고, 배포하는== 과정을 자동화하는 흔한 방식입니다."
+    },
+    {
+      "en": "CI stands for Continuous Integration.",
+      "ko": "CI 는 Continuous Integration(지속적 통합)입니다."
+    },
+    {
+      "en": "CD usually refers to Continuous Delivery or Continuous Deployment.",
+      "ko": "CD 는 보통 Continuous Delivery(지속적 배달) 또는 Continuous Deployment(지속적 배포)를 뜻합니다."
+    },
+    {
+      "en": "Let's start with Continuous Integration.",
+      "ko": "Continuous Integration 부터 시작합시다."
+    },
+    {
+      "en": "Imagine several developers are working on the same project.",
+      "ko": "여러 개발자가 같은 프로젝트에서 일한다고 해 봅시다."
+    },
+    {
+      "en": "Each person may be changing different files.",
+      "ko": "각자 다른 파일을 바꾸고 있을 수 있습니다."
+    },
+    {
+      "en": "Those changes eventually need to come together.",
+      "ko": "그 변경들은 결국 합쳐져야 합니다."
+    },
+    {
+      "en": "Continuous Integration means that changes are integrated into the shared codebase frequently and automatically checked.",
+      "ko": "Continuous Integration 은 변경을 ==공유 코드베이스에 자주 통합하고 자동으로 확인== 하는 것입니다."
+    },
+    {
+      "en": "For example, when a developer opens a pull request, the system may automatically run tests.",
+      "ko": "예를 들어 개발자가 pull request 를 열면 시스템이 자동으로 테스트를 돌릴 수 있습니다."
+    },
+    {
+      "en": "It may check whether the application still builds correctly.",
+      "ko": "애플리케이션이 여전히 제대로 빌드되는지 확인할 수 있고,"
+    },
+    {
+      "en": "It may run security checks.",
+      "ko": "보안 검사를 돌릴 수 있고,"
+    },
+    {
+      "en": "It may inspect code quality.",
+      "ko": "코드 품질을 살펴볼 수 있습니다."
+    },
+    {
+      "en": "The goal is to catch problems early, before the changes become part of the main version of the project.",
+      "ko": "목표는 ==변경이 프로젝트 주 버전의 일부가 되기 전에 문제를 일찍 잡는== 것입니다."
+    },
+    {
+      "en": "Now, let's look at Continuous Delivery.",
+      "ko": "이제 Continuous Delivery 를 봅시다."
+    },
+    {
+      "en": "Continuous Delivery means the software is kept in a state where it can be released safely.",
+      "ko": "Continuous Delivery 는 소프트웨어를 ==안전하게 배포할 수 있는 상태로 유지== 하는 것입니다."
+    },
+    {
+      "en": "After changes pass the required checks, the system can prepare them for deployment.",
+      "ko": "변경이 필수 검사를 통과하면 시스템이 배포 준비를 할 수 있습니다."
+    },
+    {
+      "en": "A person may still decide when the final release happens.",
+      "ko": "==최종 배포 시점은 여전히 사람이 결정== 할 수 있습니다."
+    },
+    {
+      "en": "Continuous Deployment goes one step further.",
+      "ko": "Continuous Deployment 는 한 걸음 더 나갑니다."
+    },
+    {
+      "en": "If all required checks pass, the system can automatically deploy the change without waiting for manual approval.",
+      "ko": "필수 검사가 모두 통과하면 시스템이 ==수동 승인을 기다리지 않고 자동으로 배포== 할 수 있습니다."
+    },
+    {
+      "en": "So, the basic difference is simple.",
+      "ko": "그래서 기본적인 차이는 단순합니다."
+    },
+    {
+      "en": "Continuous Integration checks and combines changes.",
+      "ko": "==Continuous Integration 은 변경을 확인하고 합칩니다.=="
+    },
+    {
+      "en": "Continuous Delivery prepares approved changes so they are ready to release.",
+      "ko": "==Continuous Delivery 는 승인된 변경을 배포 가능한 상태로 준비합니다.=="
+    },
+    {
+      "en": "Continuous Deployment can automatically release them.",
+      "ko": "==Continuous Deployment 는 그것을 자동으로 배포할 수 있습니다.=="
+    },
+    {
+      "en": "Now, let's talk about pipelines.",
+      "ko": "이제 파이프라인(pipeline) 이야기를 해 봅시다."
+    },
+    {
+      "en": "A pipeline is an automated sequence of steps.",
+      "ko": "pipeline 은 ==자동화된 단계의 연속== 입니다."
+    },
+    {
+      "en": "You can think of it as a workflow that starts when something happens in the development process.",
+      "ko": "개발 과정에서 무슨 일이 일어나면 시작되는 워크플로라고 생각하면 됩니다."
+    },
+    {
+      "en": "For example, opening a pull request may start a pipeline.",
+      "ko": "예를 들어 pull request 를 여는 것이 pipeline 을 시작시킬 수 있습니다."
+    },
+    {
+      "en": "A simple pipeline could include build, test, review and deploy.",
+      "ko": "간단한 pipeline 은 ==build → test → review → deploy== 를 담을 수 있습니다."
+    },
+    {
+      "en": "The build stage checks whether the software can be prepared correctly.",
+      "ko": "build 단계는 소프트웨어가 제대로 준비될 수 있는지 확인하고,"
+    },
+    {
+      "en": "The test stage runs automated tests.",
+      "ko": "test 단계는 자동 테스트를 돌리고,"
+    },
+    {
+      "en": "The review stage may run additional quality or security checks.",
+      "ko": "review 단계는 추가 품질·보안 검사를 돌릴 수 있고,"
+    },
+    {
+      "en": "And the deployment stage releases the application to an environment.",
+      "ko": "deploy 단계는 애플리케이션을 환경에 배포합니다."
+    },
+    {
+      "en": "Not every pipeline contains all of these stages.",
+      "ko": "모든 pipeline 이 이 단계를 다 갖는 것은 아닙니다."
+    },
+    {
+      "en": "The exact workflow depends on the project.",
+      "ko": "정확한 워크플로는 프로젝트에 따라 다릅니다."
+    },
+    {
+      "en": "The important idea is that the steps happen automatically and in a predictable order.",
+      "ko": "중요한 생각은 단계가 ==자동으로, 예측 가능한 순서로== 일어난다는 것입니다."
+    },
+    {
+      "en": "This saves time and reduces the chance that someone forgets an important check.",
+      "ko": "시간을 절약하고 ==중요한 검사를 잊을 가능성을 줄여== 줍니다."
+    },
+    {
+      "en": "Now, let's look at what happens when a developer opens a pull request.",
+      "ko": "이제 개발자가 pull request 를 열면 무슨 일이 일어나는지 봅시다."
+    },
+    {
+      "en": "The pull request contains proposed changes.",
+      "ko": "pull request 는 제안된 변경을 담고 있습니다."
+    },
+    {
+      "en": "The CI/CD system can detect that event and start a pipeline.",
+      "ko": "CI/CD 시스템이 그 이벤트를 감지해 pipeline 을 시작할 수 있습니다."
+    },
+    {
+      "en": "It may first build the project, then run tests, then run code quality checks.",
+      "ko": "먼저 프로젝트를 빌드하고, 테스트를 돌리고, 코드 품질 검사를 돌릴 수 있습니다."
+    },
+    {
+      "en": "If everything passes, the pull request may be considered safe to merge.",
+      "ko": "모두 통과하면 pull request 는 병합해도 안전하다고 볼 수 있습니다."
+    },
+    {
+      "en": "If something fails, the developer can see the failure and fix the problem before the change is accepted.",
+      "ko": "무엇이 실패하면 개발자가 실패를 보고 변경이 받아들여지기 전에 문제를 고칠 수 있습니다."
+    },
+    {
+      "en": "Some checks are blocking.",
+      "ko": "어떤 검사는 ==blocking(차단형)== 입니다."
+    },
+    {
+      "en": "A blocking check means the workflow cannot continue if the check fails.",
+      "ko": "blocking 검사는 ==그 검사가 실패하면 워크플로가 계속될 수 없다== 는 뜻입니다."
+    },
+    {
+      "en": "For example, a company may require all automated tests to pass before a pull request can be merged.",
+      "ko": "예를 들어 회사가 pull request 병합 전에 모든 자동 테스트 통과를 요구할 수 있습니다."
+    },
+    {
+      "en": "If one required test fails, the merge is blocked.",
+      "ko": "필수 테스트 하나가 실패하면 병합이 막힙니다."
+    },
+    {
+      "en": "Other checks may be non-blocking.",
+      "ko": "다른 검사는 ==non-blocking(비차단형)== 일 수 있습니다."
+    },
+    {
+      "en": "A non-blocking check provides information but does not stop the workflow.",
+      "ko": "non-blocking 검사는 ==정보를 주지만 워크플로를 멈추지 않습니다.=="
+    },
+    {
+      "en": "For example, an automated review may report several possible improvements.",
+      "ko": "예를 들어 자동 리뷰가 개선 가능성 몇 개를 보고할 수 있습니다."
+    },
+    {
+      "en": "The team can read those findings, but the pull request may still be allowed to continue.",
+      "ko": "팀은 그 결과를 읽을 수 있지만 pull request 는 계속 진행될 수 있습니다."
+    },
+    {
+      "en": "This distinction is important.",
+      "ko": "이 구분이 중요합니다."
+    },
+    {
+      "en": "Not every automated check should have the power to block a release.",
+      "ko": "==모든 자동 검사가 배포를 막는 권한을 가져야 하는 것은 아닙니다.=="
+    },
+    {
+      "en": "The decision depends on how reliable the check is and how serious the risk would be if the issue were ignored.",
+      "ko": "판단은 ==그 검사가 얼마나 믿을 만한지==, 그리고 ==그 문제를 무시하면 위험이 얼마나 심각한지== 에 달려 있습니다."
+    },
+    {
+      "en": "Now, let's connect this to Claude Code.",
+      "ko": "이제 이것을 Claude Code 와 연결해 봅시다."
+    },
+    {
+      "en": "Claude Code can participate in automated development workflows.",
+      "ko": "Claude Code 는 자동화된 개발 워크플로에 참여할 수 있습니다."
+    },
+    {
+      "en": "For example, a pipeline may ask Claude Code to review the files changed in a pull request.",
+      "ko": "예를 들어 pipeline 이 Claude Code 에게 pull request 에서 바뀐 파일을 리뷰하라고 할 수 있습니다."
+    },
+    {
+      "en": "Claude Code may inspect those changes.",
+      "ko": "Claude Code 는 그 변경을 살펴보고,"
+    },
+    {
+      "en": "It may identify potential bugs.",
+      "ko": "잠재적 버그를 찾아내고,"
+    },
+    {
+      "en": "It may find missing validation.",
+      "ko": "빠진 검증을 찾고,"
+    },
+    {
+      "en": "It may check whether the change follows project instructions.",
+      "ko": "변경이 프로젝트 지시를 따르는지 확인하고,"
+    },
+    {
+      "en": "And it may return findings that another system can process.",
+      "ko": "==다른 시스템이 처리할 수 있는 findings== 를 반환할 수 있습니다."
+    },
+    {
+      "en": "Claude Code can also be used for tasks that happen outside the blocking pull request flow.",
+      "ko": "Claude Code 는 ==차단형 pull request 흐름 밖== 의 작업에도 쓸 수 있습니다."
+    },
+    {
+      "en": "For example, a team may run a larger review overnight.",
+      "ko": "예를 들어 팀이 밤새 더 큰 리뷰를 돌릴 수 있습니다."
+    },
+    {
+      "en": "That review may inspect more files or perform deeper analysis.",
+      "ko": "그 리뷰는 더 많은 파일을 보거나 더 깊은 분석을 할 수 있습니다."
+    },
+    {
+      "en": "Because it is not blocking a developer who is waiting for a pull request, it can take more time.",
+      "ko": "pull request 를 기다리는 개발자를 막고 있지 않으니 ==시간을 더 써도 됩니다.=="
+    },
+    {
+      "en": "This is an important architectural choice.",
+      "ko": "이것이 중요한 아키텍처 선택입니다."
+    },
+    {
+      "en": "A fast check may fit inside a blocking pipeline.",
+      "ko": "==빠른 검사는 차단형 pipeline 안에 들어갈 수 있고,=="
+    },
+    {
+      "en": "A slower or more expensive analysis may be better as a non-blocking report.",
+      "ko": "==더 느리거나 비싼 분석은 비차단형 보고서로 두는 게 낫습니다.=="
+    },
+    {
+      "en": "There is one more concept that becomes very important when AI is used inside automation.",
+      "ko": "자동화 안에서 AI 를 쓸 때 아주 중요해지는 개념이 하나 더 있습니다."
+    },
+    {
+      "en": "Machine-readable output.",
+      "ko": "==machine-readable output(기계가 읽을 수 있는 출력).=="
+    },
+    {
+      "en": "When a person uses Claude interactively, a normal text response may be enough.",
+      "ko": "사람이 Claude 를 대화형으로 쓸 때는 평범한 텍스트 응답으로 충분할 수 있습니다."
+    },
+    {
+      "en": "For example, I found two possible problems in this code.",
+      "ko": "예를 들어 \"이 코드에서 문제 가능성 두 개를 찾았습니다.\""
+    },
+    {
+      "en": "A human can read that.",
+      "ko": "사람은 그것을 읽을 수 있습니다."
+    },
+    {
+      "en": "But an automated pipeline needs predictable information.",
+      "ko": "하지만 자동화된 pipeline 은 ==예측 가능한 정보== 가 필요합니다."
+    },
+    {
+      "en": "The system may need to know.",
+      "ko": "시스템이 알아야 할 것들:"
+    },
+    {
+      "en": "Did the review pass or fail?",
+      "ko": "리뷰가 통과인가 실패인가?"
+    },
+    {
+      "en": "How many issues were found?",
+      "ko": "몇 개의 문제가 발견됐나?"
+    },
+    {
+      "en": "Which file contains the problem?",
+      "ko": "어느 파일에 문제가 있나?"
+    },
+    {
+      "en": "What is the severity?",
+      "ko": "심각도는 무엇인가?"
+    },
+    {
+      "en": "Should the pull request be blocked?",
+      "ko": "pull request 를 막아야 하나?"
+    },
+    {
+      "en": "If Claude returns only free-form text, another system has to interpret that text.",
+      "ko": "Claude 가 자유 형식 텍스트만 돌려주면 다른 시스템이 그 텍스트를 해석해야 합니다."
+    },
+    {
+      "en": "That can be unreliable.",
+      "ko": "그건 ==믿을 만하지 않을 수== 있습니다."
+    },
+    {
+      "en": "Instead, Claude can return structured information.",
+      "ko": "대신 Claude 는 ==구조화된 정보== 를 돌려줄 수 있습니다."
+    },
+    {
+      "en": "For example, file, issue type, severity, description, recommended action.",
+      "ko": "예를 들어 ==file, issue type, severity, description, recommended action== 처럼요."
+    },
+    {
+      "en": "Now the pipeline can process the result automatically.",
+      "ko": "그러면 pipeline 이 결과를 자동으로 처리할 수 있습니다."
+    },
+    {
+      "en": "It can post a comment, create a report, store the result, or decide whether another step should run.",
+      "ko": "코멘트를 달고, 보고서를 만들고, 결과를 저장하고, 다음 단계를 돌릴지 결정할 수 있습니다."
+    },
+    {
+      "en": "This is why machine-readable output is important in automated AI workflows.",
+      "ko": "그래서 자동화된 AI 워크플로에서 machine-readable output 이 중요합니다."
+    },
+    {
+      "en": "Humans can work with flexible language.",
+      "ko": "==사람은 유연한 언어로 일할 수 있지만,=="
+    },
+    {
+      "en": "Pipelines need predictable structure.",
+      "ko": "==pipeline 은 예측 가능한 구조가 필요합니다.=="
+    },
+    {
+      "en": "So the main ideas are simple.",
+      "ko": "핵심 생각은 단순합니다."
+    },
+    {
+      "en": "CI means automatically integrating and checking code changes.",
+      "ko": "CI 는 코드 변경을 자동으로 통합하고 확인하는 것."
+    },
+    {
+      "en": "CD means preparing or automatically releasing approved changes.",
+      "ko": "CD 는 승인된 변경을 준비하거나 자동으로 배포하는 것."
+    },
+    {
+      "en": "A pipeline is an automated sequence of steps.",
+      "ko": "pipeline 은 자동화된 단계의 연속."
+    },
+    {
+      "en": "Those steps may include build, test, review, and deployment.",
+      "ko": "그 단계에는 build·test·review·deploy 가 들어갈 수 있음."
+    },
+    {
+      "en": "Some checks can block the workflow.",
+      "ko": "어떤 검사는 워크플로를 막을 수 있고,"
+    },
+    {
+      "en": "Others only provide information.",
+      "ko": "다른 검사는 정보만 준다."
+    },
+    {
+      "en": "Claude Code can participate in these pipelines as an automated reviewer or analysis tool.",
+      "ko": "Claude Code 는 이 pipeline 에 ==자동 리뷰어나 분석 툴== 로 참여할 수 있고,"
+    },
+    {
+      "en": "And when AI is part of automation, structured machine-readable output makes the workflow much more reliable.",
+      "ko": "AI 가 자동화의 일부가 될 때 ==구조화된 machine-readable output== 이 워크플로를 훨씬 믿을 만하게 만듭니다."
+    }
+  ],
+  "body": "### CI, CD, CD — 세 용어 구분 (시험 1순위)\n| Term | What it does |\n|---|---|\n| **CI** — Continuous Integration | changes are ==integrated into the shared codebase frequently and automatically checked== — it ==checks and combines changes== |\n| **CD** — Continuous Delivery | the software is ==kept in a state where it can be released safely==; approved changes are ==prepared for deployment==, but ==a person may still decide when the final release happens== |\n| **CD** — Continuous Deployment | if ==all required checks pass==, the system ==automatically deploys without waiting for manual approval== |\n\n- The dividing line between the two CDs is ==who pulls the trigger==: Delivery keeps it ==ready== for a human decision, Deployment ==releases it automatically==. // 준비까지 vs 자동 배포까지.\n- CI's goal: ==catch problems early, before the changes become part of the main version==. Typical automatic checks on a pull request: ==run tests, check the build, run security checks, inspect code quality==. // 주 버전에 들어가기 전에 잡는다.\n\n### Pipeline\n- A **pipeline** = an ==automated sequence of steps==, a workflow that ==starts when something happens== in the development process (e.g. ==opening a pull request==). // 이벤트로 시작되는 자동 단계 연속.\n- Stages: ==build== (can the software be prepared correctly), ==test== (run automated tests), ==review== (additional quality or security checks), ==deploy== (release to an environment). // 네 단계.\n- ==Not every pipeline contains all of these stages== — the exact workflow ==depends on the project==. // 프로젝트마다 다르다.\n- The value: steps happen ==automatically and in a predictable order==, which ==saves time and reduces the chance that someone forgets an important check==. // 잊을 가능성을 줄인다.\n\n### On a pull request\n- The CI/CD system ==detects the event and starts a pipeline==: build → tests → code quality checks. // 이벤트 감지 후 순서대로.\n- All pass → the PR ==may be considered safe to merge==. Something fails → the developer ==sees the failure and fixes it before the change is accepted==. // 통과면 병합 가능, 실패면 먼저 고친다.\n\n### Blocking vs non-blocking\n- **Blocking check**: ==the workflow cannot continue if the check fails==. Example: all automated tests must pass before merge — ==one required test fails, the merge is blocked==. // 실패하면 진행 불가.\n- **Non-blocking check**: ==provides information but does not stop the workflow==. Example: an automated review reports possible improvements; the team ==reads the findings but the PR may still continue==. // 정보만 준다.\n- ==Not every automated check should have the power to block a release.== // 모든 검사가 차단 권한을 가질 필요는 없다.\n- The decision depends on ==how reliable the check is== and ==how serious the risk would be if the issue were ignored==. // 신뢰도 × 위험도.\n\n### Where Claude Code fits\n- Claude Code can ==participate in automated development workflows==: a pipeline may ask it to ==review the files changed in a pull request==. // 파이프라인이 리뷰를 시킨다.\n- It can ==identify potential bugs==, ==find missing validation==, ==check whether the change follows project instructions==, and ==return findings that another system can process==. // 네 가지 + 처리 가능한 결과 반환.\n- It can also run ==outside the blocking pull request flow== — e.g. a ==larger review overnight== inspecting ==more files or deeper analysis==, which ==can take more time because it is not blocking a waiting developer==. // 야간 대형 리뷰는 시간을 써도 된다.\n- ==The architectural choice: a fast check fits inside a blocking pipeline; a slower or more expensive analysis is better as a non-blocking report.== // 빠르면 차단형, 느리고 비싸면 비차단 보고서.\n\n### Machine-readable output\n- Interactive use: ==a normal text response may be enough== (\"I found two possible problems\") because ==a human can read that==. // 사람은 읽는다.\n- Automation: the pipeline needs ==predictable information== — ==pass or fail? how many issues? which file? what severity? should the PR be blocked?== // 다섯 가지를 알아야 한다.\n- ==Free-form text forces another system to interpret it, which can be unreliable.== So return ==structured information==: ==file, issue type, severity, description, recommended action==. // 자유 텍스트 해석은 불안정.\n- Then the pipeline can ==post a comment, create a report, store the result, or decide whether another step should run==. // 자동 처리가 가능해진다.\n- ((Humans can work with flexible language. Pipelines need predictable structure.)) // 사람은 유연, 파이프라인은 구조.",
+  "keyPoints": [
+    "CI integrates changes into the shared codebase frequently and checks them automatically, so problems are caught before the change joins the main version. // CI 는 자주 통합하고 자동 확인, 주 버전 전에 잡는다.",
+    "Continuous Delivery keeps approved changes prepared and ready to release with a human deciding when; Continuous Deployment releases automatically once all required checks pass. // Delivery 는 사람이 시점 결정, Deployment 는 자동 배포.",
+    "A pipeline is an automated, predictably ordered sequence started by an event such as opening a pull request, typically build, test, review, and deploy — not every pipeline has all stages. // 이벤트로 시작하는 자동 순서, 단계 구성은 프로젝트마다.",
+    "A blocking check stops the workflow when it fails (a required test failing blocks the merge); a non-blocking check only reports information and the PR may continue. // 차단형은 멈추고 비차단형은 알려만 준다.",
+    "Not every check deserves blocking power: decide by how reliable the check is and how serious the risk is if the issue is ignored. // 신뢰도와 위험도로 차단 권한을 정한다.",
+    "Claude Code can act as an automated reviewer in a pipeline (bugs, missing validation, project-instruction compliance) and also as a slower overnight deep review outside the blocking flow. // 파이프라인 리뷰어로, 또 차단 밖 야간 심층 리뷰로.",
+    "Fast checks belong in the blocking pipeline; slow or expensive analysis belongs in a non-blocking report — that is the architectural choice. // 빠른 것은 차단형, 느린 것은 비차단형.",
+    "Automation needs machine-readable output: return file, issue type, severity, description, and recommended action instead of free-form prose, so the pipeline can comment, report, store, or gate the next step. // 자유 텍스트 대신 구조화된 필드."
+  ],
+  "examTrends": {
+    "how": "Definition questions on the three terms, where the trap swaps Continuous Delivery and Continuous Deployment — the answer hinges on whether a human decides the release. A second shape gives a check (a slow AI review, a flaky scan, a required test suite) and asks whether it should block the merge, answered by reliability and the risk of ignoring the finding, plus the rule that fast checks fit blocking pipelines while slow or expensive analysis belongs in a non-blocking report. The third and most Claude-specific shape describes a pipeline that cannot act on Claude's review and asks what to change, where the answer is structured machine-readable output with file, issue type, severity, description, and recommended action rather than prose or a stricter prompt. // 세 용어의 정의 문제가 나오고, 함정은 Continuous Delivery 와 Deployment 를 맞바꾸는 것이다. 답은 배포 시점을 사람이 정하는지로 갈린다. 두 번째 형태는 어떤 검사(느린 AI 리뷰, 불안정한 스캔, 필수 테스트)를 주고 병합을 막아야 하는지 묻는데, 답은 검사의 신뢰도와 무시했을 때의 위험이며, 빠른 검사는 차단형·느리고 비싼 분석은 비차단 보고서라는 규칙이 함께 쓰인다. 세 번째이자 가장 Claude 다운 형태는 pipeline 이 Claude 의 리뷰 결과로 아무것도 못 하는 상황을 주고 무엇을 바꿀지 묻는데, 답은 산문이나 더 강한 프롬프트가 아니라 file·issue type·severity·description·recommended action 을 담은 구조화된 machine-readable output 이다.",
+    "answerLooks": [
+      "\"Continuous Delivery keeps changes ready to release while a person decides when; Continuous Deployment releases automatically after the checks pass\" // 두 CD 의 차이.",
+      "\"CI integrates changes frequently and checks them automatically before they reach the main version\" // CI 의 정의.",
+      "\"Make the required test suite a blocking check so a failure prevents the merge\" // 신뢰도 높고 위험 큰 검사는 차단형.",
+      "\"Run the deeper AI review as a non-blocking report because it is slower and no developer is waiting on it\" // 느린 분석은 비차단.",
+      "\"Have Claude Code return file, issue type, severity, description, and recommended action so the pipeline can process it\" // 구조화된 필드 반환.",
+      "\"The pipeline can then post a comment, create a report, store the result, or gate the next step\" // 자동 처리 가능.",
+      "\"Decide blocking power from how reliable the check is and how serious the ignored risk would be\" // 신뢰도 × 위험도."
+    ],
+    "traps": [
+      "\"Continuous Deployment means a human approves each release\": that is Continuous Delivery. // 두 CD 를 맞바꾼 보기.",
+      "\"CI means deploying to production continuously\": CI checks and combines changes; releasing is CD. // CI 를 배포로 오해.",
+      "\"Every automated check should block the merge so nothing slips through\": not every check deserves blocking power. // 전부 차단은 오답.",
+      "\"Put the deep overnight review in the blocking pipeline so problems are caught before merge\": it is slow and expensive, so it belongs in a non-blocking report. // 느린 분석을 차단형에 넣지 않는다.",
+      "\"Let the pipeline parse Claude's prose response with keyword matching\": interpreting free-form text is unreliable; return structured output. // 산문 파싱은 불안정.",
+      "\"Ask Claude to always answer with the sentence 'review passed' so the pipeline can grep it\": automation needs structured fields, not a fixed sentence. // 고정 문장 grep 도 구조화가 아니다.",
+      "\"A pipeline must contain build, test, review, and deploy stages\": not every pipeline has all stages; it depends on the project. // 모든 단계가 필수라고 하면 오답."
+    ],
+    "memorize": "CI checks and combines, Delivery keeps it release-ready for a human call, Deployment ships it automatically; a pipeline is an event-triggered automated sequence whose checks either block or merely inform, blocking power earned by reliability and risk; fast checks block, slow analysis reports, and Claude Code in automation must return file, issue type, severity, description, and recommended action. // CI 는 확인·통합, Delivery 는 사람 결정을 위한 준비, Deployment 는 자동 배포. pipeline 은 이벤트로 시작하는 자동 순서이고 검사는 차단형이거나 정보형인데 차단 권한은 신뢰도와 위험으로 얻는다. 빠른 검사는 차단, 느린 분석은 보고서, 그리고 자동화 속 Claude Code 는 file·issue type·severity·description·recommended action 을 반환해야 한다."
+  },
+  "createdAt": "2026-09-10T20:00:00Z"
+}

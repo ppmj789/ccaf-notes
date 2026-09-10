@@ -94,6 +94,10 @@
         {
           "no": "43",
           "title": "Claude Code Session Management: Resume, Compact, Forks, and Scratchpads"
+        },
+        {
+          "no": "45",
+          "title": "CI/CD Explained for Non-Developers"
         }
       ]
     }
