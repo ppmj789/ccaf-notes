@@ -72,6 +72,10 @@
         {
           "no": "39",
           "title": "Session State, Forking, Scratchpads, and Large Context Workflows"
+        },
+        {
+          "no": "40",
+          "title": "BUILD: ShopAssist Becomes an Agentic System"
         }
       ]
     }

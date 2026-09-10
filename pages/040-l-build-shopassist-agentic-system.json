@@ -1,0 +1,459 @@
+{
+  "id": "l-040",
+  "kind": "lesson",
+  "order": 40,
+  "section": "Multi-Agent Systems",
+  "lecture": "40",
+  "title_en": "BUILD: ShopAssist Becomes an Agentic System",
+  "title": "BUILD: ShopAssist 가 에이전트 시스템이 되다",
+  "domain": "멀티에이전트",
+  "summary": "ShopAssist becomes a controlled loop driven by stop_reason: tool_use means the backend runs the requested typed tools, updates case facts, and returns results to continue, end_turn means the response is done, and an unexpected stop reason escalates safely instead of improvising. On a multi-concern message the agent verifies the customer, looks up order 77819, checks policy and duplicate charge independently, and when it requests a $149 refund the hook blocks it against the $75 automatic limit and returns a structured error, so Claude escalates to a human with a structured handoff and drafts the final reply from case facts and verified tool results. // ShopAssist 는 `stop_reason` 이 이끄는 통제된 루프가 된다. `tool_use` 면 백엔드가 타입 지정 툴을 실행하고 case facts 를 갱신해 결과를 돌려주며 계속하고, `end_turn` 이면 응답이 끝난 것이고, 예상 밖의 stop reason 이면 즉흥적으로 굴지 않고 안전하게 에스컬레이션한다. 여러 관심사가 섞인 메시지에서 에이전트는 고객을 확인하고 주문 77819 을 조회하고 정책과 중복 결제를 독립적으로 확인하는데, 149달러 환불을 요청하면 hook 이 75달러 자동 한도에 걸어 막고 구조화된 오류를 돌려주므로, Claude 는 구조화된 handoff 로 사람에게 넘기고 최종 답변은 case facts 와 확인된 툴 결과를 근거로 작성한다.",
+  "paragraphs": [
+    {
+      "en": "In this build lesson, ShopAssist becomes an agentic support system.",
+      "ko": "이 빌드 강의에서 ShopAssist 는 에이전트형 고객지원 시스템이 됩니다."
+    },
+    {
+      "en": "Not just one prompt, not just one tool call.",
+      "ko": "프롬프트 하나도, 툴 호출 하나도 아닙니다."
+    },
+    {
+      "en": "A controlled loop where Claude reads the customer request, chooses tools,",
+      "ko": "Claude 가 고객 요청을 읽고, 툴을 고르고,"
+    },
+    {
+      "en": "reviews tool results, continues when more information is needed,",
+      "ko": "툴 결과를 검토하고, 정보가 더 필요하면 계속하고,"
+    },
+    {
+      "en": "and stops when the case is ready for a response or human escalation.",
+      "ko": "케이스가 응답이나 사람 에스컬레이션 준비가 되면 멈추는 ==통제된 루프== 입니다."
+    },
+    {
+      "en": "The architecture rule is the same.",
+      "ko": "아키텍처 규칙은 같습니다."
+    },
+    {
+      "en": "Claude reasons, tools execute, gates enforce,",
+      "ko": "Claude 는 추론하고, 툴은 실행하고, 게이트는 강제하고,"
+    },
+    {
+      "en": "hooks intercept, and handoffs carry structured state.",
+      "ko": "hook 은 가로채고, handoff 는 구조화된 상태를 실어 나릅니다."
+    },
+    {
+      "en": "For the demo, our backend tools return mock data.",
+      "ko": "데모에서는 백엔드 툴이 목(mock) 데이터를 돌려줍니다."
+    },
+    {
+      "en": "In production, the same functions would call your customer database,",
+      "ko": "프로덕션에서는 같은 함수가 고객 데이터베이스,"
+    },
+    {
+      "en": "order API, payment provider, refund service, or ticketing system.",
+      "ko": "주문 API, 결제 사업자, 환불 서비스, 티켓 시스템을 호출할 겁니다."
+    },
+    {
+      "en": "Here is the customer case.",
+      "ko": "고객 케이스는 이렇습니다."
+    },
+    {
+      "en": "Customer message:",
+      "ko": "고객 메시지:"
+    },
+    {
+      "en": "Hi, I received my blue jacket yesterday and it arrived damaged.",
+      "ko": "\"안녕하세요, 어제 파란 재킷을 받았는데 파손돼서 왔어요."
+    },
+    {
+      "en": "I also think I was charged twice.",
+      "ko": "그리고 두 번 결제된 것 같아요."
+    },
+    {
+      "en": "I want a full refund, not a replacement.",
+      "ko": "교환이 아니라 전액 환불을 원합니다."
+    },
+    {
+      "en": "My order number is 77819.",
+      "ko": "주문 번호는 77819 입니다.\""
+    },
+    {
+      "en": "This is a multi-concern request.",
+      "ko": "이것은 여러 관심사가 섞인 요청입니다."
+    },
+    {
+      "en": "The customer has a damaged item issue, a refund request, and a possible duplicate charge.",
+      "ko": "고객에게는 파손 상품 문제, 환불 요청, 그리고 중복 결제 가능성이 있습니다."
+    },
+    {
+      "en": "A fixed pipeline could miss one of those concerns.",
+      "ko": "고정 파이프라인은 그중 하나를 놓칠 수 있습니다."
+    },
+    {
+      "en": "An agentic workflow is useful because Claude can decide which tools are needed and in what order.",
+      "ko": "에이전트형 워크플로가 유용한 것은 Claude 가 어떤 툴이 필요하고 어떤 순서인지 결정할 수 있기 때문입니다."
+    },
+    {
+      "en": "But Claude does not execute business actions directly.",
+      "ko": "하지만 Claude 가 업무 행동을 직접 실행하지는 않습니다."
+    },
+    {
+      "en": "It receives tools with typed inputs.",
+      "ko": "타입이 정해진 입력을 가진 툴을 받습니다."
+    },
+    {
+      "en": "In this demo, these tools map to backend functions.",
+      "ko": "이 데모에서 이 툴들은 백엔드 함수에 대응합니다."
+    },
+    {
+      "en": "verify_customer checks the authenticated session.",
+      "ko": "`verify_customer` 는 인증된 세션을 확인합니다."
+    },
+    {
+      "en": "lookup_order retrieves order facts using customer ID and order ID.",
+      "ko": "`lookup_order` 는 고객 ID 와 주문 ID 로 주문 사실을 가져옵니다."
+    },
+    {
+      "en": "check_return_policy checks a specific item and reason.",
+      "ko": "`check_return_policy` 는 특정 상품과 사유를 확인합니다."
+    },
+    {
+      "en": "investigate_duplicate_charge checks payment records.",
+      "ko": "`investigate_duplicate_charge` 는 결제 기록을 확인합니다."
+    },
+    {
+      "en": "process_refund can create a refund, but only if gates and hooks allow it.",
+      "ko": "`process_refund` 는 환불을 만들 수 있지만, 게이트와 hook 이 허용할 때만입니다."
+    },
+    {
+      "en": "And escalate_to_human creates a structured handoff.",
+      "ko": "그리고 `escalate_to_human` 은 구조화된 handoff 를 만듭니다."
+    },
+    {
+      "en": "Now we create persistent case facts.",
+      "ko": "이제 지속되는 case facts 를 만듭니다."
+    },
+    {
+      "en": "This case facts block is memory for the workflow.",
+      "ko": "이 case facts 블록은 워크플로의 기억입니다."
+    },
+    {
+      "en": "It protects important details like order IDs, item IDs, refund amounts,",
+      "ko": "주문 ID, 상품 ID, 환불 금액,"
+    },
+    {
+      "en": "evidence, missing information, and escalation reasons.",
+      "ko": "증거, 빠진 정보, 에스컬레이션 사유 같은 중요한 세부를 지켜 줍니다."
+    },
+    {
+      "en": "Now let's look at the backend functions.",
+      "ko": "이제 백엔드 함수들을 봅시다."
+    },
+    {
+      "en": "This is the customer verification gate.",
+      "ko": "이것이 고객 확인 게이트입니다."
+    },
+    {
+      "en": "Before ShopAssist can process a refund, the backend must confirm the customer session.",
+      "ko": "ShopAssist 가 환불을 처리하기 전에, 백엔드가 고객 세션을 확인해야 합니다."
+    },
+    {
+      "en": "Claude can request verification, but the backend decides whether verification passes.",
+      "ko": "Claude 는 확인을 요청할 수 있지만, 확인이 통과하는지는 백엔드가 결정합니다."
+    },
+    {
+      "en": "Next, order lookup.",
+      "ko": "다음은 주문 조회입니다."
+    },
+    {
+      "en": "The tool receives explicit typed arguments.",
+      "ko": "툴은 명시적인 타입 인자를 받습니다."
+    },
+    {
+      "en": "Customer ID and order ID.",
+      "ko": "고객 ID 와 주문 ID."
+    },
+    {
+      "en": "It does not guess everything from the raw customer message.",
+      "ko": "고객 메시지 원문에서 전부 추측하지 않습니다."
+    },
+    {
+      "en": "Now the policy check.",
+      "ko": "이제 정책 확인입니다."
+    },
+    {
+      "en": "The item is eligible, but the refund amount is above the automatic limit.",
+      "ko": "상품은 대상이 되지만, 환불 금액이 자동 처리 한도를 넘습니다."
+    },
+    {
+      "en": "That limit will matter in the refund hook.",
+      "ko": "그 한도가 환불 hook 에서 중요해집니다."
+    },
+    {
+      "en": "Now duplicate charge investigation.",
+      "ko": "이제 중복 결제 조사입니다."
+    },
+    {
+      "en": "This is a separate concern from the damaged item.",
+      "ko": "이것은 파손 상품과 별개의 관심사입니다."
+    },
+    {
+      "en": "In a larger system, the coordinator could run the policy check and payment investigation in parallel,",
+      "ko": "더 큰 시스템이라면 coordinator 가 정책 확인과 결제 조사를 병렬로 돌릴 수 있습니다,"
+    },
+    {
+      "en": "because they do not depend on each other.",
+      "ko": "서로 의존하지 않으니까요."
+    },
+    {
+      "en": "Now the refund tool.",
+      "ko": "이제 환불 툴입니다."
+    },
+    {
+      "en": "This is the refund limit hook.",
+      "ko": "이것이 환불 한도 hook 입니다."
+    },
+    {
+      "en": "Claude may decide that a refund makes sense.",
+      "ko": "Claude 는 환불이 타당하다고 판단할 수 있습니다."
+    },
+    {
+      "en": "But the backend still blocks automatic refund processing above the threshold.",
+      "ko": "하지만 백엔드는 여전히 한도를 넘는 자동 환불 처리를 막습니다."
+    },
+    {
+      "en": "Prompts guide behavior.",
+      "ko": "==프롬프트는 행동을 안내하고,=="
+    },
+    {
+      "en": "Code enforces rules.",
+      "ko": "==코드는 규칙을 강제한다.=="
+    },
+    {
+      "en": "Now we need a tool runner.",
+      "ko": "이제 tool runner 가 필요합니다."
+    },
+    {
+      "en": "This function is the backend execution layer.",
+      "ko": "이 함수가 백엔드 실행 계층입니다."
+    },
+    {
+      "en": "Claude requests a tool.",
+      "ko": "Claude 가 툴을 요청합니다."
+    },
+    {
+      "en": "The backend executes it.",
+      "ko": "백엔드가 그것을 실행합니다."
+    },
+    {
+      "en": "Then the backend returns structured success, blocked, or raw results.",
+      "ko": "그다음 백엔드가 구조화된 success, blocked, 또는 원본 결과를 돌려줍니다."
+    },
+    {
+      "en": "Now let's look at the agentic loop.",
+      "ko": "이제 에이전트 루프를 봅시다."
+    },
+    {
+      "en": "This is the core pattern.",
+      "ko": "이것이 핵심 패턴입니다."
+    },
+    {
+      "en": "When stop reason is tool_use, Claude is asking the application to run one or more tools.",
+      "ko": "`stop_reason` 이 `tool_use` 면, Claude 가 애플리케이션에게 툴 하나 이상을 실행해 달라고 요청하는 것입니다."
+    },
+    {
+      "en": "The backend executes those tools, updates case facts, sends the tool results back, and continues the loop.",
+      "ko": "백엔드는 그 툴들을 실행하고, case facts 를 갱신하고, 툴 결과를 돌려보내고, 루프를 계속합니다."
+    },
+    {
+      "en": "When stop reason is end_turn, Claude has finished the response.",
+      "ko": "`stop_reason` 이 `end_turn` 이면, Claude 가 응답을 끝낸 것입니다."
+    },
+    {
+      "en": "If the stop reason is unexpected, the system does not improvise.",
+      "ko": "`stop_reason` 이 예상 밖이면, 시스템은 즉흥적으로 행동하지 않습니다."
+    },
+    {
+      "en": "It escalates safely.",
+      "ko": "안전하게 에스컬레이션합니다."
+    },
+    {
+      "en": "The update case facts function keeps the important facts outside the model context.",
+      "ko": "case facts 갱신 함수는 중요한 사실을 모델 context 바깥에 유지합니다."
+    },
+    {
+      "en": "This is simple, but important.",
+      "ko": "단순하지만 중요합니다."
+    },
+    {
+      "en": "The case facts block survives the loop.",
+      "ko": "case facts 블록은 루프를 지나서도 살아남습니다."
+    },
+    {
+      "en": "It gives the coordinator a stable view of the case.",
+      "ko": "coordinator 에게 케이스의 안정된 시야를 줍니다."
+    },
+    {
+      "en": "Now let's walk through what happens.",
+      "ko": "무슨 일이 일어나는지 따라가 봅시다."
+    },
+    {
+      "en": "First, Claude reads the customer message and sees multiple concerns.",
+      "ko": "먼저 Claude 가 고객 메시지를 읽고 여러 관심사를 봅니다."
+    },
+    {
+      "en": "It should request verification and order lookup.",
+      "ko": "확인과 주문 조회를 요청해야 합니다."
+    },
+    {
+      "en": "The backend verifies the customer and retrieves the order.",
+      "ko": "백엔드가 고객을 확인하고 주문을 가져옵니다."
+    },
+    {
+      "en": "Then Claude can request a return policy check and duplicate charge investigation.",
+      "ko": "그다음 Claude 는 반품 정책 확인과 중복 결제 조사를 요청할 수 있습니다."
+    },
+    {
+      "en": "Those are independent concerns.",
+      "ko": "이 둘은 독립적인 관심사입니다."
+    },
+    {
+      "en": "The damaged item may qualify for a refund, but the requested amount is $149.",
+      "ko": "파손 상품은 환불 대상일 수 있지만, 요청 금액이 149달러입니다."
+    },
+    {
+      "en": "The automatic refund limit is $75.",
+      "ko": "자동 환불 한도는 75달러입니다."
+    },
+    {
+      "en": "So, if Claude requests process_refund, the refund hook blocks it and returns a structured error.",
+      "ko": "그래서 Claude 가 `process_refund` 를 요청하면, 환불 hook 이 그것을 막고 구조화된 오류를 돌려줍니다."
+    },
+    {
+      "en": "This error is not a failure of the agent, it is the system working correctly.",
+      "ko": "이 오류는 에이전트의 실패가 아니라, 시스템이 제대로 동작하는 것입니다."
+    },
+    {
+      "en": "The tool tells Claude what happened and what the next safe step is.",
+      "ko": "툴이 Claude 에게 무슨 일이 있었는지, 다음 안전한 단계가 무엇인지 알려 줍니다."
+    },
+    {
+      "en": "Then Claude should call escalate_to_human.",
+      "ko": "그다음 Claude 는 `escalate_to_human` 을 불러야 합니다."
+    },
+    {
+      "en": "This is a structured human escalation handoff.",
+      "ko": "이것이 구조화된 사람 에스컬레이션 handoff 입니다."
+    },
+    {
+      "en": "It includes the customer, order, root cause,",
+      "ko": "여기에는 고객, 주문, 근본 원인,"
+    },
+    {
+      "en": "refund amount, evidence, missing information, and escalation reason.",
+      "ko": "환불 금액, 증거, 빠진 정보, 에스컬레이션 사유가 들어갑니다."
+    },
+    {
+      "en": "Finally, ShopAssist drafts a customer response from verified state.",
+      "ko": "마지막으로 ShopAssist 는 확인된 상태를 근거로 고객 응답을 작성합니다."
+    },
+    {
+      "en": "Not from scattered intermediate reasoning.",
+      "ko": "흩어진 중간 추론이 아니라,"
+    },
+    {
+      "en": "Not from unverified assumptions.",
+      "ko": "확인되지 않은 가정이 아니라,"
+    },
+    {
+      "en": "From case facts and tool results.",
+      "ko": "case facts 와 툴 결과를 근거로요."
+    },
+    {
+      "en": "For the exam, remember the pattern.",
+      "ko": "시험을 위해 이 패턴을 기억하세요."
+    },
+    {
+      "en": "An agentic system is not let the model do anything.",
+      "ko": "에이전트 시스템은 \"모델이 아무거나 하게 두기\" 가 아닙니다."
+    },
+    {
+      "en": "It is a controlled loop.",
+      "ko": "==통제된 루프== 입니다."
+    },
+    {
+      "en": "Claude chooses steps and reasons over tool results.",
+      "ko": "Claude 는 단계를 고르고 툴 결과를 놓고 추론합니다."
+    },
+    {
+      "en": "The backend executes tools with typed arguments.",
+      "ko": "백엔드는 타입이 정해진 인자로 툴을 실행합니다."
+    },
+    {
+      "en": "Stop reason controls whether the loop continues or ends.",
+      "ko": "`stop_reason` 이 루프를 계속할지 끝낼지 통제합니다."
+    },
+    {
+      "en": "Gates verify identity and permissions.",
+      "ko": "게이트는 신원과 권한을 확인합니다."
+    },
+    {
+      "en": "Hooks block unsafe or policy-sensitive actions.",
+      "ko": "hook 은 안전하지 않거나 정책에 민감한 행동을 막습니다."
+    },
+    {
+      "en": "Structured errors guide recovery.",
+      "ko": "구조화된 오류는 복구를 안내합니다."
+    },
+    {
+      "en": "Case facts preserve important context.",
+      "ko": "case facts 는 중요한 context 를 보존합니다."
+    },
+    {
+      "en": "Parallel investigation handles independent concerns.",
+      "ko": "병렬 조사는 독립적인 관심사를 처리합니다."
+    },
+    {
+      "en": "And human escalation is a structured handoff, not a vague fallback.",
+      "ko": "그리고 사람 에스컬레이션은 모호한 대비책이 아니라 구조화된 handoff 입니다."
+    },
+    {
+      "en": "That is how ShopAssist becomes an agentic system without giving up production control.",
+      "ko": "그렇게 해서 ShopAssist 는 프로덕션 통제를 포기하지 않고 에이전트 시스템이 됩니다."
+    }
+  ],
+  "body": "### What an agentic system is\n- Not one prompt, not one tool call, but a ==controlled loop==: Claude ==reads the request, chooses tools, reviews tool results, continues when more information is needed, and stops when the case is ready for a response or human escalation==. // 읽고·고르고·검토하고·계속하고·멈추는 루프.\n- The architecture rule repeats: ((Claude reasons · tools execute · gates enforce · hooks intercept · handoffs carry structured state)). // 추론·실행·강제·가로채기·운반.\n- Claude ==does not execute business actions directly==; it ==receives tools with typed inputs== that map to backend functions. // 직접 실행하지 않고 타입 지정 툴을 받는다.\n- Demo tools return ==mock data==; in production the same functions call the ==customer database, order API, payment provider, refund service, or ticketing system==. // 데모는 목 데이터, 프로덕션은 실제 시스템.\n\n### The case: a multi-concern request\n- ==Blue jacket arrived damaged== + ==I think I was charged twice== + ==full refund, not a replacement== + ==order 77819==. // 파손 + 중복 결제 + 환불(교환 아님) + 주문번호.\n- Three concerns: ==damaged item, refund request, possible duplicate charge==. A ==fixed pipeline could miss one of them==. // 고정 파이프라인은 하나를 놓칠 수 있다.\n- Agentic is useful because Claude can decide ==which tools are needed and in what order==. // 어떤 툴을 어떤 순서로.\n\n### The six tools\n| Tool | What it does |\n|---|---|\n| `verify_customer` | checks the ==authenticated session== |\n| `lookup_order` | order facts from ==customer ID + order ID== |\n| `check_return_policy` | a ==specific item and reason== |\n| `investigate_duplicate_charge` | checks ==payment records== |\n| `process_refund` | creates a refund ==only if gates and hooks allow it== |\n| `escalate_to_human` | creates a ==structured handoff== |\n\n- The tool receives ==explicit typed arguments== (customer ID, order ID); it ==does not guess everything from the raw customer message==. // 원문에서 추측하지 않는다.\n\n### Case facts = memory for the workflow\n- The case facts block is ==memory for the workflow==, protecting ==order IDs, item IDs, refund amounts, evidence, missing information, and escalation reasons==. // 워크플로의 기억.\n- It ==keeps the important facts outside the model context==, ==survives the loop==, and gives the coordinator a ==stable view of the case==. // context 바깥, 루프를 넘어 생존.\n\n### Gate and hook in this build\n- **Verification gate**: before a refund can be processed, the ==backend must confirm the customer session==. ==Claude can request verification, but the backend decides whether it passes.== // 요청은 Claude, 통과 판정은 백엔드.\n- **Refund limit hook**: the item is eligible but the amount is ==above the automatic limit==. ==Claude may decide a refund makes sense, but the backend still blocks automatic processing above the threshold.== // 판단은 Claude, 차단은 백엔드.\n- ==Prompts guide behavior. Code enforces rules.== // 프롬프트는 안내, 코드는 강제.\n- **Tool runner** = the ==backend execution layer==: Claude requests a tool, the backend executes it, and returns ==structured success, blocked, or raw results==. // 요청 → 실행 → success·blocked·원본.\n\n### The loop, driven by stop_reason\n- `stop_reason` = ==tool_use== → Claude is asking the application to ==run one or more tools==. The backend ==executes them, updates case facts, sends the tool results back, and continues the loop==. // tool_use 면 실행하고 결과 돌려주고 계속.\n- `stop_reason` = ==end_turn== → Claude has ==finished the response==. // end_turn 이면 끝.\n- ==Unexpected stop reason → the system does not improvise, it escalates safely.== // 예상 밖이면 즉흥 금지, 안전하게 에스컬레이션.\n\n### Walkthrough\n- Claude sees multiple concerns → requests ==verification and order lookup==; the backend verifies the customer and retrieves the order. // 확인 + 조회부터.\n- Then ==return policy check and duplicate charge investigation== — ==independent concerns==, so a larger system could run them ==in parallel==. // 독립이니 병렬 가능.\n- Damaged item may qualify, but requested amount is ==$149== while the automatic refund limit is ==$75==. // 149 vs 75.\n- So `process_refund` is ==blocked by the refund hook, which returns a structured error==. ==This error is not a failure of the agent, it is the system working correctly== — the tool tells Claude ==what happened and what the next safe step is==. // 차단은 실패가 아니라 정상 동작.\n- Then Claude calls `escalate_to_human`, a structured handoff including ==customer, order, root cause, refund amount, evidence, missing information, and escalation reason==. // handoff 일곱 항목.\n- Finally the response is drafted ==from verified state — case facts and tool results — not from scattered intermediate reasoning or unverified assumptions==. // 확인된 상태를 근거로 작성.\n\n### Exam pattern\n- An agentic system is ==not let the model do anything==, it is a ==controlled loop==. // 아무거나 하게 두기가 아니다.\n- ==Claude chooses steps and reasons over tool results; the backend executes tools with typed arguments.== // 선택·추론 vs 실행.\n- ==stop_reason controls whether the loop continues or ends.== ==Gates verify identity and permissions.== ==Hooks block unsafe or policy-sensitive actions.== // 루프 제어·신원 확인·행동 차단.\n- ==Structured errors guide recovery.== ==Case facts preserve important context.== ==Parallel investigation handles independent concerns.== // 오류는 복구 안내, 사실은 보존, 독립은 병렬.\n- ==Human escalation is a structured handoff, not a vague fallback== — production control is kept, not given up. // 에스컬레이션은 프로토콜, 통제는 유지.",
+  "keyPoints": [
+    "An agentic system is a controlled loop, not free rein: Claude reads the request, chooses tools, reasons over results, continues while information is missing, and stops at a response or a human escalation. // 통제된 루프이지 아무거나 하게 두는 게 아니다.",
+    "stop_reason drives the loop: tool_use means the application runs the requested tools, updates case facts, and returns results to continue; end_turn means Claude is done; an unexpected stop reason escalates safely instead of improvising. // tool_use 는 계속, end_turn 은 종료, 예상 밖은 안전 에스컬레이션.",
+    "Claude never executes business actions; it requests typed tools (verify_customer, lookup_order, check_return_policy, investigate_duplicate_charge, process_refund, escalate_to_human) that the backend tool runner executes and returns as success, blocked, or raw results. // 실행은 백엔드, Claude 는 타입 지정 툴을 요청한다.",
+    "The verification gate and refund limit hook keep control in code: Claude can request verification and recommend a refund, but the backend decides whether verification passes and blocks automatic refunds above the threshold ($149 requested vs a $75 limit). // 게이트와 hook 이 코드로 통제, 149 vs 75.",
+    "A blocked tool call is the system working correctly, not an agent failure: the structured error tells Claude what happened and what the next safe step is, which here is escalate_to_human with customer, order, root cause, amount, evidence, missing info, and reason. // 차단은 정상 동작, 구조화된 오류가 다음 단계를 안내.",
+    "Case facts are the workflow's memory outside the model context, surviving the loop so the final customer response is drafted from verified state and tool results, not from scattered reasoning or unverified assumptions. // case facts 로 확인된 상태에서 응답을 쓴다."
+  ],
+  "examTrends": {
+    "how": "A BUILD lesson, so questions usually replay this exact case: a multi-concern message, a refund above the automatic limit, a blocked tool call, and then escalation. The most common item asks what the application should do for a given stop_reason (tool_use = run tools and continue, end_turn = finished, unexpected = escalate safely, never improvise). A second asks what the blocked refund means, where the answer is that the system worked correctly and the structured error points to the next safe step. A third asks which two investigations may run in parallel (policy check and duplicate charge, because they are independent), and a fourth asks what the escalation or the final response must be based on, the answer being case facts and verified tool results. // 빌드 강의라 문제는 보통 이 케이스를 그대로 재현한다. 여러 관심사가 섞인 메시지, 자동 한도를 넘는 환불, 차단된 툴 호출, 그다음 에스컬레이션. 가장 흔한 문항은 주어진 stop_reason 에 애플리케이션이 무엇을 해야 하는지다(tool_use 는 실행하고 계속, end_turn 은 종료, 예상 밖이면 즉흥 없이 안전하게 에스컬레이션). 두 번째는 차단된 환불이 무엇을 뜻하는지 묻고 답은 시스템이 제대로 동작한 것이며 구조화된 오류가 다음 안전한 단계를 알려 준다는 것이다. 세 번째는 어떤 두 조사를 병렬로 돌릴 수 있는지(정책 확인과 중복 결제, 서로 독립적이므로), 네 번째는 에스컬레이션과 최종 응답이 무엇을 근거로 해야 하는지(case facts 와 확인된 툴 결과)를 묻는다.",
+    "answerLooks": [
+      "\"When stop_reason is tool_use, execute the requested tools, update case facts, return the results, and continue the loop\" // tool_use 처리 순서.",
+      "\"When the stop reason is unexpected, escalate safely instead of improvising\" // 예상 밖이면 안전 에스컬레이션.",
+      "\"The refund hook correctly blocked the $149 refund because it exceeds the $75 automatic limit\" // 한도 초과라 hook 이 막은 것이 정상.",
+      "\"Return a structured error that states what happened and what the next safe step is\" // 무슨 일 + 다음 안전 단계.",
+      "\"Call escalate_to_human with the customer, order, root cause, amount, evidence, missing information, and reason\" // 구조화된 handoff 내용.",
+      "\"Run the return policy check and the duplicate charge investigation in parallel because they are independent\" // 독립 관심사는 병렬.",
+      "\"Pass explicit typed arguments such as customer ID and order ID rather than the raw message\" // 원문 대신 타입 인자.",
+      "\"Draft the customer response from case facts and verified tool results\" // 확인된 상태에서 응답 작성."
+    ],
+    "traps": [
+      "\"The blocked refund means the agent failed, so retry process_refund with a stronger instruction\": the block is the system working correctly and the next step is escalation. // 차단은 실패가 아니고 재시도 대상도 아니다.",
+      "\"Let Claude process the $149 refund since it verified the item is eligible\": eligibility is not authorization, and the backend enforces the $75 limit. // 대상 여부와 승인은 다르다.",
+      "\"Handle an unexpected stop reason by asking Claude to continue anyway\": the system must not improvise; it escalates safely. // 즉흥적으로 이어가면 안 된다.",
+      "\"Pass the customer's raw message to lookup_order so no detail is lost\": tools take typed arguments, not guesses from raw text. // 툴은 타입 인자를 받는다.",
+      "\"Run verification, order lookup, policy check, and duplicate charge all in parallel to finish faster\": policy and payment checks are independent, but they need the verified customer and order first. // 앞 단계가 필요한 것은 병렬로 못 돈다.",
+      "\"Escalate with a note asking the reviewer to read the conversation history\": escalation is a structured handoff, not a vague fallback. // 모호한 인계는 안 된다.",
+      "\"Write the final response from Claude's intermediate reasoning so it sounds natural\": it must come from case facts and verified tool results. // 중간 추론이 아니라 확인된 사실로.",
+      "\"Give Claude direct database access so it can act without the tool runner\": Claude reasons and requests, the backend executes. // 직접 실행은 경계 위반."
+    ],
+    "memorize": "Controlled loop: tool_use runs tools and continues, end_turn ends, unexpected escalates safely; gates verify identity, hooks block over-limit or unsafe actions, structured errors name the next safe step, case facts hold the truth outside the context, independent concerns go parallel, and escalation is a structured handoff. // 통제된 루프 — tool_use 는 실행·계속, end_turn 은 종료, 예상 밖은 안전 에스컬레이션, 게이트는 신원, hook 은 한도·위험 차단, 구조화된 오류는 다음 안전 단계를 말하고, case facts 가 context 바깥에서 진실을 쥐고, 독립 관심사는 병렬, 에스컬레이션은 구조화된 handoff."
+  },
+  "createdAt": "2026-09-10T16:30:00Z"
+}
