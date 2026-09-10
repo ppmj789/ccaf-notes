@@ -1,0 +1,390 @@
+{
+  "id": "l-041",
+  "kind": "lesson",
+  "order": 41,
+  "section": "Claude Code",
+  "lecture": "41",
+  "title_en": "Git, GitHub, Repositories, and Pull Requests for Non-Developers",
+  "title": "비개발자를 위한 Git, GitHub, repository, pull request",
+  "domain": "Claude Code",
+  "summary": "Source code is the set of files that build software, Git is the version control system that tracks how those files change, a repository is the project together with its version history (a project folder with memory), and GitHub is one online platform that can host Git repositories. Work flows as repository, branch, changes, commit, pull request, review, merge — a commit records a set of changes with a message, a branch keeps the main version unchanged until approval, a pull request asks the team to review and merge, and code review (human or automated) checks for bugs, security issues, wrong logic, missing tests, and standards; Claude Code operates inside that repository, using tests, docs, configuration, and coding standards as project context and even inspecting pull request changes. // 소스 코드는 소프트웨어를 만드는 파일 묶음이고, Git 은 그 파일의 변경을 추적하는 버전 관리 시스템이며, repository 는 프로젝트와 그 버전 이력을 함께 담은 것(기억을 가진 프로젝트 폴더)이고, GitHub 은 Git repository 를 호스팅할 수 있는 온라인 플랫폼 하나다. 작업은 repository → branch → changes → commit → pull request → review → merge 로 흐르는데, commit 은 메시지와 함께 변경 묶음을 기록하고, branch 는 승인 전까지 주 버전을 그대로 두고, pull request 는 검토·병합을 요청하고, code review 는 사람이든 자동 시스템이든 버그·보안·로직·빠진 테스트·표준을 확인한다. Claude Code 는 그 repository 안에서 동작하며 테스트·문서·설정·코딩 표준을 프로젝트 context 로 쓰고 pull request 의 변경까지 살펴본다.",
+  "paragraphs": [
+    {
+      "en": "Let's start with the most basic term.",
+      "ko": "가장 기본적인 용어부터 시작합시다."
+    },
+    {
+      "en": "Source code is the set of files that developers write to build software.",
+      "ko": "소스 코드(source code)는 개발자가 소프트웨어를 만들기 위해 쓰는 파일들의 묶음입니다."
+    },
+    {
+      "en": "A software project may contain many different files.",
+      "ko": "소프트웨어 프로젝트에는 서로 다른 파일이 많이 들어 있을 수 있습니다."
+    },
+    {
+      "en": "Some files contain application code, others contain configuration, tests, documentation, images or other resources.",
+      "ko": "어떤 파일은 애플리케이션 코드를, 다른 파일은 설정·테스트·문서·이미지 같은 자원을 담습니다."
+    },
+    {
+      "en": "These files are usually organized into folders.",
+      "ko": "이 파일들은 보통 폴더로 정리됩니다."
+    },
+    {
+      "en": "Together they form the project.",
+      "ko": "그것들이 모여 프로젝트가 됩니다."
+    },
+    {
+      "en": "Now imagine several developers are working on the same project.",
+      "ko": "이제 여러 개발자가 같은 프로젝트에서 일한다고 해 봅시다."
+    },
+    {
+      "en": "They need a safe way to track changes.",
+      "ko": "변경을 안전하게 추적할 방법이 필요합니다."
+    },
+    {
+      "en": "They need to know who changed what.",
+      "ko": "누가 무엇을 바꿨는지 알아야 합니다."
+    },
+    {
+      "en": "They may need to compare different versions.",
+      "ko": "서로 다른 버전을 비교해야 할 수도 있습니다."
+    },
+    {
+      "en": "And sometimes they need to restore an older version if something goes wrong.",
+      "ko": "그리고 문제가 생기면 예전 버전으로 되돌려야 할 때도 있습니다."
+    },
+    {
+      "en": "This is where version control becomes important.",
+      "ko": "여기서 버전 관리(version control)가 중요해집니다."
+    },
+    {
+      "en": "One of the most common version control systems is Git.",
+      "ko": "가장 널리 쓰이는 버전 관리 시스템 중 하나가 Git 입니다."
+    },
+    {
+      "en": "Git tracks changes to files over time.",
+      "ko": "Git 은 파일의 변경을 시간에 따라 추적합니다."
+    },
+    {
+      "en": "It helps developers work on the same project without simply replacing each other's files.",
+      "ko": "개발자들이 서로의 파일을 그냥 덮어써 버리지 않고 같은 프로젝트에서 일할 수 있게 해 줍니다."
+    },
+    {
+      "en": "A project managed with Git is usually stored in something called a repository.",
+      "ko": "Git 으로 관리되는 프로젝트는 보통 저장소(repository)라는 것에 담깁니다."
+    },
+    {
+      "en": "A repository is the project together with its version history.",
+      "ko": "repository 는 프로젝트와 그 버전 이력을 함께 담은 것입니다."
+    },
+    {
+      "en": "You can think of it as a project folder with memory.",
+      "ko": "==기억을 가진 프로젝트 폴더== 라고 생각하면 됩니다."
+    },
+    {
+      "en": "It contains the current files but it also tracks how those files changed over time.",
+      "ko": "현재 파일을 담고 있으면서, 그 파일들이 시간에 따라 어떻게 바뀌었는지도 추적합니다."
+    },
+    {
+      "en": "Now let's separate two terms that are often confused. Git and GitHub.",
+      "ko": "이제 자주 혼동되는 두 용어를 구분해 봅시다. Git 과 GitHub."
+    },
+    {
+      "en": "Git is the version control system.",
+      "ko": "Git 은 버전 관리 시스템입니다."
+    },
+    {
+      "en": "GitHub is an online platform that can host Git repositories.",
+      "ko": "GitHub 은 Git repository 를 호스팅할 수 있는 온라인 플랫폼입니다."
+    },
+    {
+      "en": "So Git is the technology that tracks changes.",
+      "ko": "즉 Git 은 변경을 추적하는 기술이고,"
+    },
+    {
+      "en": "GitHub is one place where teams can store, share and collaborate on Git repositories.",
+      "ko": "GitHub 은 팀이 Git repository 를 저장·공유·협업할 수 있는 한 장소입니다."
+    },
+    {
+      "en": "A company may use GitHub but other platforms can also host Git repositories.",
+      "ko": "회사가 GitHub 을 쓸 수도 있지만, 다른 플랫폼도 Git repository 를 호스팅할 수 있습니다."
+    },
+    {
+      "en": "Now let's talk about commits.",
+      "ko": "이제 커밋(commit) 이야기를 해 봅시다."
+    },
+    {
+      "en": "A commit is a saved set of changes.",
+      "ko": "commit 은 저장된 변경 묶음입니다."
+    },
+    {
+      "en": "Imagine a developer updates ShopAssist to fix a refund calculation.",
+      "ko": "개발자가 환불 계산을 고치려고 ShopAssist 를 수정한다고 해 봅시다."
+    },
+    {
+      "en": "They change several files.",
+      "ko": "파일 여러 개를 바꿉니다."
+    },
+    {
+      "en": "Once the change is ready they can create a commit.",
+      "ko": "변경이 준비되면 commit 을 만들 수 있습니다."
+    },
+    {
+      "en": "That commit records the change as a point in the project history.",
+      "ko": "그 commit 은 그 변경을 프로젝트 이력의 한 지점으로 기록합니다."
+    },
+    {
+      "en": "A commit usually includes a short message explaining what changed.",
+      "ko": "commit 에는 보통 무엇이 바뀌었는지 설명하는 짧은 메시지가 들어갑니다."
+    },
+    {
+      "en": "For example, fix refund amount calculation.",
+      "ko": "예를 들어 \"fix refund amount calculation\" 처럼요."
+    },
+    {
+      "en": "This makes it easier to understand how the project evolved.",
+      "ko": "그래서 프로젝트가 어떻게 변해 왔는지 이해하기 쉬워집니다."
+    },
+    {
+      "en": "Another important concept is a branch.",
+      "ko": "또 하나 중요한 개념은 브랜치(branch)입니다."
+    },
+    {
+      "en": "A branch allows someone to work on changes without immediately modifying the main version of the project.",
+      "ko": "branch 는 프로젝트의 주 버전을 곧바로 건드리지 않고 변경 작업을 할 수 있게 해 줍니다."
+    },
+    {
+      "en": "For example, the team may have a main branch containing the current approved version of ShopAssist.",
+      "ko": "예를 들어 팀에는 현재 승인된 ShopAssist 버전을 담은 `main` 브랜치가 있을 수 있습니다."
+    },
+    {
+      "en": "A developer wants to add a new escalation feature.",
+      "ko": "한 개발자가 새로운 에스컬레이션 기능을 추가하고 싶어 합니다."
+    },
+    {
+      "en": "Instead of changing the main branch directly, they create a separate branch.",
+      "ko": "`main` 브랜치를 직접 바꾸는 대신 별도의 브랜치를 만듭니다."
+    },
+    {
+      "en": "They make the changes there.",
+      "ko": "거기서 변경을 합니다."
+    },
+    {
+      "en": "They can test them. They can review them.",
+      "ko": "테스트할 수 있고, 검토할 수 있습니다."
+    },
+    {
+      "en": "And the main branch remains unchanged until the new work is approved.",
+      "ko": "그리고 새 작업이 승인될 때까지 `main` 브랜치는 그대로 남아 있습니다."
+    },
+    {
+      "en": "When the developer believes the work is ready, they may create a pull request.",
+      "ko": "작업이 준비됐다고 판단하면 개발자는 pull request 를 만들 수 있습니다."
+    },
+    {
+      "en": "A pull request is a request to review and combine changes from one branch into another.",
+      "ko": "pull request 는 한 브랜치의 변경을 ==검토하고 다른 브랜치에 합쳐 달라는 요청== 입니다."
+    },
+    {
+      "en": "For example, a developer creates a branch for a new refund feature.",
+      "ko": "예를 들어 개발자가 새 환불 기능을 위한 브랜치를 만듭니다."
+    },
+    {
+      "en": "They finish the work.",
+      "ko": "작업을 끝냅니다."
+    },
+    {
+      "en": "Then they open a pull request asking the team to merge that work into the main branch.",
+      "ko": "그다음 그 작업을 `main` 브랜치에 병합해 달라고 팀에 요청하는 pull request 를 엽니다."
+    },
+    {
+      "en": "The pull request gives the team a place to inspect the changes before accepting them.",
+      "ko": "pull request 는 팀이 변경을 받아들이기 전에 살펴볼 자리를 줍니다."
+    },
+    {
+      "en": "This leads to another important concept. Code review.",
+      "ko": "여기서 또 하나의 중요한 개념이 나옵니다. 코드 리뷰(code review)."
+    },
+    {
+      "en": "Code review means another developer or sometimes an automated system examines the proposed changes.",
+      "ko": "code review 는 다른 개발자, 또는 때로는 자동화된 시스템이 제안된 변경을 살펴보는 것입니다."
+    },
+    {
+      "en": "The reviewer may look for bugs, security problems, incorrect logic, missing tests,",
+      "ko": "리뷰어는 버그, 보안 문제, 잘못된 로직, 빠진 테스트,"
+    },
+    {
+      "en": "or code that does not follow the project standards.",
+      "ko": "또는 프로젝트 표준을 따르지 않는 코드를 찾습니다."
+    },
+    {
+      "en": "The reviewer can leave comments and request changes before the pull request is approved.",
+      "ko": "리뷰어는 pull request 가 승인되기 전에 코멘트를 남기고 변경을 요청할 수 있습니다."
+    },
+    {
+      "en": "So a common development flow looks like this.",
+      "ko": "그래서 흔한 개발 흐름은 이렇습니다."
+    },
+    {
+      "en": "A developer starts with a repository. They create a branch. They modify files.",
+      "ko": "개발자가 repository 에서 시작합니다. 브랜치를 만듭니다. 파일을 수정합니다."
+    },
+    {
+      "en": "They create commits. They open a pull request. The changes are reviewed.",
+      "ko": "commit 을 만듭니다. pull request 를 엽니다. 변경이 검토됩니다."
+    },
+    {
+      "en": "Then the approved changes can be merged into the main branch.",
+      "ko": "그다음 승인된 변경이 `main` 브랜치에 병합됩니다."
+    },
+    {
+      "en": "You do not need to know git commands to understand this workflow.",
+      "ko": "이 워크플로를 이해하려고 git 명령어를 알아야 하는 것은 아닙니다."
+    },
+    {
+      "en": "The important part is the structure.",
+      "ko": "중요한 것은 구조입니다."
+    },
+    {
+      "en": "Repository, branch, changes, commit, pull request, review, merge.",
+      "ko": "==repository → branch → changes → commit → pull request → review → merge.=="
+    },
+    {
+      "en": "Now let's connect this to Claude Code.",
+      "ko": "이제 이것을 Claude Code 와 연결해 봅시다."
+    },
+    {
+      "en": "Claude Code can work inside an existing software repository.",
+      "ko": "Claude Code 는 기존 소프트웨어 repository 안에서 일할 수 있습니다."
+    },
+    {
+      "en": "That means Claude can inspect project files and understand the structure of the code base.",
+      "ko": "즉 Claude 가 프로젝트 파일을 살펴보고 코드베이스의 구조를 이해할 수 있다는 뜻입니다."
+    },
+    {
+      "en": "It can read configuration, search for relevant code, modify files, run commands,",
+      "ko": "설정을 읽고, 관련 코드를 검색하고, 파일을 수정하고, 명령을 실행하고,"
+    },
+    {
+      "en": "and help developers work on changes inside the project.",
+      "ko": "개발자가 프로젝트 안에서 변경 작업을 하도록 도울 수 있습니다."
+    },
+    {
+      "en": "For example, a developer may ask Claude Code, find where refund limits are checked and update the logic.",
+      "ko": "예를 들어 개발자가 Claude Code 에게 \"환불 한도를 확인하는 곳을 찾아서 로직을 고쳐 줘\" 라고 할 수 있습니다."
+    },
+    {
+      "en": "Claude Code can inspect the repository, find the relevant files, understand the surrounding code, and make targeted changes.",
+      "ko": "Claude Code 는 repository 를 살펴보고, 관련 파일을 찾고, 주변 코드를 이해하고, 겨냥한 변경을 만들 수 있습니다."
+    },
+    {
+      "en": "But the repository provides more than just source code.",
+      "ko": "하지만 repository 는 소스 코드만 주는 것이 아닙니다."
+    },
+    {
+      "en": "It also provides project context.",
+      "ko": "==프로젝트 context== 도 줍니다."
+    },
+    {
+      "en": "For example, it may contain tests, documentation, configuration files, project instructions, and coding standards.",
+      "ko": "예를 들어 테스트, 문서, 설정 파일, 프로젝트 지시서, 코딩 표준이 들어 있을 수 있습니다."
+    },
+    {
+      "en": "These files help Claude understand how the project is organized and how changes should be made.",
+      "ko": "이 파일들이 Claude 가 프로젝트가 어떻게 조직됐고 변경을 어떻게 해야 하는지 이해하도록 돕습니다."
+    },
+    {
+      "en": "Claude Code can also be used as part of review workflows.",
+      "ko": "Claude Code 는 리뷰 워크플로의 일부로도 쓸 수 있습니다."
+    },
+    {
+      "en": "For example, it can inspect changes in a pull request and identify potential problems.",
+      "ko": "예를 들어 pull request 의 변경을 살펴보고 잠재적 문제를 찾아낼 수 있습니다."
+    },
+    {
+      "en": "This is why concepts such as repositories, branches, pull requests, and code review matter even if you are not a developer.",
+      "ko": "그래서 개발자가 아니어도 repository·branch·pull request·code review 같은 개념이 중요합니다."
+    },
+    {
+      "en": "They describe the environment where Claude Code often operates.",
+      "ko": "그것들이 Claude Code 가 주로 동작하는 환경을 설명하기 때문입니다."
+    },
+    {
+      "en": "The main ideas are simple.",
+      "ko": "핵심 생각은 단순합니다."
+    },
+    {
+      "en": "Source code is the set of files used to build software.",
+      "ko": "소스 코드는 소프트웨어를 만드는 데 쓰이는 파일들의 묶음."
+    },
+    {
+      "en": "A repository stores the project and its version history.",
+      "ko": "repository 는 프로젝트와 그 버전 이력을 담는다."
+    },
+    {
+      "en": "Git tracks changes.",
+      "ko": "Git 은 변경을 추적한다."
+    },
+    {
+      "en": "GitHub is a platform that can host Git repositories.",
+      "ko": "GitHub 은 Git repository 를 호스팅할 수 있는 플랫폼이다."
+    },
+    {
+      "en": "A commit records a set of changes.",
+      "ko": "commit 은 변경 묶음을 기록한다."
+    },
+    {
+      "en": "A branch provides a separate place to work.",
+      "ko": "branch 는 따로 작업할 자리를 준다."
+    },
+    {
+      "en": "A pull request asks for changes to be reviewed and merged.",
+      "ko": "pull request 는 변경을 검토하고 병합해 달라고 요청한다."
+    },
+    {
+      "en": "And code review checks those changes before they become part of the main project.",
+      "ko": "그리고 code review 는 그 변경이 주 프로젝트의 일부가 되기 전에 확인한다."
+    },
+    {
+      "en": "You do not need to become a Git expert.",
+      "ko": "Git 전문가가 될 필요는 없습니다."
+    },
+    {
+      "en": "You only need to understand these concepts well enough to recognize how Claude Code fits into a normal software development workflow.",
+      "ko": "Claude Code 가 평범한 소프트웨어 개발 워크플로에 어떻게 들어맞는지 알아볼 만큼만 이해하면 됩니다."
+    }
+  ],
+  "body": "### Source code and the project\n- **Source code** = the ==set of files developers write to build software==. // 소프트웨어를 만드는 파일 묶음.\n- A project holds more than code: ==configuration, tests, documentation, images, and other resources==, usually organized into folders. // 설정·테스트·문서·이미지까지.\n- Together those files ==form the project==. // 그것들이 모여 프로젝트.\n\n### Why version control\n- Several developers on one project need to ==track changes safely==, ==know who changed what==, ==compare versions==, and ==restore an older version when something goes wrong==. // 추적·책임·비교·복구.\n- **Git** = one of the most common ==version control systems==; it ==tracks changes to files over time== so developers do not ==simply replace each other's files==. // 서로 덮어쓰지 않게.\n\n### Repository\n- A **repository** = ==the project together with its version history==. // 프로젝트 + 버전 이력.\n- Mental model: ==a project folder with memory== — it holds the current files ==and== tracks how they changed over time. // 기억을 가진 폴더.\n\n### Git vs GitHub (자주 혼동)\n| | What it is |\n|---|---|\n| **Git** | the ==version control system==, the ==technology that tracks changes== |\n| **GitHub** | an ==online platform that can host Git repositories== — one place to ==store, share, and collaborate== |\n\n- A company may use GitHub, but ==other platforms can also host Git repositories==. // GitHub 은 여러 선택지 중 하나.\n\n### Commit\n- A **commit** = a ==saved set of changes==, recorded as ==a point in the project history==. // 저장된 변경 묶음 = 이력의 한 지점.\n- Example: a developer changes several files to fix a refund calculation in ShopAssist, then creates a commit. // 파일 여러 개 → commit 하나.\n- A commit usually carries a ==short message explaining what changed== (`fix refund amount calculation`), which makes it easier to see ==how the project evolved==. // 메시지가 이력을 읽게 해 준다.\n\n### Branch\n- A **branch** lets someone work on changes ==without immediately modifying the main version of the project==. // 주 버전을 건드리지 않고 작업.\n- Example: `main` holds the ==current approved version==; a developer adding an escalation feature creates a ==separate branch==, makes changes there, ==tests and reviews them==. // main 은 승인된 버전.\n- The main branch ==remains unchanged until the new work is approved==. // 승인 전까지 main 은 그대로.\n\n### Pull request and code review\n- A **pull request** = a ==request to review and combine changes from one branch into another==. It gives the team ==a place to inspect the changes before accepting them==. // 검토하고 합쳐 달라는 요청.\n- **Code review** = ==another developer, or sometimes an automated system, examines the proposed changes==. // 사람 또는 자동 시스템이 살펴본다.\n- Reviewers look for ==bugs, security problems, incorrect logic, missing tests, or code that does not follow the project standards==, and can ==leave comments and request changes before approval==. // 다섯 가지를 본다.\n\n### The flow to memorize\n- ((repository → branch → changes → commit → pull request → review → merge)) // 일곱 단계.\n- ==You do not need to know git commands to understand this workflow. The important part is the structure.== // 명령어가 아니라 구조.\n\n### Where Claude Code fits\n- Claude Code ==works inside an existing repository==: it can ==inspect project files and understand the structure of the code base==. // repository 안에서 일한다.\n- It can ==read configuration, search for relevant code, modify files, run commands==, and help work on changes inside the project. // 읽기·검색·수정·실행.\n- Example ask: ==find where refund limits are checked and update the logic== → Claude Code inspects the repo, finds the relevant files, ==understands the surrounding code, and makes targeted changes==. // 주변 코드를 이해하고 겨냥해 고친다.\n- The repository gives ==more than source code — it gives project context==: ==tests, documentation, configuration files, project instructions, and coding standards== that tell Claude ==how the project is organized and how changes should be made==. // repository = context 원천.\n- Claude Code can also join ==review workflows==, inspecting ==changes in a pull request to identify potential problems==. // PR 리뷰에도 쓴다.\n- That is why these concepts matter to non-developers: they ==describe the environment where Claude Code often operates==. // Claude Code 가 사는 환경.",
+  "keyPoints": [
+    "Git is the version control system that tracks changes; GitHub is an online platform that hosts Git repositories, and other platforms can host them too. // Git 은 기술, GitHub 은 호스팅 플랫폼.",
+    "A repository is the project plus its version history — a project folder with memory, holding current files and how they changed. // repository = 프로젝트 + 이력.",
+    "A commit is a saved set of changes recorded as a point in history, with a short message explaining what changed. // commit 은 이력의 한 지점 + 메시지.",
+    "A branch is a separate place to work so the main branch stays unchanged until the new work is approved. // branch 는 별도 작업 공간, main 은 승인까지 그대로.",
+    "A pull request asks to review and merge one branch into another, and code review (a person or an automated system) checks for bugs, security issues, wrong logic, missing tests, and standards violations before approval. // PR 은 검토·병합 요청, 리뷰는 다섯 가지를 본다.",
+    "The structure to remember is repository, branch, changes, commit, pull request, review, merge — git commands are not required. // 일곱 단계 구조만 알면 된다.",
+    "Claude Code operates inside a repository, using not only source code but project context (tests, docs, configuration, project instructions, coding standards), and can also inspect pull request changes in review workflows. // repository 는 코드뿐 아니라 context 를 주고, PR 리뷰도 가능."
+  ],
+  "examTrends": {
+    "how": "Vocabulary and role questions, since the lecture is a glossary for non-developers. The most common item is the Git versus GitHub distinction, where the answer separates the version control system from the hosting platform. Another asks what a repository provides Claude Code, and the answer goes beyond source code to project context such as tests, documentation, configuration, project instructions, and coding standards. A third gives the flow out of order and asks for the correct sequence, or asks what a pull request is for, where the answer is review before merging rather than the act of merging itself. // 강의가 비개발자용 용어집이라 용어·역할 문제가 나온다. 가장 흔한 것은 Git 과 GitHub 의 구분이며, 답은 버전 관리 시스템과 호스팅 플랫폼을 나누는 쪽이다. 다른 문항은 repository 가 Claude Code 에 무엇을 주는지 묻는데, 답은 소스 코드를 넘어 테스트·문서·설정·프로젝트 지시서·코딩 표준 같은 프로젝트 context 다. 세 번째는 흐름을 뒤섞어 순서를 묻거나 pull request 의 목적을 묻는데, 답은 병합 자체가 아니라 병합 전 검토다.",
+    "answerLooks": [
+      "\"Git tracks changes; GitHub is a platform that hosts Git repositories\" // 기술 vs 플랫폼.",
+      "\"A repository is the project together with its version history\" // 프로젝트 + 이력.",
+      "\"A branch lets work proceed without modifying the main version until it is approved\" // 승인 전까지 main 보호.",
+      "\"A pull request asks the team to review and merge changes from one branch into another\" // 검토 + 병합 요청.",
+      "\"Code review may be done by another developer or an automated system before approval\" // 사람 또는 자동 시스템.",
+      "\"The repository also supplies project context: tests, documentation, configuration, project instructions, and coding standards\" // 코드 외의 context.",
+      "\"Claude Code can inspect pull request changes and identify potential problems\" // PR 리뷰 참여."
+    ],
+    "traps": [
+      "\"GitHub is the version control system and Git is the website\": the two are swapped. // 둘을 뒤바꾼 보기.",
+      "\"A repository only stores the current files\": it stores the version history too. // 이력이 빠지면 오답.",
+      "\"A commit merges a branch into main\": a commit records changes; merging happens after review. // commit 과 merge 를 섞은 보기.",
+      "\"A pull request immediately applies the changes to the main branch\": it is a request to review before merging. // PR 은 즉시 반영이 아니다.",
+      "\"Code review must always be done by a human developer\": an automated system can examine the changes as well. // 사람만이라고 하면 오답.",
+      "\"Claude Code needs git commands memorized to work in a repository\": the lecture states the structure matters, not the commands. // 명령어 암기가 조건이 아니다.",
+      "\"A repository gives Claude only source code, so standards must go in the prompt\": tests, docs, configuration, and standards in the repo are themselves project context. // repository 자체가 context 원천."
+    ],
+    "memorize": "Git tracks, GitHub hosts; a repository is the project plus its memory; commit saves changes, branch isolates work, pull request asks for review, review checks it, merge lands it — and Claude Code lives inside that repository, reading its context as well as its code. // Git 은 추적하고 GitHub 은 호스팅한다, repository 는 프로젝트에 기억을 더한 것, commit 은 저장·branch 는 분리·pull request 는 검토 요청·review 는 확인·merge 는 반영, 그리고 Claude Code 는 그 repository 안에서 코드와 함께 context 를 읽는다."
+  },
+  "createdAt": "2026-09-10T18:30:00Z"
+}

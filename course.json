@@ -78,6 +78,16 @@
           "title": "BUILD: ShopAssist Becomes an Agentic System"
         }
       ]
+    },
+    {
+      "no": 6,
+      "title": "Claude Code",
+      "lectures": [
+        {
+          "no": "41",
+          "title": "Git, GitHub, Repositories, and Pull Requests for Non-Developers"
+        }
+      ]
     }
   ]
 }
