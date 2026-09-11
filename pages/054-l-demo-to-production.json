@@ -1,0 +1,62 @@
+{
+  "id": "l-054",
+  "kind": "lesson",
+  "order": 54,
+  "section": "Instructor Interview: From Exam Prep to Production Practice",
+  "lecture": "54",
+  "title_en": "From Impressive Demo to Production System",
+  "title": "인상적인 데모에서 프로덕션 시스템으로",
+  "domain": "신뢰성",
+  "summary": "The biggest misconception engineers bring from traditional architecture is the deterministic mindset: an LLM is probabilistic, so you design permissions around what the model should be allowed to do — not just what it can do — and put a human in the loop so risky operations such as refunds cannot happen by mistake. A demo proves capability on clean context and a well-defined task, but production brings incomplete inputs, tool failures, permission issues, and customers who ask three things in one message, so the most important and most time-consuming part of the architecture is knowing what happens when it fails. // 전통적인 아키텍처에서 가져오는 가장 큰 오해는 결정론적 사고방식이다. LLM 은 확률적이니, 모델이 무엇을 할 수 있는지가 아니라 무엇을 하도록 허용할지를 기준으로 권한을 설계하고, 환불 같은 위험한 작업이 실수로 일어나지 않게 사람을 개입시킨다. 데모는 깨끗한 컨텍스트와 잘 정의된 작업에서 가능성을 증명할 뿐이고, 프로덕션에는 불완전한 입력, 툴 실패, 권한 문제, 한 메시지에 세 가지를 묻는 고객이 있다. 그래서 아키텍처에서 가장 중요하고 가장 시간이 많이 드는 부분은 실패했을 때 무슨 일이 일어나는지 아는 것이다.",
+  "paragraphs": [
+    {"en": "Now let's talk a little bit about misconceptions.", "ko": "이제 오해에 대해 조금 이야기해 보죠."},
+    {"en": "What is the biggest misconception software engineers bring from traditional software", "ko": "소프트웨어 엔지니어가 전통적인 소프트웨어"},
+    {"en": "architecture into AI?", "ko": "아키텍처에서 AI 로 가져오는 가장 큰 오해는 뭘까요?"},
+    {"en": "I believe it's a deterministic mindset, because in this architecture we have, again, that probabilistic", "ko": "결정론적 사고방식이라고 봐요. 이 아키텍처에는 앞서 말한 확률적인"},
+    {"en": "behavior, and we never know what the LLM can return, so the approach has to be different.", "ko": "동작이 있고, LLM 이 무엇을 돌려줄지 절대 모르니까 접근 방식이 달라야 합니다."},
+    {"en": "We have to think about permissions, and we should think not only about what the", "ko": "권한을 생각해야 하고, 모델이"},
+    {"en": "model can do, but also about what the model should be allowed to do, right? And about when we need a", "ko": "무엇을 할 수 있는지뿐 아니라 무엇을 하도록 허용해야 하는지도 생각해야 해요. 그리고 언제"},
+    {"en": "human in the loop, so that we don't allow risky operations by mistake — like refunds, etc.", "ko": "사람을 개입시킬지도요. 환불 같은 위험한 작업이 실수로 일어나지 않도록요."},
+    {"en": "So I would say it's another mindset — the deterministic mindset is a different approach.", "ko": "그러니까 다른 사고방식이에요. 결정론적 사고방식과는 접근이 다릅니다."},
+    {"en": "It's also about mistakes. The question: what are the biggest architectural", "ko": "실수 이야기도 해 보죠. 가장 큰 아키텍처 실수는 뭘까요?"},
+    {"en": "mistakes you see when a team takes an impressive AI demo and tries to turn it into a production system?", "ko": "팀이 인상적인 AI 데모를 프로덕션 시스템으로 바꾸려 할 때 보이는 것 중에요."},
+    {"en": "Well, a good demo can prove that the model can do something, right? But if you need to", "ko": "음, 좋은 데모는 모델이 뭔가를 할 수 있다는 걸 증명해 줘요. 하지만"},
+    {"en": "produce — if you need to build a production-ready architecture, then you need to", "ko": "프로덕션에 올릴 아키텍처를 만들어야 한다면,"},
+    {"en": "understand what happens when it fails, right? — And that will be the next question. — Yes, and this", "ko": "실패하면 무슨 일이 일어나는지 이해해야 합니다. — 그게 다음 질문이겠네요. — 네, 그리고 이게"},
+    {"en": "is the most important question, and this is the most time-consuming part. — Can you describe", "ko": "가장 중요한 질문이고, 시간이 가장 많이 드는 부분이에요. — AI 프로토타입이"},
+    {"en": "a situation when an AI prototype looked impressive but completely failed when you started thinking", "ko": "인상적이었는데 프로덕션을 생각하기 시작하자 완전히 무너진 상황을"},
+    {"en": "about production? — A common example: the prototype works perfectly when we have a clean", "ko": "설명해 주실 수 있나요? — 흔한 예로, 프로토타입은 컨텍스트가 깨끗하고"},
+    {"en": "context and a well-defined task, but in production users provide incomplete inputs, tools fail,", "ko": "작업이 잘 정의돼 있으면 완벽하게 돌아가요. 그런데 프로덕션에서는 사용자가 불완전한 입력을 주고, 툴이 실패하고,"},
+    {"en": "we have issues with permissions, etc. So it's always about being ready for anything, right?", "ko": "권한 문제도 생기죠. 그러니까 늘 어떤 상황에도 대비하는 게 핵심이에요."},
+    {"en": "For example, you build an AI assistant that should process customer requests, right,", "ko": "예를 들어 고객 요청을 처리하는 AI 어시스턴트를 만든다고 해 보죠."},
+    {"en": "but the customer decides to ask you three different questions at the same time.", "ko": "그런데 고객이 한 번에 세 가지 질문을 하기로 한 거예요."},
+    {"en": "The customer asks, \"Hey, can you please do a refund? Then also please check this order. And also,", "ko": "고객이 이렇게 묻는 거죠. '환불 좀 해 주실래요? 그리고 이 주문도 확인해 주시고요. 그리고"},
+    {"en": "you know, I saw that new product — what's its price?\" And here you have to be ready", "ko": "새 제품을 봤는데 가격이 얼마예요?' 이런 상황에"},
+    {"en": "for any kind of situation like that. So instead of one request, the customer asked you three requests,", "ko": "대비해야 합니다. 요청 하나 대신 고객이 요청 세 개를 한 거죠."},
+    {"en": "right, and your system has to be ready to process all of them. So this is", "ko": "시스템은 그걸 전부 처리할 준비가 되어 있어야 해요. 이게 바로"},
+    {"en": "what AI architecture is.", "ko": "AI 아키텍처입니다."}
+  ],
+  "body": "### The biggest misconception: a deterministic mindset\n- LLM behavior is ==probabilistic — you never know what it will return==, so the approach has to change. // 확률적이니 접근이 달라야 한다.\n- ((Another mindset.)) Traditional \"configure it and it works\" thinking does not carry over. // 설정하면 된다는 사고가 통하지 않는다.\n\n### Can vs. should be allowed\n- Think not only about ==what the model can do== but about ==what the model should be allowed to do==. // 할 수 있는 것과 허용할 것은 다르다.\n- Design ==permissions== explicitly. // 권한을 명시적으로 설계한다.\n- Decide ==when a human is in the loop==, so ==risky operations such as refunds cannot happen by mistake==. // 환불 같은 위험한 작업엔 사람.\n\n### Demo vs. production\n| Demo / prototype | Production |\n|---|---|\n| ==clean context== | ==incomplete inputs== |\n| ==well-defined task== | several requests in one message |\n| tools always succeed | ==tools fail== |\n| no permission questions | ==permission issues== |\n- A demo ==proves the model can do something==; production requires knowing ==what happens when it fails==. // 실패하면 무슨 일이 일어나는지.\n- That is ==the most important and the most time-consuming part==. // 가장 중요하고 가장 오래 걸린다.\n\n### One message, three requests\n- \"Please do a refund, also check this order, and what's the price of the new product?\" // 환불·주문 확인·가격 문의를 한 번에.\n- The system must ==process all of them==, not just the first. // 첫 번째만이 아니라 전부.\n- A robust design ==splits the message into distinct requests, handles each with the right tool and permission, and combines the results into one reply== — the refund still passes its approval rules. // 나누고, 각각 처리하고, 하나로 합친다.\n\n### Be ready for anything\n- ((Design for failure, not for the happy path.)) // 실패를 설계한다.",
+  "keyPoints": [
+    "The biggest misconception is the deterministic mindset: LLM output is probabilistic, so design for what it might return, not what it should return. // 결정론적 사고가 가장 큰 오해다.",
+    "Design permissions around what the model should be allowed to do, not only what it can do; risky actions such as refunds need a human in the loop. // 할 수 있는 것과 허용할 것은 다르다. 환불엔 사람.",
+    "A demo runs on clean context and a well-defined task; production brings incomplete inputs, tool failures, and permission issues — plan what happens when it fails. // 실패했을 때를 설계한다.",
+    "One customer message can contain several requests: handle every one of them, not just the first. // 한 메시지에 요청이 여러 개일 수 있다."
+  ],
+  "examTrends": {
+    "how": "Two recurring shapes come straight from this lecture. First, a support agent that can technically issue refunds: the correct option limits what it is allowed to do — a programmatic check or hook that blocks high-risk actions or routes them for human approval — rather than a prompt instruction asking it to be careful. Second, a customer message that bundles several requests: the correct option decomposes it into distinct items, investigates each with the right tool, and returns one unified answer, instead of answering only the first question or asking the customer to send them separately. // 이 강의에서 바로 나오는 반복 형태가 둘이다. 첫째, 기술적으로 환불을 할 수 있는 지원 에이전트다. 정답은 조심하라는 프롬프트 지시가 아니라, 위험한 작업을 막거나 사람 승인으로 보내는 코드 검사·hook 으로 허용 범위를 제한하는 것이다. 둘째, 요청 여러 개를 한 메시지에 담은 고객이다. 정답은 요청을 개별 항목으로 나누고 각각을 맞는 툴로 조사한 뒤 하나로 합친 답을 돌려주는 것이고, 첫 질문에만 답하거나 따로 보내 달라고 하는 것은 오답이다.",
+    "answerLooks": [
+      "Gate refunds above a threshold with a hook or programmatic check that routes them for human approval // 기준을 넘는 환불은 hook 으로 사람 승인.",
+      "Decompose the multi-part request into distinct items, handle each, and synthesize one reply // 나누고, 각각 처리하고, 하나로 합친다.",
+      "Plan for incomplete input and tool failure: ask for missing details, return structured errors, retry or escalate // 불완전한 입력과 툴 실패에 대비한다."
+    ],
+    "traps": [
+      "\"Tell the model in the system prompt to be careful with refunds\": a probabilistic safeguard for a risky action. // 위험한 작업에 프롬프트 안내만.",
+      "Answering only the first request in a multi-part message: the other two are silently dropped. // 첫 요청만 처리하면 나머지가 사라진다.",
+      "\"The prototype passed on clean examples, so it is production-ready\": clean context hides the real failure modes. // 깨끗한 예시 통과가 준비 완료는 아니다.",
+      "Giving the agent broad permissions so it never gets stuck: what it can do is not what it should be allowed to do. // 막히지 않게 권한을 넓게 주기."
+    ],
+    "memorize": "Can ≠ should be allowed. Design what happens when it fails. // 할 수 있다 ≠ 해도 된다. 실패했을 때를 설계한다."
+  },
+  "createdAt": "2026-09-11T16:40:00+09:00"
+}

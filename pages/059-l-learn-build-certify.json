@@ -1,0 +1,66 @@
+{
+  "id": "l-059",
+  "kind": "lesson",
+  "order": 59,
+  "section": "Instructor Interview: From Exam Prep to Production Practice",
+  "lecture": "59",
+  "title_en": "If I Started Over: Learn, Build, Then Certify",
+  "title": "다시 시작한다면: 배우고, 만들고, 그다음 자격증",
+  "domain": "모델 선택",
+  "summary": "Starting over, the instructor would stop jumping between random tutorials and long courses, use the certification exam guide as a roadmap, study its topics, build something real, and only then take the exam and build for production. Over the next five years, basic knowledge such as context management, reliability, and evaluation stays relevant while vendor-specific knowledge fades as models change, and learning through a real application like ShopAssist beats pure theory because you see where each piece of knowledge applies. // 다시 시작한다면 강사는 이런저런 튜토리얼과 긴 강의 사이를 떠돌지 않고, 자격증 시험 가이드를 로드맵으로 삼아 그 주제를 공부하고, 진짜 뭔가를 만들고, 그다음에야 시험을 보고 프로덕션용으로 만든다. 앞으로 5년 동안 context management · reliability · evaluation 같은 기본 지식은 계속 유효하지만, 벤더 특화 지식은 모델이 바뀌면서 빛이 바랜다. ShopAssist 같은 실제 애플리케이션으로 배우면 각 지식이 어디에 쓰이는지 보이기 때문에 순수 이론보다 잘 배운다.",
+  "paragraphs": [
+    {"en": "If you were starting your career again right now, knowing everything you know today, what", "ko": "지금 아는 걸 다 알고 커리어를 처음부터 다시 시작한다면,"},
+    {"en": "would you learn first?", "ko": "무엇부터 배우시겠어요?"},
+    {"en": "Where do you need to start?", "ko": "어디서 시작해야 할까요?"},
+    {"en": "You mentioned that we don't need to start with prompt engineering, but where do we need to start?", "ko": "프롬프트 엔지니어링부터 할 필요는 없다고 하셨는데, 그럼 어디서 시작해야 하나요?"},
+    {"en": "Yeah, it's a great question.", "ko": "네, 좋은 질문이에요."},
+    {"en": "First of all, I would not spend too much time, like I did, jumping between random YouTube tutorials", "ko": "우선, 저처럼 이런저런 유튜브 튜토리얼과"},
+    {"en": "and long courses.", "ko": "긴 강의 사이를 오가며 시간을 너무 많이 쓰지는 않을 거예요."},
+    {"en": "Instead, I would use a certification exam guide as a roadmap, and then I would study", "ko": "대신 자격증 시험 가이드를 로드맵으로 삼고,"},
+    {"en": "that roadmap — study those topics.", "ko": "그 로드맵, 그 주제들을 공부하겠어요."},
+    {"en": "And right after that, I would build something real — some practical product.", "ko": "그리고 바로 이어서 진짜 뭔가를, 실용적인 제품을 만들 거예요."},
+    {"en": "And then, after that, if I have practical experience and basic knowledge, go ahead:", "ko": "그다음, 실무 경험과 기본 지식이 생기면 그때 가세요."},
+    {"en": "try to pass an exam, try to build something in production.", "ko": "시험에 도전하고, 프로덕션에서 뭔가를 만들어 보세요."},
+    {"en": "Let's talk about long-term career.", "ko": "장기적인 커리어 이야기를 해 보죠."},
+    {"en": "What will separate AI professionals who remain valuable over the next five years from those", "ko": "앞으로 5년 동안 가치를 유지하는 AI 전문가와"},
+    {"en": "whose skills become obsolete?", "ko": "기술이 쓸모없어지는 사람을 가르는 건 뭘까요?"},
+    {"en": "I would say, as I said, the basic knowledge.", "ko": "말씀드렸듯이 기본 지식이라고 봐요."},
+    {"en": "If you try to learn something vendor-specific — Claude-specific, domain-specific — well, models", "ko": "벤더 특화, Claude 특화, 특정 영역 특화 지식을 배우면, 모델은"},
+    {"en": "will change, right?", "ko": "바뀌잖아요."},
+    {"en": "And we don't know which model will be popular in a couple of years.", "ko": "몇 년 뒤에 어떤 모델이 인기 있을지 모릅니다."},
+    {"en": "But if you learn the basic things, like context management, reliability, evaluation, I believe", "ko": "하지만 context management, reliability, evaluation 같은 기본을 배우면,"},
+    {"en": "they will be relevant even in many years.", "ko": "여러 해가 지나도 여전히 유효할 거라고 믿어요."},
+    {"en": "So this is my approach.", "ko": "그게 제 방식입니다."},
+    {"en": "Don't waste your time on vendor-specific things.", "ko": "벤더 특화 지식에 시간을 낭비하지 마세요."},
+    {"en": "Yeah, and you're definitely about the practical approach.", "ko": "네, 그리고 확실히 실용적인 접근을 중시하시죠."},
+    {"en": "You built your Claude Certified Architect – Foundations course around the ShopAssist AI project.", "ko": "Claude Certified Architect – Foundations 강의를 ShopAssist AI 프로젝트 중심으로 만드셨잖아요."},
+    {"en": "Why did you choose a real application instead of simply teaching the exam topics one by one?", "ko": "시험 주제를 하나씩 가르치는 대신 실제 애플리케이션을 고른 이유는 뭔가요?"},
+    {"en": "For me, it's the best way to understand how the knowledge can be applied.", "ko": "제게는 지식이 어떻게 적용되는지 이해하는 가장 좋은 방법이에요."},
+    {"en": "And pure theory is harder to remember.", "ko": "순수한 이론은 기억하기 더 어렵고요."},
+    {"en": "And when you see where you can apply that knowledge in practice, that is the best way to learn it.", "ko": "그 지식을 실제로 어디에 쓸 수 있는지 보면, 그게 가장 잘 배우는 방법입니다."},
+    {"en": "This is how I've done it over time.", "ko": "저도 늘 그렇게 해 왔고요."},
+    {"en": "And this is what I recommend other people do.", "ko": "다른 분들께도 그렇게 하라고 권합니다."}
+  ],
+  "body": "### If I started over\n- Don't ==jump between random YouTube tutorials and long courses==. // 이것저것 떠돌지 않는다.\n- Use ==the certification exam guide as a roadmap== and study its topics. // 시험 가이드를 로드맵으로.\n- Then ==build something real==; only then take the exam and build in production. // 만들고, 그다음 시험과 프로덕션.\n\n### The roadmap for this exam\n| Domain | Weight |\n|---|---|\n| D1 Agentic Architecture & Orchestration | 27% |\n| D2 Tool Design & MCP Integration | 18% |\n| D3 Claude Code Configuration & Workflows | 20% |\n| D4 Prompt Engineering & Structured Output | 20% |\n| D5 Context Management & Reliability | 15% |\n- Study ==in proportion to the weights==; D1 is the largest single share. // 비중대로 공부한다.\n\n### Skills that keep their value\n- ==Basic knowledge== — context management, reliability, evaluation — ==stays relevant for years==. // 기본은 오래간다.\n- ==Vendor-specific knowledge fades: models change==, and nobody knows which one will be popular. // 벤더 특화 지식은 바랜다.\n- For the exam, though, Claude-specific questions still appear (lecture 56), so learn both. // 시험에는 Claude 특화 문제도 나온다.\n\n### Learning through a real application\n- The course is built around ==ShopAssist== because ==seeing where knowledge applies is the best way to learn it==. // 실제 앱으로 배운다.\n- ==Pure theory is harder to remember.== // 순수 이론은 잊기 쉽다.",
+  "keyPoints": [
+    "Use the official exam guide as the study roadmap instead of jumping between random tutorials. // 시험 가이드가 로드맵이다.",
+    "Order: study the guide's topics → build something real → take the exam and build in production. // 공부 → 만들기 → 시험.",
+    "Principles — context management, reliability, evaluation — outlast any model; vendor-specific details change. // 원칙은 모델보다 오래간다.",
+    "Learning through a real application like ShopAssist beats pure theory, because you see where each concept applies. // 실제 앱으로 배우면 오래 남는다."
+  ],
+  "examTrends": {
+    "how": "This lecture is about study strategy, and it lines up with how the exam is weighted: the official guide's five domains (27 · 18 · 20 · 20 · 15) are the roadmap, and most questions reward durable principles over model trivia. In practice, the options that hinge on a specific model's name, version, or a number that changes between releases are rarely the point; the correct option is usually the one that applies a principle — manage context, validate outputs, evaluate, limit permissions — to the scenario. Claude-specific mechanics still matter where the stem points to them. // 이 강의는 공부 전략에 관한 것이고, 시험 비중과 맞아떨어진다. 공식 가이드의 다섯 도메인(27 · 18 · 20 · 20 · 15)이 로드맵이고, 대부분의 문제는 모델 잡지식보다 오래가는 원칙에 점수를 준다. 실제로 특정 모델의 이름·버전이나 릴리스마다 바뀌는 숫자에 달린 보기는 핵심이 아닌 경우가 많고, 정답은 보통 컨텍스트 관리·출력 검증·평가·권한 제한 같은 원칙을 시나리오에 적용한 보기다. 지문이 Claude 특화 기능을 가리키면 그 메커니즘은 여전히 중요하다.",
+    "answerLooks": [
+      "A principle applied to the scenario — manage context, validate outputs, evaluate, limit permissions // 원칙을 시나리오에 적용.",
+      "The Claude mechanism the stem explicitly calls for, used as intended // 지문이 부르는 Claude 기능을 제대로.",
+      "A design that would still hold if the model were swapped // 모델을 바꿔도 유지되는 설계."
+    ],
+    "traps": [
+      "An option whose only merit is naming the newest or biggest model // 최신·최대 모델 이름만 내세운다.",
+      "An option built on a number or limit you would have to memorize and that the scenario does not need // 시나리오와 무관한 암기 숫자.",
+      "Theory with no link to the scenario: a correct definition that does not solve the stated problem // 문제를 풀지 않는 정의."
+    ],
+    "memorize": "Exam guide = roadmap. Principles outlast models. Learn by building. // 가이드가 지도, 원칙은 모델보다 오래간다, 만들며 배운다."
+  },
+  "createdAt": "2026-09-11T17:20:00+09:00"
+}

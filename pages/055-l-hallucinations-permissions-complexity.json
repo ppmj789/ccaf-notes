@@ -1,0 +1,67 @@
+{
+  "id": "l-055",
+  "kind": "lesson",
+  "order": 55,
+  "section": "Instructor Interview: From Exam Prep to Production Practice",
+  "lecture": "55",
+  "title_en": "Hallucinations, Permissions, and Unnecessary Complexity",
+  "title": "환각, 권한, 그리고 불필요한 복잡성",
+  "domain": "신뢰성",
+  "summary": "Hallucinations cannot be eliminated, so an architect designs around them: even a great prompt does not make an LLM response reliable, so the system must handle incorrect answers, limit permissions so that risky operations such as refunds or transactions wait until they are certainly allowed, and add human review. Adding more AI makes a system worse when deterministic software already solves the problem or when a multi-agent system could be one function with a few LLM calls — the one architecture the instructor would ban is \"multi-agent systems for everything\", being against unnecessary complexity rather than against agents. // 환각은 없앨 수 없으니 아키텍트는 환각을 전제로 설계한다. 훌륭한 프롬프트로도 LLM 응답을 믿을 수는 없으므로, 시스템은 틀린 답을 처리하고, 권한을 제한해 환불·거래 같은 위험한 작업은 허용이 확실할 때까지 기다리게 하고, 사람의 검토를 더한다. 결정론적 소프트웨어로 이미 풀리는 문제이거나, 멀티에이전트 시스템이 함수 하나와 LLM 호출 몇 번이면 되는 경우에 AI 를 더 넣으면 시스템이 나빠진다. 강사가 금지하고 싶은 단 하나의 아키텍처는 \"모든 곳에 쓰는 멀티에이전트\" 이고, 에이전트가 아니라 불필요한 복잡성에 반대한다.",
+  "paragraphs": [
+    {"en": "As I remember, a lot of questions in the exam are associated with hallucinations —", "ko": "제 기억으로는 시험 문제 중 상당수가 환각(hallucination)과 관련 있어요."},
+    {"en": "how to manage them.", "ko": "환각을 어떻게 다룰지요."},
+    {"en": "So how should an architect think about hallucinations in a production system?", "ko": "그럼 아키텍트는 프로덕션 시스템의 환각을 어떻게 생각해야 할까요?"},
+    {"en": "Is the goal to eliminate them, or to design around them?", "ko": "목표가 환각을 없애는 건가요, 아니면 환각을 전제로 설계하는 건가요?"},
+    {"en": "You should design your system around them, because an LLM can produce incorrect answers.", "ko": "환각을 전제로 시스템을 설계해야 합니다. LLM 은 틀린 답을 낼 수 있으니까요."},
+    {"en": "And even if you have a great prompt, you cannot rely on the LLM's response.", "ko": "훌륭한 프롬프트가 있어도 LLM 응답을 믿을 수는 없어요."},
+    {"en": "And you have to be ready to handle incorrect responses.", "ko": "틀린 응답을 처리할 준비가 되어 있어야 합니다."},
+    {"en": "And it's very important to limit permissions.", "ko": "그리고 권한을 제한하는 게 아주 중요해요."},
+    {"en": "So you shouldn't allow risky operations like refunds or transactions before you are", "ko": "환불이나 거래 같은 위험한 작업은"},
+    {"en": "100% sure that they're allowed in this case.", "ko": "이 경우에 허용된다고 100% 확신하기 전에는 허용하면 안 됩니다."},
+    {"en": "And of course, human review.", "ko": "그리고 물론 사람의 검토도요."},
+    {"en": "But at what point does adding more AI actually make a system worse?", "ko": "그런데 AI 를 더 넣는 게 오히려 시스템을 나쁘게 만드는 건 언제인가요?"},
+    {"en": "You know, good question.", "ko": "좋은 질문이에요."},
+    {"en": "Because if deterministic software solves the problem, use it.", "ko": "결정론적 소프트웨어로 문제가 풀리면, 그걸 쓰세요."},
+    {"en": "There's no need to use AI everywhere.", "ko": "AI 를 모든 곳에 쓸 필요는 없어요."},
+    {"en": "And orchestration.", "ko": "그리고 orchestration 이요."},
+    {"en": "It's a big mistake. — Yeah.", "ko": "큰 실수죠. — 네."},
+    {"en": "The agentic approach.", "ko": "에이전틱 접근이요."},
+    {"en": "You can replace that difficult multi-agent system with just one function and several", "ko": "복잡한 멀티에이전트 시스템을 함수 하나와"},
+    {"en": "requests to the LLM that do this.", "ko": "LLM 요청 몇 번으로 대신할 수 있어요."},
+    {"en": "So it should be as simple as possible.", "ko": "그러니까 최대한 단순해야 합니다."},
+    {"en": "That was my next question.", "ko": "그게 제 다음 질문이었어요."},
+    {"en": "Are companies currently over-engineering AI agents?", "ko": "지금 기업들이 AI 에이전트를 과하게 설계하고 있나요?"},
+    {"en": "I see that they are, but you are deeper in this topic.", "ko": "제가 보기엔 그런데, 이 주제는 강사님이 더 깊이 아시니까요."},
+    {"en": "So you have your experience. — Sometimes. Sometimes.", "ko": "경험이 있으시잖아요. — 가끔요. 가끔."},
+    {"en": "Sometimes people want, you know, to learn something, and then they want to apply their knowledge", "ko": "가끔 사람들은 뭔가를 배우고 나면 그 지식을"},
+    {"en": "even in places where it's not necessary.", "ko": "필요 없는 곳에까지 적용하고 싶어 해요."},
+    {"en": "And I've seen systems, like multi-agent systems, that could be replaced by just one function.", "ko": "그리고 함수 하나로 대체할 수 있는 멀티에이전트 시스템 같은 것도 봤습니다."},
+    {"en": "Yeah, so here it is.", "ko": "네, 그럼 이 질문이요."},
+    {"en": "If you could ban one AI architecture that companies are blindly adopting in 2026, what would it be?", "ko": "2026년에 기업들이 무작정 도입하는 AI 아키텍처 하나를 금지할 수 있다면, 무엇인가요?"},
+    {"en": "Multi-agent systems for everything.", "ko": "모든 곳에 쓰는 멀티에이전트 시스템이요."},
+    {"en": "So yeah — and I'm not anti-agent, no, I'm anti-unnecessary complexity. — Yeah.", "ko": "네, 저는 에이전트 반대론자가 아니에요. 불필요한 복잡성에 반대하는 거죠. — 네."}
+  ],
+  "body": "### Hallucinations: design around them\n- The goal is to ==design around hallucinations, not to eliminate them==. // 없애는 게 아니라 전제하고 설계한다.\n- ==Even with a great prompt, you cannot rely on the LLM's response.== // 좋은 프롬프트로도 믿을 수 없다.\n- Be ready to ==handle incorrect responses==. // 틀린 응답을 처리한다.\n\n### Three defenses\n| Defense | What it means |\n|---|---|\n| Handle incorrect responses | check outputs before they are used |\n| ==Limit permissions== | no refunds or transactions until you are 100% sure they are allowed |\n| ==Human review== | a person checks risky decisions |\n\n### When more AI makes it worse\n- ==If deterministic software solves the problem, use it.== // 결정론적 코드로 되면 그걸 쓴다.\n- ==There's no need to use AI everywhere.== // AI 를 모든 곳에 쓸 필요는 없다.\n- Over-orchestration is a big mistake: ==a complex multi-agent system can often be one function plus a few LLM calls==. // 함수 하나와 LLM 호출 몇 번.\n- ((As simple as possible.)) // 최대한 단순하게.\n\n### Over-engineered agents\n- People learn a technique and then ==apply it where it isn't necessary==. // 배운 걸 필요 없는 곳에 쓴다.\n- The one architecture to ban: ==multi-agent systems for everything==. // 금지할 것: 모든 곳의 멀티에이전트.\n- \"Not anti-agent — ==anti-unnecessary complexity==.\" // 에이전트가 아니라 불필요한 복잡성에 반대.",
+  "keyPoints": [
+    "Design around hallucinations instead of trying to eliminate them: no prompt makes an LLM response fully reliable. // 환각은 없애지 못하니 전제하고 설계한다.",
+    "Limit permissions: refunds and transactions wait until they are certainly allowed, with human review for risky decisions. // 권한 제한과 사람 검토.",
+    "If deterministic code solves the problem, use it; AI does not belong everywhere. // 코드로 되면 코드를 쓴다.",
+    "Choose the simplest architecture that works — many multi-agent systems could be one function with a few LLM calls. // 되는 것 중 가장 단순한 구조."
+  ],
+  "examTrends": {
+    "how": "The instructor says hallucination questions are common, and their answer is always a design, never a promise: verify the model's claims against source data or tool results, keep risky actions behind permission checks and human approval, and route uncertain cases to a person. A second shape asks for an architecture: the correct option is the simplest one that meets the stated requirements — plain code for deterministic steps, a single agent or a function with a few LLM calls before a multi-agent system — and multi-agent designs win only when the stem needs parallel, independent specialists or isolated context. // 강사 말대로 환각 문제는 자주 나오고, 정답은 언제나 약속이 아니라 설계다. 모델의 주장을 원본 데이터나 툴 결과와 대조하고, 위험한 작업은 권한 검사와 사람 승인 뒤에 두고, 불확실한 건은 사람에게 보낸다. 두 번째 형태는 아키텍처를 묻는데, 정답은 요구 사항을 만족하는 가장 단순한 것이다. 결정론적 단계는 일반 코드로, 멀티에이전트 전에 단일 에이전트나 함수 하나와 LLM 호출 몇 번으로. 멀티에이전트는 지문이 병렬로 독립적인 전문가나 분리된 컨텍스트를 필요로 할 때만 정답이 된다.",
+    "answerLooks": [
+      "Verify the model's claims against the retrieved source or tool result before acting on them // 행동 전에 원본·툴 결과와 대조.",
+      "Keep refunds and transactions behind a permission check and human approval // 환불·거래는 권한 검사와 사람 승인 뒤에.",
+      "Use deterministic code for the rule-based step and a single LLM call for the judgement step // 규칙은 코드, 판단만 LLM."
+    ],
+    "traps": [
+      "\"A better prompt (or lower temperature) will eliminate hallucinations\": you cannot rely on the response no matter how good the prompt is. // 프롬프트로 환각을 없앤다.",
+      "Adding a multi-agent system or a verifier agent to a simple, well-defined task: unnecessary complexity. // 단순한 작업에 멀티에이전트.",
+      "Using the LLM for a calculation or policy rule that deterministic code already handles: slower, costlier, and less reliable. // 코드로 되는 일을 LLM 에 맡긴다."
+    ],
+    "memorize": "Design around hallucinations; if code can do it, don't use AI. Not anti-agent — anti-unnecessary complexity. // 환각은 전제하고 설계, 코드로 되면 AI 는 안 쓴다."
+  },
+  "createdAt": "2026-09-11T16:50:00+09:00"
+}
