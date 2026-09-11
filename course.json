@@ -118,6 +118,16 @@
           "title": "Reliability Patterns and Final Exam Mapping"
         }
       ]
+    },
+    {
+      "no": 8,
+      "title": "Instructor Interview: From Exam Prep to Production Practice",
+      "lectures": [
+        {
+          "no": "49",
+          "title": "Do You Need a Certification to Build an AI Career?"
+        }
+      ]
     }
   ]
 }
