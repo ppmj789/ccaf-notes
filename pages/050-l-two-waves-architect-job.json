@@ -1,0 +1,68 @@
+{
+  "id": "l-050",
+  "kind": "lesson",
+  "order": 50,
+  "section": "Instructor Interview: From Exam Prep to Production Practice",
+  "lecture": "50",
+  "title_en": "Two Waves That Changed the Architect's Job",
+  "title": "아키텍트의 일을 바꾼 두 물결",
+  "domain": "신뢰성",
+  "summary": "The instructor saw two waves change the architect's job — no-code and low-code automation such as n8n, then agentic coding with Claude Code — and building with Claude Code showed that a classic developer or architect background is no longer enough without context management and choosing the right orchestration approach. Vibe coding is fine for a demo that proves the model can do something, but not for production, because you never know what the LLM will return or which tool it will use, so a real system must be reliable for any input and any response. // 강사는 두 물결이 아키텍트의 일을 바꿨다고 본다. n8n 같은 노코드·로코드 자동화, 그리고 Claude Code 같은 에이전틱 코딩이다. Claude Code 로 만들어 보니 context management 와 적절한 orchestration 방식 선택을 모르면 전통적인 개발자·아키텍트 배경만으로는 부족했다. vibe coding 은 모델이 뭔가를 할 수 있다는 걸 보여 주는 데모에는 좋지만 프로덕션에는 부족하다. LLM 이 무엇을 돌려줄지, 어떤 툴을 쓸지 알 수 없으니 실제 시스템은 어떤 입력과 응답에도 견뎌야 한다.",
+  "paragraphs": [
+    {"en": "You've spent more than 15 years in software engineering and enterprise systems architecture.", "ko": "소프트웨어 엔지니어링과 엔터프라이즈 시스템 아키텍처 분야에서 15년 넘게 일하셨죠."},
+    {"en": "When did you realize that AI was changing the architect's job itself?", "ko": "AI 가 아키텍트라는 일 자체를 바꾸고 있다는 걸 언제 깨달으셨나요?"},
+    {"en": "What was that experience? — Good question.", "ko": "어떤 경험이었나요? — 좋은 질문이네요."},
+    {"en": "I remember two waves.", "ko": "두 번의 물결이 기억납니다."},
+    {"en": "So the first wave was related to no-code and low-code systems like n8n, when everyone", "ko": "첫 번째 물결은 n8n 같은 노코드·로코드 시스템이었어요. 그때는"},
+    {"en": "without any software development experience could build automations, and, you know, we saw those", "ko": "소프트웨어 개발 경험이 전혀 없는 사람도 자동화를 만들 수 있었고,"},
+    {"en": "numerous AI agencies that automated everything. And then I remember the second wave, related", "ko": "모든 걸 자동화해 주는 AI 에이전시가 우후죽순 생겼죠. 그리고 두 번째 물결은"},
+    {"en": "to agentic coding — for example, Claude Code — and that changed the approach to building", "ko": "에이전틱 코딩, 예를 들면 Claude Code 였고, 그게 자동화 시스템을"},
+    {"en": "automation systems. And when I tried to build something with Claude Code, I realized that", "ko": "만드는 방식을 바꿔 놓았습니다. Claude Code 로 뭔가를 만들어 보면서 깨달았죠."},
+    {"en": "it's not enough to have that classic background of a software developer, or even an", "ko": "소프트웨어 개발자, 아니 아키텍트의 전통적인 배경만으로는"},
+    {"en": "architect, and I need more knowledge: I need to understand what context management is,", "ko": "부족하고 더 많은 지식이 필요하다는 걸요. context management 가 무엇인지,"},
+    {"en": "how to choose the proper orchestration approach, etc. So at that point I realized that", "ko": "적절한 orchestration 방식을 어떻게 고르는지 같은 것들요. 그래서 그때 깨달았어요."},
+    {"en": "I need to learn more to build systems like that.", "ko": "이런 시스템을 만들려면 더 배워야 한다는 걸요."},
+    {"en": "What do you think about the vibe coding trend?", "ko": "vibe coding 유행은 어떻게 보세요?"},
+    {"en": "Is it making 10x more garbage, or is it something that can really change the software", "ko": "쓰레기를 10배로 찍어 내는 건가요, 아니면 소프트웨어"},
+    {"en": "development market?", "ko": "개발 시장을 정말 바꿀 수 있는 건가요?"},
+    {"en": "Yeah, first of all, why not?", "ko": "네, 우선, 안 될 거 없죠."},
+    {"en": "It depends on why you're doing it, right?", "ko": "무엇을 위해 하느냐에 달렸어요."},
+    {"en": "I don't believe that you can build a production-ready product just by vibe coding,", "ko": "vibe coding 만으로 프로덕션에 올릴 제품을 만들 수 있다고는 생각하지 않아요."},
+    {"en": "because if you just build something for the happy path, you see that it works", "ko": "happy path 만 보고 만들면, 단순한 요청에는"},
+    {"en": "for some simple requests. But the complexity of AI systems is that you never know —", "ko": "잘 돌아가는 것처럼 보이거든요. 하지만 AI 시스템이 복잡한 건, 절대 알 수 없다는 점이에요."},
+    {"en": "you never know what the LLM will return as a result, you never know which tool will be used, etc.", "ko": "LLM 이 무슨 결과를 돌려줄지, 어떤 툴이 쓰일지 절대 알 수 없어요."},
+    {"en": "And as a result, you need to create a reliable system that can handle any kind of", "ko": "그래서 어떤 입력과 LLM 응답이 와도"},
+    {"en": "input and LLM response. So in this case, I would say it's nice for creating some kind of demo,", "ko": "처리할 수 있는 신뢰할 만한 시스템을 만들어야 합니다. 그러니까 데모를 만드는 데는 좋다고 봐요."},
+    {"en": "just to prove that the model can do something. But if you need to implement some", "ko": "모델이 뭔가를 할 수 있다는 걸 증명하는 용도로요. 하지만 프로덕션에 올릴"},
+    {"en": "kind of production-ready solution, I don't believe that vibe coding will be enough.", "ko": "솔루션을 구현해야 한다면 vibe coding 으로는 부족하다고 봅니다."},
+    {"en": "Yeah, yeah.", "ko": "네, 네."},
+    {"en": "I mean, I think that's a good point.", "ko": "좋은 지적이라고 생각해요."},
+    {"en": "It's like, you know, you can build a system that can handle any kind of input and LLM", "ko": "그러니까, 어떤 입력과 LLM 응답도"},
+    {"en": "response, but if you need to implement some kind of production-ready solution, I", "ko": "처리하는 시스템을 만들 수는 있어도, 프로덕션에 올릴 솔루션을 구현해야 한다면"},
+    {"en": "don't believe that vibe coding will be enough.", "ko": "vibe coding 으로는 부족하다는 거죠."},
+    {"en": "I mean, you can build a system that can handle any kind of input and LLM response, but in", "ko": "어떤 입력과 LLM 응답도 처리하는 시스템을 만들 수는 있지만,"},
+    {"en": "case you need to implement some kind of production-ready solution, I don't believe…", "ko": "프로덕션에 올릴 솔루션을 구현해야 한다면, 제 생각엔…"}
+  ],
+  "body": "### Two waves\n- ==Wave 1: no-code and low-code automation== such as n8n — people without development experience could build automations, and many AI agencies automated everything. // 1차: 노코드·로코드 자동화.\n- ==Wave 2: agentic coding== such as Claude Code — it ==changed the approach to building automation systems==. // 2차: 에이전틱 코딩.\n\n### What the architect now needs\n- ==A classic developer or even architect background is not enough.== // 전통적인 배경만으로는 부족하다.\n- New knowledge: ==what context management is== and ==how to choose the proper orchestration approach==. // context management, orchestration 방식 선택.\n- These are the same areas the instructor named for the Architect exam in lecture 49. // 49강에서 말한 Architect 영역과 같다.\n\n### Vibe coding: good for demos\n- It depends on the purpose: ==fine for a demo that proves the model can do something==. // 데모에는 좋다.\n- ==Not enough for a production-ready solution.== // 프로덕션에는 부족하다.\n\n### Why the happy path is not enough\n- Building ==only for the happy path== makes the system look like it works on simple requests. // happy path 만 만들면 쉬운 요청에서는 되는 것처럼 보인다.\n- AI systems are complex because ==you never know what the LLM will return or which tool will be used==. // LLM 응답과 툴 선택은 예측할 수 없다.\n- So a production system must be ==reliable for any kind of input and any LLM response==. // 어떤 입력·응답에도 견뎌야 한다.\n\n### Architect's takeaway\n- ((Demo proves capability; production needs reliability.)) // 데모는 가능성, 프로덕션은 신뢰성.\n- Design the unhappy paths on purpose — validation, error handling, retries, escalation — the reliability patterns of section 7. // 실패 경로를 일부러 설계한다.",
+  "keyPoints": [
+    "A demo on the happy path proves the model can do something; a production-ready system must handle any input and any LLM response. // 데모는 happy path, 프로덕션은 모든 입력과 응답.",
+    "LLM output and tool selection are unpredictable — you never know what the model returns or which tool it uses — so reliability has to be designed in. // 예측할 수 없으니 신뢰성을 설계에 넣는다.",
+    "Agentic coding shifted what an architect must know toward context management and choosing the right orchestration approach. // 에이전틱 코딩 이후 context management·orchestration 선택이 필수.",
+    "Vibe coding is fine for proving capability, not enough for production. // vibe coding 은 데모용이다."
+  ],
+  "examTrends": {
+    "how": "No new facts here either, but the instructor's point is the exam's recurring logic: an answer that only works on the happy path is a demo, not an architecture. Scenarios often describe a system that works in testing and then fails on unexpected input, a different LLM response, or an unexpected tool choice; the correct option adds a deterministic safeguard — schema validation, error handling, a retry with feedback, or escalation — rather than hoping a better prompt makes the model behave. // 새 사실은 없지만 강사의 요지가 시험의 반복 논리다. happy path 에서만 되는 답은 데모이지 아키텍처가 아니다. 시나리오는 흔히 테스트에선 됐는데 예상 밖 입력·다른 LLM 응답·예상 밖 툴 선택에서 실패하는 시스템을 보여 준다. 정답은 모델이 잘 따라 주길 바라는 프롬프트 개선이 아니라 스키마 검증·오류 처리·피드백 재시도·에스컬레이션 같은 결정론적 안전장치를 더하는 쪽이다.",
+    "answerLooks": [
+      "Validate the model's output with deterministic code before acting on it // 행동하기 전에 코드로 출력 검증.",
+      "Handle unexpected responses and tool failures with structured errors, retries, or escalation // 예상 밖 응답·툴 실패를 구조적으로 처리.",
+      "Evaluate against realistic, messy inputs rather than a few clean examples // 깨끗한 예시 몇 개가 아니라 현실적인 입력으로 평가."
+    ],
+    "traps": [
+      "\"It worked in the demo, so ship it\": the demo only proved capability on the happy path. // 데모 성공이 배포 근거는 아니다.",
+      "\"Make the prompt stricter\" as the only safeguard: the LLM's output still cannot be predicted, so nothing catches the failure. // 프롬프트 강화만으로는 예측 불가를 막지 못한다.",
+      "Assuming the model will always call the right tool: tool selection is not guaranteed and must be checked or constrained. // 툴 선택은 보장되지 않는다."
+    ],
+    "memorize": "Happy path = demo. Any input, any LLM response = production. // happy path 는 데모, 모든 입력과 응답을 견디면 프로덕션."
+  },
+  "createdAt": "2026-09-11T15:45:00+09:00"
+}
